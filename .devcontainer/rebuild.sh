@@ -10,26 +10,24 @@ CONFIG="$ROOT/.devcontainer/devcontainer.json"
     exit 1
 }
 
-for cmd in docker devcontainer; do
-    command -v "$cmd" >/dev/null || {
-        echo "Missing executable: $cmd" >&2
-        exit 1
-    }
+# Match this exact project and configuration.
+mapfile -t CONTAINERS < <(
+    docker ps -aq \
+        --filter "label=devcontainer.local_folder=$ROOT" \
+        --filter "label=devcontainer.config_file=$CONFIG"
+)
+
+if (( ${#CONTAINERS[@]} == 0 )); then
+    echo "No devcontainer found for $ROOT"
+    exit 0
+fi
+
+echo "Removing devcontainer(s) for $ROOT:"
+docker ps -a --filter "id=${CONTAINERS[0]}" \
+    --format '{{.Names}} ({{.Status}})'
+
+for id in "${CONTAINERS[@]}"; do
+    docker rm -f "$id"
 done
 
-docker info >/dev/null
-export BUILDKIT_PROGRESS=plain
-
-echo "Building devcontainer for $ROOT (existing container stays until build succeeds)..."
-devcontainer build --workspace-folder "$ROOT" --config "$CONFIG" --log-level debug
-
-echo "Recreating and starting devcontainer..."
-devcontainer up \
-    --workspace-folder "$ROOT" \
-    --config "$CONFIG" \
-    --id-label "devcontainer.local_folder=$ROOT" \
-    --id-label "devcontainer.config_file=$CONFIG" \
-    --remove-existing-container \
-    --log-level debug
-
-echo "Done. Open the devcontainer in Zed to attach."
+echo "Done. Reopen the project in Zed to rebuild."

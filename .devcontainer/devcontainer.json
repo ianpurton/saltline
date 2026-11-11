@@ -1,77 +1,15 @@
 {
   	"name": "Saltline",
-	"build": {
-		"dockerfile": "Dockerfile",
-		"context": "."
-	},
+	"dockerComposeFile": ["compose.yaml", "compose.gpu.generated.yaml"],
+	"service": "dev",
+	"remoteUser": "vscode",
+	"initializeCommand": ["bash", ".devcontainer/initialize-gpu.sh"],
 	"workspaceFolder": "/workspace",
-  	"workspaceMount": "source=${localWorkspaceFolder},target=/workspace,type=bind,consistency=cached",
-
-	// So that host.docker.internal and mcp.host work from inside the container.
-	"runArgs": [
-		"--add-host=host.docker.internal:host-gateway",
-		"--add-host=mcp.host:host-gateway",
-		"--security-opt", "seccomp=unconfined",
-		"--cap-add", "SYS_ADMIN",
-		"--privileged"
-	],
-
-	// Gives access to the ssh keys on the host for git operations.
-	"mounts": [
-		"source=${localEnv:HOME}/.ssh,target=/home/vscode/.ssh,type=bind,consistency=cached",
-		// Codex stores auth + config in ~/.codex.
-		// Without this volume every container rebuild logs you out.
-		"source=codex-config,target=/home/vscode/.codex,type=volume"
-	],
 
 	"features": {
 		"ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
 		// https://github.com/devcontainers/features/issues/1466
 		"moby": false
 		}
-	},
-	// Set *default* container specific settings.json values on container create.
-	"customizations": {
-		"vscode": {
-			"settings": {
-				"lldb.executable": "/usr/bin/lldb",
-				// VS Code don't watch files under ./target
-				"files.watcherExclude": {
-					"**/target/**": true
-				},
-				// Stop rust analyzer blocking the main build
-				"rust-analyzer.check.extraArgs": [
-					"--target-dir",
-					"/tmp/rust-analyzer-check"
-				]
-			},
-			// Add the IDs of extensions you want installed when the container is created.
-			"extensions": [
-				"vadimcn.vscode-lldb",
-				"mutantdino.resourcemonitor",
-				"rust-lang.rust-analyzer",
-				"tamasfe.even-better-toml",
-				"fill-labs.dependi",
-				"glehmann.earthlyls"
-			]
-		}
-	},
-	"remoteEnv": {
-		// Pass in the host directory for Docker mount commands from inside the container
-		"HOST_PROJECT_PATH": "${localWorkspaceFolder}",
-		"RUST_LOG": "debug",
-		// For tracing_subscriber
-		"LOG_LEVEL": "DEBUG",
-		"DATABASE_URL": "postgresql://db-owner:testpassword@host.docker.internal:30001/bionic-gpt?sslmode=disable",
-		"APP_DATABASE_URL": "postgresql://application_user:testpassword@host.docker.internal:30001/bionic-gpt?sslmode=disable",
-		// Switch on for row level encryption
-		// "CUSTOMER_KEY": "190a5bf4b3cbb6c0991967ab1c48ab30790af876720f1835cbbf3820f4f5d949",
-		"INVITE_DOMAIN": "http://envoy:7700",
-		"INVITE_FROM_EMAIL_ADDRESS": "support@application.com",
-		"SMTP_HOST": "smtp",
-		"SMTP_PORT": "1025",
-		"SMTP_USERNAME": "thisisnotused",
-		"SMTP_PASSWORD": "thisisnotused",
-		"SMTP_TLS_OFF": "true"
 	}
 }
