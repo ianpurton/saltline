@@ -79,11 +79,13 @@ The player's objectives are:
 
 Relays should be recognizable industrial terminals with lights, antennas and animated status indicators.
 
-Press E within interaction range to deactivate a relay.
+Press E within interaction range and with unobstructed line of sight to deactivate a relay. Repeated interaction is harmless. Extraction requires all three relays to be deactivated.
 
 The HUD displays objective progress, ammunition, health and navigation information.
 
 Include main menu, pause, death/restart and victory states.
+
+Pause freezes gameplay while menus remain responsive. Resume clears stale input. Restart resets player health and ammunition, enemies, relays, projectiles, effects and mission progress.
 
 ## 2. Graphics and visual quality
 
@@ -96,6 +98,17 @@ Prioritize visual quality in this order:
 5. Atmospheric fog, rain and particles.
 6. Weapon and enemy animations.
 7. Combat effects and UI polish.
+
+Inspect every image in `assets/reference/` before implementation. Use these images as the visual quality target:
+
+- `port.png`: layered industrial composition, crane silhouettes, container density, warm dawn, cool shadows, water and atmospheric depth.
+- `rifle.png`: proportions, receiver, magazine, rails, sights, barrel and stock detail.
+- `hound.png`: articulated silhouette, joints, feet, armor panels, sensors and contrasting materials.
+- `warehouse.png`: structural depth, roof framing, corrugated surfaces, storage, practical lighting and surface wear.
+
+Match their level of detail and material variation at gameplay viewing distances. Adapt lighting to heavy rain at dawn while preserving readability.
+
+Target 60 FPS on hardware rendering. Record adapter, build profile and frame timings along a fixed gameplay route. Use software rendering for functional verification and captures.
 
 ## 3. Required source tree
 
@@ -115,7 +128,13 @@ Use this structure as a guide. Create additional modules only when their respons
 │   │
 │   ├── game/                    # BEVY APPLICATION + GAMEPLAY
 │   │   ├── Cargo.toml
+│   │   ├── tests/
+│   │   │   ├── combat.rs        # Hit detection and damage
+│   │   │   ├── enemies.rs       # AI behaviour
+│   │   │   ├── objectives.rs    # Mission completion and state transitions
+│   │   │   └── navigation.rs    # Movement and collision
 │   │   └── src/
+│   │       ├── lib.rs           # Reusable gameplay plugins
 │   │       ├── main.rs          # App setup, plugins, startup
 │   │       ├── states.rs        # Menu, Playing, Paused, Dead, Victory
 │   │       ├── player.rs        # FPS movement, camera, health
@@ -184,10 +203,6 @@ Use this structure as a guide. Create additional modules only when their respons
 │       └── *.png                # Art direction references
 │
 ├── tests/
-│   ├── combat.rs                # Hit detection and damage
-│   ├── enemies.rs               # AI behaviour
-│   ├── objectives.rs            # Mission completion
-│   ├── navigation.rs            # Movement/pathfinding
 │   └── baselines/
 │       ├── port.png             # Approved scene screenshot
 │       ├── rifle.png            # Approved weapon screenshot
@@ -213,6 +228,8 @@ Files listed under `assets/` are examples, not mandatory empty placeholders. Cre
 
 The Rust code is the authoritative source of geometry and animations.
 
+Use dependencies `game → world → models` and `game → models`. Models owns geometry, materials and visual rigs; world owns layout and environment; game owns gameplay and AI. World generation exposes player, enemy, relay and extraction placements; game attaches gameplay behavior.
+
 ## 4. Efficient implementation strategy
 
 **Minimize total inference cost and elapsed development time without sacrificing the final result.**
@@ -220,7 +237,7 @@ The Rust code is the authoritative source of geometry and animations.
 Follow these principles:
 
 - Inspect the existing devcontainer and installed tools before changing the environment.
-- Use the installed Bevy version rather than upgrading unnecessarily.
+- Declare Bevy `0.20` in workspace Cargo dependencies and commit `Cargo.lock`. Use the installed Bevy skills.
 - Use existing Bevy rendering features, ECS systems and standard Rust crates.
 - Prefer simple, proven implementations over custom frameworks.
 - Reuse geometry builders, material definitions and procedural components.
@@ -242,11 +259,11 @@ Spend the available effort on game quality, not infrastructure.
 
 ## 5. Autonomous testing
 
-Use the Bevy testing approach described by the `bevy-testing` skill if it is installed and compatible with the project's Bevy version.
+Follow the installed `bevy-testing` skill.
 
 ### Gameplay verification
 
-Write lightweight Rust tests using minimal Bevy `App` instances.
+Write lightweight Rust tests in `crates/game/tests/` using minimal Bevy `App` instances, controlled time and inputs, fixed seeds, scheduled `App::update()` calls and observable state assertions. Bound asynchronous progress checks by a step limit or deadline.
 
 Use deterministic simulation steps to verify:
 
@@ -255,6 +272,8 @@ Use deterministic simulation steps to verify:
 - Enemy detection, pursuit and attacks.
 - Relay interaction and mission progression.
 - Death, restart and victory conditions.
+- Pause/resume and complete mission reset.
+- Input handling across zero, one and multiple fixed ticks per frame.
 
 Avoid launching the renderer for tests that only require ECS state.
 
@@ -271,7 +290,7 @@ Support deterministic camera views of:
 - The relay terminal.
 - Representative materials.
 
-Use Bevy screenshot capture to save PNG images under `tmp/screenshots/`.
+Capture 1280×720 PNG images under `tmp/screenshots/` using Bevy screenshot capture. Wait for capture completion before inspecting files.
 
 Inspect screenshots and correct visible problems, including:
 
@@ -285,9 +304,13 @@ Inspect screenshots and correct visible problems, including:
 
 Use fixed camera locations and random seeds for repeatable inspection.
 
+Compare inspection and player-height gameplay views against the references. Fix the three largest visible shortcomings and repeat until the visual target is met. Inspect successive frames of walking, attacking, recoil and reloading. Update regression baselines through explicit review.
+
 ### Gameplay smoke testing
 
-Use the installed Xvfb and xdotool tooling to exercise the native game.
+Use Xvfb and xdotool to verify launch, menus, mouse capture, movement, aiming, firing, reloading and pause/resume.
+
+Run a deterministic full-mission driver through the same movement, combat and interaction actions used by the player, under normal gameplay rules. Assert victory; fail on timeout or unmet assertions and retain diagnostic logs.
 
 Verify that the player can:
 
@@ -344,6 +367,8 @@ The project is complete when:
 - Gameplay tests pass.
 - A complete automated gameplay smoke test succeeds.
 - Representative screenshots have been captured and visually inspected.
+- Visual quality matches the reference images in composition, model detail and material variation.
+- Weapon and enemy animations have been visually verified.
 
 The game must be more than a technical prototype. It should feel like a coherent, polished, short FPS experience.
 
