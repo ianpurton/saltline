@@ -1,0 +1,63 @@
+use crate::*;
+impl Kit {
+    pub fn container(&self, c: &mut Commands, p: Vec3, mat: usize) -> Entity {
+        let e = self.root(c, p);
+        self.part(c, e, Vec3::new(0., 1.4, 0.), Vec3::new(3., 2.8, 9.), mat);
+        // Roof corrugations, corner castings and split doors.
+        for i in 0..25 {
+            self.part(
+                c,
+                e,
+                Vec3::new(0., 2.82, i as f32 * 0.35 - 4.2),
+                Vec3::new(2.85, 0.045, 0.065),
+                mat,
+            );
+        }
+        for x in [-1.43, 1.43] {
+            for y in [0.12, 2.68] {
+                for z in [-4.48, 4.48] {
+                    self.part(c, e, Vec3::new(x, y, z), Vec3::new(0.22, 0.22, 0.16), 4);
+                    self.part(
+                        c,
+                        e,
+                        Vec3::new(x, y, z.signum() * 4.57),
+                        Vec3::new(0.08, 0.07, 0.018),
+                        5,
+                    );
+                }
+            }
+        }
+        for x in [-0.74, 0.74] {
+            self.part(
+                c,
+                e,
+                Vec3::new(x, 1.4, 4.52),
+                Vec3::new(1.43, 2.5, 0.035),
+                mat,
+            );
+            for y in [0.55, 2.15] {
+                self.part(c, e, Vec3::new(x, y, 4.59), Vec3::new(0.25, 0.06, 0.06), 4);
+            }
+        }
+        for i in 0..25 {
+            for x in [-1.52, 1.52] {
+                self.part(
+                    c,
+                    e,
+                    Vec3::new(x, 1.4, i as f32 * 0.35 - 4.2),
+                    Vec3::new(0.055, 2.65, 0.065),
+                    mat,
+                );
+            }
+        }
+        for x in [-1.4, 1.4] {
+            for y in [0.1, 2.7] {
+                self.part(c, e, Vec3::new(x, y, 0.), Vec3::new(0.14, 0.14, 9.1), 4);
+            }
+        }
+        for x in [-0.65, 0.65] {
+            self.part(c, e, Vec3::new(x, 1.4, 4.53), Vec3::new(0.05, 2.5, 0.05), 4);
+        }
+        e
+    }
+}

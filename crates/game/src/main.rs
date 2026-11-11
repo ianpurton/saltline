@@ -9,7 +9,7 @@ use bevy::{
     window::{CursorGrabMode, CursorOptions},
 };
 use saltline_game::*;
-use saltline_models::{Kit, Leg};
+use saltline_models::{Kit, Knee, Leg};
 use saltline_world::{EXIT, RELAYS};
 #[derive(Resource)]
 struct Visuals {
@@ -146,35 +146,7 @@ fn setup(
     c.entity(cam).add_child(flash);
     let mut relays = vec![];
     for p in RELAYS {
-        let e = k.root(&mut c, p);
-        k.part(
-            &mut c,
-            e,
-            Vec3::new(0., 0.8, 0.),
-            Vec3::new(0.9, 1.6, 0.6),
-            4,
-        );
-        k.part(
-            &mut c,
-            e,
-            Vec3::new(0., 1.25, 0.32),
-            Vec3::new(0.65, 0.4, 0.04),
-            6,
-        );
-        k.part(
-            &mut c,
-            e,
-            Vec3::new(0.3, 2., 0.),
-            Vec3::new(0.035, 2., 0.035),
-            0,
-        );
-        relays.push(k.part(
-            &mut c,
-            e,
-            Vec3::new(0., 1.8, 0.),
-            Vec3::new(0.4, 0.1, 0.4),
-            7,
-        ));
+        relays.push(saltline_models::library::relay::build(&mut c, &k, p));
     }
     for i in 0..10 {
         let drone = i % 3 == 0;
@@ -307,6 +279,7 @@ fn visuals(
     mut hud: Query<&mut Text, With<Hud>>,
     rain: Query<Entity, With<Rain>>,
     legs: Query<(Entity, &Leg)>,
+    knees: Query<(Entity, &Knee)>,
     mut lights: Query<&mut PointLight, With<Muzzle>>,
 ) {
     let Ok(cam) = camera.single() else { return };
@@ -359,6 +332,14 @@ fn visuals(
         for (e, leg) in &legs {
             if let Ok(mut t) = transforms.get_mut(e) {
                 t.rotation = Quat::from_rotation_x((m.elapsed * 9. + leg.phase).sin() * 0.35);
+            }
+        }
+    }
+    if m.mode == Mode::Playing {
+        for (e, knee) in &knees {
+            if let Ok(mut t) = transforms.get_mut(e) {
+                t.rotation =
+                    Quat::from_rotation_x((m.elapsed * 9. + knee.phase + 0.7).sin() * 0.22);
             }
         }
     }
