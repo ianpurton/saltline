@@ -16,17 +16,18 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
     k.part(
         c,
         root,
-        Vec3::new(0., -0.25, -35.),
-        Vec3::new(55., 0.5, 105.),
+        Vec3::new(-12., -0.25, -35.),
+        Vec3::new(81., 0.5, 105.),
         0,
     );
-    k.part(
+    let ocean = k.part(
         c,
         root,
         Vec3::new(65., -0.55, -40.),
         Vec3::new(2400., 0.1, 2400.),
         8,
     );
+    c.entity(ocean).insert(MeshMaterial3d(k.sea.clone()));
     for row in 0..8 {
         for side in [-1., 1.] {
             let x = side * (12. + (row % 2) as f32 * 3.);
@@ -40,6 +41,41 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
             }
             port.walls
                 .push((Vec3::new(x, 2., z), Vec3::new(1.8, 4., 4.8)));
+        }
+    }
+
+    // Worn loading-bay paint and crossing stripes sit flush on the quay.
+    for z in [-3., -31., -64.] {
+        for i in 0..9 {
+            k.part(
+                c,
+                root,
+                Vec3::new(-4. + i as f32, 0.012, z),
+                Vec3::new(0.5, 0.015, 2.),
+                4,
+            );
+        }
+        for x in [-20., 20.] {
+            k.part(
+                c,
+                root,
+                Vec3::new(x, 0.012, z),
+                Vec3::new(3., 0.015, 0.12),
+                3,
+            );
+        }
+    }
+    for i in 0..10 {
+        for layer in 0..2 {
+            k.container(
+                c,
+                Vec3::new(
+                    -41. - (i % 2) as f32 * 3.3,
+                    layer as f32 * 2.85,
+                    -4. - i as f32 * 9.5,
+                ),
+                1 + (i + layer) % 3,
+            );
         }
     }
     for x in [-26., 26.] {
@@ -92,6 +128,20 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
                 },
                 Transform::from_xyz(x, 11.5, z),
             ));
+        }
+    }
+
+    // Match the new enclosing walls while leaving the loading bays open.
+    for z in [-25., -55.] {
+        port.walls
+            .push((Vec3::new(-35., 2.5, z), Vec3::new(0.15, 2.5, 10.)));
+        for dz in [-10., 10.] {
+            port.walls
+                .push((Vec3::new(-30., 2.5, z + dz), Vec3::new(5., 2.5, 0.15)));
+        }
+        for dz in [-7.5, 7.5] {
+            port.walls
+                .push((Vec3::new(-25., 2.5, z + dz), Vec3::new(0.15, 2.5, 2.5)));
         }
     }
     saltline_models::library::warehouse::build(c, k, root);

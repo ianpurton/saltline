@@ -22,6 +22,32 @@ impl Kit {
                     .with_rotation(rot),
             )
         };
+
+        // Recessed identification strokes, inspection plates and deck tie-downs.
+        for x in [-0.383, 0.383] {
+            for i in 0..5 {
+                part(
+                    c,
+                    e,
+                    "unit identification",
+                    &h.armor,
+                    Vec3::new(x, 0.99, -0.39 + i as f32 * 0.055),
+                    Vec3::new(0.006, 0.095, 0.021),
+                    Quat::IDENTITY,
+                    1,
+                );
+            }
+            part(
+                c,
+                e,
+                "service latch",
+                &h.armor,
+                Vec3::new(x, 1.02, 0.39),
+                Vec3::new(0.018, 0.035, 0.1),
+                Quat::IDENTITY,
+                2,
+            );
+        }
         let side = Quat::from_rotation_y(std::f32::consts::FRAC_PI_2);
         let axle = Quat::from_rotation_z(std::f32::consts::FRAC_PI_2);
         part(

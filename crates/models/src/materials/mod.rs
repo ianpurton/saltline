@@ -1,4 +1,5 @@
 pub mod industrial;
+pub mod sky;
 use bevy::prelude::*;
 pub fn legacy(
     a: &mut Assets<StandardMaterial>,
@@ -11,7 +12,7 @@ pub fn legacy(
     // Deterministic, tileable weathering at several spatial frequencies.
     // Separate linear normal/ORM maps keep surface relief in the PBR lighting.
     let mut maps = Vec::new();
-    for kind in 0..10 {
+    for kind in 0..13 {
         let n = 512usize;
         let height = |x: usize, y: usize| -> f32 {
             let u = x as f32 / n as f32 * std::f32::consts::TAU;
@@ -37,10 +38,20 @@ pub fn legacy(
                     + (sample(a, b + 1) * (1. - fx) + sample(a + 1, b + 1) * fx) * fy
             };
             let patch = noise(16) * 0.65 + noise(47) * 0.35 - 0.5;
-            if kind == 8 {
+            if kind == 10 {
+                0.5 + 0.08 * (u * 35. + (v * 2.).sin()).sin() + grain * 0.03
+            } else if kind == 8 {
                 0.5 + 0.045 * (u * 12. + (v * 5.).sin()).sin() + grain * 0.015
             } else {
-                0.5 + patch * 0.6 + grain * if kind == 0 { 0.12 } else { 0.06 }
+                if kind == 0 {
+                    0.5 + patch * 0.12 + grain * 0.22
+                } else if kind == 9 {
+                    0.5 + noise(6) * 0.16 + grain * 0.1
+                } else if kind == 5 {
+                    0.55 + grain * 0.025
+                } else {
+                    0.5 + patch * 0.4 + grain * 0.04
+                }
             }
         };
         let mut color = Vec::new();
@@ -51,7 +62,13 @@ pub fn legacy(
                 let h = height(x, y);
                 let rust = kind > 0 && kind < 4 && h < 0.39;
                 let shade = (155. + h * 100.) as u8;
-                color.extend_from_slice(&if rust {
+                color.extend_from_slice(&if kind == 11 {
+                    if ((x + y) / 64) % 2 == 0 {
+                        [210, 158, 34, 255]
+                    } else {
+                        [22, 26, 28, 255]
+                    }
+                } else if rust {
                     [130, 81, 47, 255]
                 } else {
                     [shade, shade, shade, 255]
@@ -130,6 +147,9 @@ pub fn legacy(
         (1., 0.27, 0.045),
         (0.08, 0.12, 0.15),
         (0.32, 0.33, 0.30),
+        (0.38, 0.25, 0.12),
+        (0.9, 0.9, 0.9),
+        (0.08, 0.16, 0.2),
     ];
     colors
         .iter()
@@ -149,16 +169,16 @@ pub fn legacy(
                 },
                 metallic_roughness_texture: Some(maps[i].2.clone()),
                 uv_transform: bevy::math::Affine2::from_scale(Vec2::splat(if i == 0 {
-                    24.
+                    48.
                 } else if i == 8 {
                     12.
                 } else {
                     2.
                 })),
-                metallic: if i == 0 || i == 8 || i == 9 { 0. } else { 0.7 },
+                metallic: if i == 0 || i >= 8 { 0. } else { 0.7 },
                 perceptual_roughness: 1.,
                 emissive: if i == 6 || i == 7 {
-                    LinearRgba::rgb(r * 5., g * 5., b * 5.)
+                    LinearRgba::rgb(r * 2., g * 2., b * 2.)
                 } else {
                     LinearRgba::BLACK
                 },

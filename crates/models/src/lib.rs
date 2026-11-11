@@ -8,6 +8,7 @@ pub struct Kit {
     pub industrial: Vec<Handle<StandardMaterial>>,
     pub cube: Handle<Mesh>,
     pub ball: Handle<Mesh>,
+    pub sea: Handle<StandardMaterial>,
     pub puddle: Handle<Mesh>,
     pub ring: Handle<Mesh>,
     pub mats: Vec<Handle<StandardMaterial>>,
@@ -19,8 +20,20 @@ impl Kit {
         images: &mut Assets<Image>,
     ) -> Self {
         let mats = materials::legacy(a, images);
+        let mut sea_material = a.get(&mats[8]).cloned().unwrap_or_default();
+        // Ocean UVs cover kilometres; puddle UVs cover metres.
+        sea_material.uv_transform = bevy::math::Affine2::from_scale(Vec2::splat(480.));
+        let sea = a.add(sea_material);
         let hard = geometry::HardSurface::new(m);
         let industrial = materials::industrial::create(a);
+        // Painted robot armor shares paint wear; rubber and optics retain their own response.
+        for index in [0usize, 1, 2, 4] {
+            let source = a.get(&mats[if index == 0 { 4 } else { 5 }]).cloned();
+            if let (Some(source), Some(mut target)) = (source, a.get_mut(&industrial[index])) {
+                target.base_color_texture = source.base_color_texture;
+                target.normal_map_texture = source.normal_map_texture;
+            }
+        }
         Self {
             cube: m.add({
                 let mut mesh = Mesh::from(Cuboid::default());
@@ -45,6 +58,7 @@ impl Kit {
             }),
             ball: m.add(Sphere::new(0.5).mesh().uv(12, 8)),
             mats,
+            sea,
             hard,
             industrial,
         }
@@ -59,6 +73,38 @@ impl Kit {
             .id();
         c.entity(parent).add_child(e);
         e
+    }
+    /// Cached shaped parts retain the established material palette.
+    pub fn shaped(&self, c: &mut Commands, parent: Entity, p: Vec3, s: Vec3, mat: usize) -> Entity {
+        geometry::assembly::component(
+            c,
+            parent,
+            "formed steel",
+            self.hard.armor.clone(),
+            self.mats[mat].clone(),
+            Transform::from_translation(p).with_scale(s),
+        )
+    }
+    pub fn rod(
+        &self,
+        c: &mut Commands,
+        parent: Entity,
+        a: Vec3,
+        b: Vec3,
+        diameter: f32,
+        mat: usize,
+    ) {
+        let d = b - a;
+        geometry::assembly::component(
+            c,
+            parent,
+            "tube or cable",
+            self.hard.rod.clone(),
+            self.mats[mat].clone(),
+            Transform::from_translation(a)
+                .with_rotation(Quat::from_rotation_arc(Vec3::Y, d.normalize()))
+                .with_scale(Vec3::new(diameter, d.length(), diameter)),
+        );
     }
     pub fn joint(&self, c: &mut Commands, parent: Entity, p: Vec3, r: f32) -> Entity {
         let e = c

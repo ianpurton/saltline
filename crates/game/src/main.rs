@@ -1,4 +1,5 @@
 mod driver;
+mod effects;
 use bevy::pbr::{DefaultOpaqueRendererMethod, ScreenSpaceReflections};
 use bevy::{
     camera::Hdr,
@@ -41,6 +42,7 @@ fn main() {
         .init_resource::<Actions>()
         .add_systems(Startup, setup)
         .add_systems(Update, (controls, driver::drive, simulate, visuals).chain())
+        .add_systems(Update, (surface_ripples, effects::combat_effects))
         .run();
 }
 fn setup(
@@ -48,12 +50,13 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<StandardMaterial>>,
     mut images: ResMut<Assets<Image>>,
-    mut media: ResMut<Assets<bevy::light::atmosphere::ScatteringMedium>>,
 ) {
-    c.spawn(bevy::light::Atmosphere::earth(media.add(
-        bevy::light::atmosphere::ScatteringMedium::earth(128, 128),
-    )));
+    let sky = saltline_models::materials::sky::overcast(&mut images);
     let k = Kit::new(&mut meshes, &mut mats, &mut images);
+    c.insert_resource(effects::DebrisAssets {
+        mesh: k.hard.armor.clone(),
+        material: k.mats[7].clone(),
+    });
     for (y, height, density) in [(0.7, 1.4, 0.008), (4., 4., 0.002)] {
         c.spawn((
             bevy::light::FogVolume {
@@ -69,8 +72,8 @@ fn setup(
     c.spawn((
         bevy::light::VolumetricLight,
         DirectionalLight {
-            illuminance: 14000.,
-            color: Color::srgb(1., 0.8, 0.63),
+            illuminance: 10500.,
+            color: Color::srgb(1., 0.87, 0.73),
             shadow_maps_enabled: true,
             contact_shadows_enabled: true,
             ..default()
@@ -80,8 +83,16 @@ fn setup(
     let cam = c
         .spawn((
             Camera3d::default(),
-            bevy::pbr::AtmosphereSettings::default(),
-            bevy::light::AtmosphereEnvironmentMapLight::default(),
+            bevy::light::Skybox {
+                image: Some(sky.clone()),
+                brightness: 2800.,
+                ..default()
+            },
+            bevy::light::GeneratedEnvironmentMapLight {
+                environment_map: sky,
+                intensity: 1400.,
+                ..default()
+            },
             bevy::core_pipeline::tonemapping::Tonemapping::AcesFitted,
             Msaa::Off,
             ScreenSpaceReflections::default(),
@@ -93,8 +104,8 @@ fn setup(
             DistanceFog {
                 color: Color::srgb(0.19, 0.26, 0.32),
                 falloff: FogFalloff::Linear {
-                    start: 45.,
-                    end: 260.,
+                    start: 35.,
+                    end: 220.,
                 },
                 ..default()
             },
@@ -102,22 +113,29 @@ fn setup(
         ))
         .id();
     let rifle = k.rifle(&mut c, cam);
-    k.part(
-        &mut c,
-        rifle,
-        Vec3::new(0.05, -0.26, 0.24),
-        Vec3::new(0.14, 0.12, 0.4),
-        2,
-    );
-    k.part(
-        &mut c,
-        rifle,
-        Vec3::new(-0.08, -0.18, -0.25),
-        Vec3::new(0.12, 0.11, 0.22),
-        2,
-    );
+    if !std::env::args().any(|a| a == "rifle-side") {
+        k.part(
+            &mut c,
+            rifle,
+            Vec3::new(0.05, -0.26, 0.24),
+            Vec3::new(0.14, 0.12, 0.4),
+            2,
+        );
+        k.part(
+            &mut c,
+            rifle,
+            Vec3::new(-0.08, -0.18, -0.25),
+            Vec3::new(0.12, 0.11, 0.22),
+            2,
+        );
+    }
     c.spawn((
         Text::new("+"),
+        if std::env::args().any(|a| a == "--inspect") {
+            Visibility::Hidden
+        } else {
+            Visibility::Visible
+        },
         TextFont {
             font_size: FontSize::Px(24.),
             ..default()
@@ -167,6 +185,20 @@ fn setup(
             home: p,
             cooldown: 2.,
         });
+    }
+
+    for i in 0..96 {
+        c.spawn((
+            SurfaceRipple(i as f32 * 0.618),
+            Mesh3d(k.ring.clone()),
+            MeshMaterial3d(k.mats[4].clone()),
+            Transform::from_xyz(
+                ((i * 37) % 45) as f32 - 22.,
+                0.035,
+                10. - ((i * 19) % 94) as f32,
+            )
+            .with_scale(Vec3::new(0.2, 0.015, 0.2)),
+        ));
     }
     // Rain streaks use a single cached mesh.
     for i in 0..650 {
@@ -295,8 +327,8 @@ fn visuals(
                 match v.view.as_str() {
                     "port" => Transform::from_xyz(-38., 32., 25.)
                         .looking_at(Vec3::new(8., 2., -40.), Vec3::Y),
-                    "warehouse" => Transform::from_xyz(-27., 1.8, -12.)
-                        .looking_at(Vec3::new(-30., 2., -25.), Vec3::Y),
+                    "warehouse" => Transform::from_xyz(-26., 1.8, -23.)
+                        .looking_at(Vec3::new(-32., 2., -27.), Vec3::Y),
                     "hound" => Transform::from_xyz(7., 1.8, -25.)
                         .looking_at(Vec3::new(5., 0.8, -22.), Vec3::Y),
                     "drone" => Transform::from_xyz(-1., 5., -19.)
@@ -319,10 +351,17 @@ fn visuals(
         } else {
             m.cooldown * 0.4
         });
-        if !v.view.is_empty() && v.view != "rifle" {
+        if !v.view.is_empty() && v.view != "rifle" && v.view != "rifle-side" {
             t.scale = Vec3::ZERO;
         } else {
             t.scale = Vec3::splat(0.75);
+        }
+    }
+    if v.view == "rifle-side" {
+        if let Ok(mut t) = transforms.get_mut(v.rifle) {
+            t.translation = Vec3::new(0., 0., -1.65);
+            t.rotation = Quat::from_rotation_y(std::f32::consts::FRAC_PI_2);
+            t.scale = Vec3::splat(0.9);
         }
     }
     for mut light in &mut lights {
@@ -356,9 +395,16 @@ fn visuals(
     for (i, e) in v.relays.iter().enumerate() {
         if let Ok(mut t) = transforms.get_mut(*e) {
             t.scale.y = if m.relays[i] {
-                0.1
+                0.01
             } else {
-                1. + (time.elapsed_secs() * 4.).sin() * 0.3
+                0.1 * (1.
+                    + (if v.view.is_empty() {
+                        time.elapsed_secs()
+                    } else {
+                        1.
+                    } * 4.)
+                        .sin()
+                        * 0.3)
             };
         }
     }
@@ -379,5 +425,20 @@ fn visuals(
         if v.capture > 65 {
             c.write_message(AppExit::Success);
         }
+    }
+}
+
+#[derive(Component)]
+struct SurfaceRipple(f32);
+fn surface_ripples(mission: Res<Mission>, mut ripples: Query<(&SurfaceRipple, &mut Transform)>) {
+    for (r, mut t) in &mut ripples {
+        // Inspection views use a fixed phase for repeatable comparisons.
+        let elapsed = if std::env::args().any(|a| a == "--inspect") {
+            1.
+        } else {
+            mission.elapsed
+        };
+        let phase = (elapsed * 1.7 + r.0).fract();
+        t.scale = Vec3::new(0.05 + phase * 0.7, 0.008 * (1. - phase), 0.05 + phase * 0.7);
     }
 }

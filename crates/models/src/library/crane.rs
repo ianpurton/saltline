@@ -1,5 +1,89 @@
 use crate::*;
 pub fn build(c: &mut Commands, k: &Kit, root: Entity) {
+    for z in [-22., -60., -100.] {
+        // Four-legged portal, access ladder, machinery cabin and raised boom.
+        for x in [26., 43.] {
+            for dz in [-2., 2.] {
+                k.shaped(
+                    c,
+                    root,
+                    Vec3::new(x, 0.8, z + dz),
+                    Vec3::new(2.2, 1.6, 2.),
+                    0,
+                );
+                k.rod(
+                    c,
+                    root,
+                    Vec3::new(x, 1., z + dz),
+                    Vec3::new(x, 26., z + dz),
+                    0.5,
+                    3,
+                );
+            }
+            for i in 0..42 {
+                k.part(
+                    c,
+                    root,
+                    Vec3::new(x + 0.65, 1. + i as f32 * 0.6, z),
+                    Vec3::new(0.12, 0.045, 0.65),
+                    4,
+                );
+            }
+        }
+        k.shaped(
+            c,
+            root,
+            Vec3::new(40., 25., z + 2.),
+            Vec3::new(4., 2., 3.),
+            4,
+        );
+        k.part(
+            c,
+            root,
+            Vec3::new(40., 25.3, z + 3.52),
+            Vec3::new(3.4, 0.8, 0.035),
+            8,
+        );
+        k.rod(
+            c,
+            root,
+            Vec3::new(31., 26., z),
+            Vec3::new(31., 39., z),
+            0.6,
+            3,
+        );
+        for x in [19., 54.] {
+            k.rod(
+                c,
+                root,
+                Vec3::new(31., 39., z),
+                Vec3::new(x, 26., z),
+                0.08,
+                0,
+            );
+        }
+        for dz in [-2., 2.] {
+            k.rod(
+                c,
+                root,
+                Vec3::new(18., 27., z + dz),
+                Vec3::new(54., 27., z + dz),
+                0.22,
+                3,
+            );
+            for i in 0..10 {
+                let x = 19. + i as f32 * 3.5;
+                k.rod(
+                    c,
+                    root,
+                    Vec3::new(x, 26., z + dz),
+                    Vec3::new(x + 2., 28., z + dz),
+                    0.12,
+                    0,
+                );
+            }
+        }
+    }
     // Quayside gantry cranes, cables and cross braces.
     for z in [-22., -60., -100.] {
         for x in [26., 43.] {

@@ -8,6 +8,7 @@ pub mod tube;
 use bevy::prelude::*;
 /// Shared immutable mesh palette, allocated once per Kit, reused by all instances.
 pub struct HardSurface {
+    pub hull: Handle<Mesh>,
     pub armor: Handle<Mesh>,
     pub panel: Handle<Mesh>,
     pub limb: Handle<Mesh>,
@@ -19,6 +20,19 @@ pub struct HardSurface {
 impl HardSurface {
     pub fn new(m: &mut Assets<Mesh>) -> Self {
         Self {
+            hull: m.add(extrusion::extrude(
+                &[
+                    Vec2::new(-0.5, -0.5),
+                    Vec2::new(0.5, -0.5),
+                    Vec2::new(0.5, 0.32),
+                    Vec2::new(0.36, 0.44),
+                    Vec2::new(0., 0.54),
+                    Vec2::new(-0.36, 0.44),
+                    Vec2::new(-0.5, 0.32),
+                ],
+                1.,
+            )),
+
             armor: m.add(bevel::beveled_box(Vec3::ONE, 0.12, 3, true)),
             panel: m.add(extrusion::extrude(
                 &[

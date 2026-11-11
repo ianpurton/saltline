@@ -58,6 +58,49 @@ impl Kit {
         for x in [-0.65, 0.65] {
             self.part(c, e, Vec3::new(x, 1.4, 4.53), Vec3::new(0.05, 2.5, 0.05), 4);
         }
+
+        for x in [-1.08, -0.4, 0.4, 1.08] {
+            self.rod(
+                c,
+                e,
+                Vec3::new(x, 0.23, 4.62),
+                Vec3::new(x, 2.57, 4.62),
+                0.04,
+                4,
+            );
+            for y in [0.38, 1.25, 2.4] {
+                self.shaped(c, e, Vec3::new(x, y, 4.64), Vec3::new(0.13, 0.09, 0.055), 4);
+            }
+            self.part(
+                c,
+                e,
+                Vec3::new(x + 0.1, 1.1, 4.68),
+                Vec3::new(0.23, 0.035, 0.04),
+                0,
+            );
+        }
+        for x in [-1.43, 1.43] {
+            for y in [0.5, 1.4, 2.3] {
+                self.shaped(c, e, Vec3::new(x, y, 4.58), Vec3::new(0.18, 0.13, 0.07), 4);
+            }
+            // Capacity plates and a sequence of identification stencil bars.
+            self.part(
+                c,
+                e,
+                Vec3::new(x * 1.075, 2.1, 2.8),
+                Vec3::new(0.018, 0.25, 0.75),
+                4,
+            );
+            for i in 0..7 {
+                self.part(
+                    c,
+                    e,
+                    Vec3::new(x * 1.075, 1.72, 2.5 + i as f32 * 0.1),
+                    Vec3::new(0.02, 0.15, 0.035),
+                    4,
+                );
+            }
+        }
         e
     }
 }
