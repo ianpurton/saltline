@@ -10,7 +10,7 @@ pub fn drive(
     time: Res<Time<Real>>,
     mut frames: Local<Vec<f32>>,
 ) {
-    if !std::env::args().any(|x| x == "--mission-test") {
+    if !saltline_game::launch_args().any(|x| x == "--mission-test") {
         return;
     }
     frames.push(time.delta_secs() * 1000.);

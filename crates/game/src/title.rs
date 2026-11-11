@@ -231,7 +231,7 @@ fn update(
 
 // Bounded capture of the actual startup flow, including UI, for visual review.
 fn capture(mut c: Commands, mut frame: Local<u32>) {
-    if !std::env::args().any(|a| a == "--title-capture") {
+    if !saltline_game::launch_args().any(|a| a == "--title-capture") {
         return;
     }
     *frame += 1;

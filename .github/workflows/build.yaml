@@ -1,0 +1,61 @@
+name: Build and validate
+on:
+  push:
+    paths-ignore:
+      - '.agents/**'
+      - README.md
+      - AGENTS.md
+      - '.github/assets/**'
+  pull_request:
+    paths-ignore:
+      - '.agents/**'
+      - README.md
+      - AGENTS.md
+      - '.github/assets/**'
+permissions:
+  contents: read
+env:
+  CARGO_BUILD_JOBS: 2
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - run: sudo apt-get update && sudo apt-get install -y libasound2-dev libudev-dev libwayland-dev libx11-dev libxcursor-dev libxrandr-dev libxi-dev libxkbcommon-dev
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo test --locked --workspace
+      - run: cargo build --locked --release -p saltline-game --bin saltline-game
+      - name: Package Linux build
+        run: |
+          mkdir -p dist/linux
+          cp target/release/saltline-game dist/linux/
+          cp README.md assets/fonts/OFL.txt dist/linux/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: saltline-linux
+          path: dist/linux/
+  web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: web-release
+      - name: Install matching wasm-bindgen CLI
+        run: |
+          set -euo pipefail
+          version="$(python3 -c 'import tomllib; print(next(p["version"] for p in tomllib.load(open("Cargo.lock", "rb"))["package"] if p["name"] == "wasm-bindgen"))')"
+          cargo install wasm-bindgen-cli --version "$version" --locked
+      - run: scripts/build-web.sh
+      - uses: actions/upload-artifact@v4
+        with:
+          name: saltline-web
+          path: |
+            saltline-web.zip
+            saltline-web.zip.sha256

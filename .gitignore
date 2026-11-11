@@ -1,2 +1,5 @@
 /target/
 /tmp/
+/dist/
+/saltline-web.zip
+/saltline-web.zip.sha256

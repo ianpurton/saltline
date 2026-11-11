@@ -57,3 +57,6 @@ Run `scripts/title-screen.sh` to save two startup screenshots in
 normal launches retain the selected hardware renderer. The Oswald font is embedded in the executable, so menu text does not depend on
 the launch directory or an external assets folder. Its SIL Open Font License is
 in `assets/fonts/OFL.txt`.
+
+For GitHub CI, browser builds, releases, and Wavedash setup, see
+[the release guide](docs/releases.md).

@@ -27,6 +27,8 @@ fn main() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "SALTLINE / port security incident".into(),
+                canvas: cfg!(target_arch = "wasm32").then(|| "#game".into()),
+                fit_canvas_to_parent: cfg!(target_arch = "wasm32"),
                 resolution: (1280, 720).into(),
                 ..default()
             }),
@@ -127,7 +129,7 @@ fn setup(
         ))
         .id();
     let rifle = k.rifle(&mut c, cam);
-    if !std::env::args().any(|a| a == "rifle-side") {
+    if !saltline_game::launch_args().any(|a| a == "rifle-side") {
         k.part(
             &mut c,
             rifle,
@@ -146,7 +148,7 @@ fn setup(
     c.spawn((
         title::Crosshair,
         Text::new("+"),
-        if std::env::args().any(|a| a == "--inspect") {
+        if saltline_game::launch_args().any(|a| a == "--inspect") {
             Visibility::Hidden
         } else {
             Visibility::Visible
@@ -250,7 +252,7 @@ fn setup(
             ..default()
         },
     ));
-    let view = std::env::args()
+    let view = saltline_game::launch_args()
         .skip_while(|x| x != "--inspect")
         .nth(1)
         .unwrap_or_default();
@@ -493,7 +495,7 @@ fn surface_ripples(
 ) {
     for (r, mut t) in &mut ripples {
         // Inspection views use a fixed phase for repeatable comparisons.
-        let elapsed = if std::env::args().any(|a| a == "--inspect") {
+        let elapsed = if saltline_game::launch_args().any(|a| a == "--inspect") {
             1.
         } else {
             if mission.mode == Mode::Menu {

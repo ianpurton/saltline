@@ -6,3 +6,6 @@ edition = "2024"
 bevy.workspace = true
 saltline-world = { path = "../world" }
 saltline-models = { path = "../models" }
+
+[target.'cfg(target_arch = "wasm32")'.dependencies]
+bevy = { workspace = true, features = ["webgpu"] }

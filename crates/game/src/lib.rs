@@ -219,3 +219,16 @@ pub fn simulate(
     a.interact = false;
     a.reload = false;
 }
+
+/// Command-line inspection/replay switches are native-only.
+/// Browser WASM has no process argument API.
+pub fn launch_args() -> impl Iterator<Item = String> {
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        std::env::args()
+    }
+    #[cfg(target_arch = "wasm32")]
+    {
+        std::iter::empty()
+    }
+}
