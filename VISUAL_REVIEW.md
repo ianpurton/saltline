@@ -112,3 +112,33 @@ inside the loading bay. Its broad surface mottling and flat roof remain below
 the warehouse reference, as do the warehouse light/fog transitions. Total elapsed
 execution time was approximately 17 minutes (including software capture waits).
 Token usage is not exposed by this session.
+
+## Animated title screen (PROMPT5)
+
+Implemented in `crates/game/src/title.rs` using the existing procedural port.
+Compared `tmp/screenshots/title-70.png` and `title-170.png` against
+`assets/reference/splash-screen.png`. Refined the foreground framing, title size
+and weight, gradient scrim, rain contrast, and UI camera assignment after render
+review. The live scene retains the project's procedural geometry/material style;
+it does not reproduce the reference's photographic surface detail.
+
+Verified with Xvfb/software Vulkan at 1280×720:
+- Startup displays the title before gameplay; captured two distinct camera poses.
+- Mouse Settings opens the motion option panel; Esc returns.
+- Mouse Controls opens the complete input list; Esc returns.
+- Mouse Deploy switches to the gameplay camera, HUD, rifle, and active enemies.
+- Captures: `tmp/screenshots/title-settings.png`, `title-controls.png`,
+  `title-deployed.png`.
+- `cargo test --workspace`: all seven tests pass. `git diff --check` passes.
+
+`scripts/title-screen.sh` reproduces the two startup captures. Xvfb requires
+software presentation here; normal launches retain hardware renderer selection.
+
+### Missing menu text fix
+
+Replaced asynchronous filesystem loading of Oswald with `include_bytes!` and a
+font added directly to `Assets<Font>`. Removed the build-machine asset directory
+from application configuration. Verified the rebuilt executable from
+`/tmp/saltline-font-check` with `BEVY_ASSET_ROOT` pointing to a nonexistent folder:
+the title, button labels, summary and legend all render. Capture:
+`tmp/screenshots/title-embedded-font.png`. All seven workspace tests pass.

@@ -1,5 +1,6 @@
 mod driver;
 mod effects;
+mod title;
 use bevy::pbr::{DefaultOpaqueRendererMethod, ScreenSpaceReflections};
 use bevy::{
     camera::Hdr,
@@ -40,6 +41,7 @@ fn main() {
         .insert_resource(DefaultOpaqueRendererMethod::deferred())
         .init_resource::<Mission>()
         .init_resource::<Actions>()
+        .add_plugins(title::TitlePlugin)
         .add_systems(Startup, setup)
         .add_systems(Update, (controls, driver::drive, simulate, visuals).chain())
         .add_systems(Update, (surface_ripples, effects::combat_effects))
@@ -68,6 +70,17 @@ fn setup(
         ));
     }
     let port = saltline_world::build(&mut c, &k);
+    // Foreground stacks frame the title shot; excluded from gameplay collision.
+    for z in [-7., -17.] {
+        for layer in 0..4 {
+            let e = k.container(
+                &mut c,
+                Vec3::new(-7., layer as f32 * 2.85, z),
+                1 + layer % 3,
+            );
+            c.entity(e).insert(title::TitleDressing);
+        }
+    }
     c.insert_resource(port);
     c.spawn((
         bevy::light::VolumetricLight,
@@ -83,6 +96,7 @@ fn setup(
     let cam = c
         .spawn((
             Camera3d::default(),
+            title::GameplayCamera,
             bevy::light::Skybox {
                 image: Some(sky.clone()),
                 brightness: 2800.,
@@ -130,6 +144,7 @@ fn setup(
         );
     }
     c.spawn((
+        title::Crosshair,
         Text::new("+"),
         if std::env::args().any(|a| a == "--inspect") {
             Visibility::Hidden
@@ -200,6 +215,13 @@ fn setup(
             .with_scale(Vec3::new(0.2, 0.015, 0.2)),
         ));
     }
+    // A pale translucent material keeps backlit rain visible against the stacks.
+    let rain_material = mats.add(StandardMaterial {
+        base_color: Color::srgba(0.67, 0.74, 0.78, 0.32),
+        unlit: true,
+        alpha_mode: AlphaMode::Blend,
+        ..default()
+    });
     // Rain streaks use a single cached mesh.
     for i in 0..650 {
         let p = Vec3::new(
@@ -208,7 +230,9 @@ fn setup(
             12. - ((i * 43) % 1000) as f32 * 0.1,
         );
         let e = k.root(&mut c, p);
-        k.part(&mut c, e, Vec3::ZERO, Vec3::new(0.008, 0.3, 0.008), 4);
+        let streak = k.part(&mut c, e, Vec3::ZERO, Vec3::new(0.009, 0.45, 0.009), 4);
+        c.entity(streak)
+            .insert(MeshMaterial3d(rain_material.clone()));
         c.entity(e).insert(Rain);
     }
     c.spawn((
@@ -307,7 +331,7 @@ fn visuals(
     a: Res<Actions>,
     mut v: ResMut<Visuals>,
     mut transforms: Query<&mut Transform>,
-    camera: Query<Entity, With<Camera3d>>,
+    camera: Query<Entity, With<title::GameplayCamera>>,
     mut hud: Query<&mut Text, With<Hud>>,
     rain: Query<Entity, With<Rain>>,
     legs: Query<(Entity, &Leg)>,
@@ -351,7 +375,9 @@ fn visuals(
         } else {
             m.cooldown * 0.4
         });
-        if !v.view.is_empty() && v.view != "rifle" && v.view != "rifle-side" {
+        if (m.mode == Mode::Menu && v.view.is_empty())
+            || (!v.view.is_empty() && v.view != "rifle" && v.view != "rifle-side")
+        {
             t.scale = Vec3::ZERO;
         } else {
             t.scale = Vec3::splat(0.75);
@@ -382,7 +408,7 @@ fn visuals(
             }
         }
     }
-    if m.mode == Mode::Playing {
+    if m.mode == Mode::Playing || m.mode == Mode::Menu {
         for e in &rain {
             if let Ok(mut t) = transforms.get_mut(e) {
                 t.translation.y -= time.delta_secs() * 14.;
@@ -414,7 +440,37 @@ fn visuals(
             continue;
         }
         let done = m.relays.iter().filter(|x| **x).count();
-        text.0=match m.mode{Mode::Menu=>"S A L T L I N E\n\nAUTOMATED SECURITY HAS TURNED HOSTILE\n\nDisable three communication relays. Reach the boat.\n\n[ ENTER ]  DEPLOY\n\nWASD move · Mouse aim · LMB fire · RMB sights\nR reload · Shift sprint · C crouch · Space jump\nE interact · Esc pause".into(),Mode::Paused=>"S A L T L I N E  /  PAUSED\n\n[ ENTER / ESC ] RESUME".into(),Mode::Dead=>"SIGNAL LOST\n\n[ ENTER ] REDEPLOY".into(),Mode::Victory=>format!("EXTRACTION CONFIRMED\n\nPort communications neutralized.\n{} threats destroyed · {:.0}s\n\n[ ENTER ] NEW OPERATION",m.kills,m.elapsed),Mode::Playing=>{let target=RELAYS.iter().enumerate().find(|(i,_)|!m.relays[*i]).map(|(_,p)|*p).unwrap_or(EXIT);format!("S A L T L I N E    /    OPERATION BREAKWATER\n\nRELAYS  {done} / 3     {}  {:.0}m\n\nHP {:03.0}    |    {:02} / {}   {}\n\n{}",if done==3{"EXTRACTION"}else{"UPLINK"},m.position.distance(target),m.health,m.ammo,m.reserve,if m.reload>0.{"RELOADING"}else{""},if m.position.distance(target+Vec3::Y*1.3)<3.{"[ E ] INTERACT"}else{""})}};
+        text.0 = match m.mode {
+            Mode::Menu => String::new(),
+            Mode::Paused => "S A L T L I N E  /  PAUSED\n\n[ ENTER / ESC ] RESUME".into(),
+            Mode::Dead => "SIGNAL LOST\n\n[ ENTER ] REDEPLOY".into(),
+            Mode::Victory => format!(
+                "EXTRACTION CONFIRMED\n\nPort communications neutralized.\n{} threats destroyed · {:.0}s\n\n[ ENTER ] NEW OPERATION",
+                m.kills, m.elapsed
+            ),
+            Mode::Playing => {
+                let target = RELAYS
+                    .iter()
+                    .enumerate()
+                    .find(|(i, _)| !m.relays[*i])
+                    .map(|(_, p)| *p)
+                    .unwrap_or(EXIT);
+                format!(
+                    "S A L T L I N E    /    OPERATION BREAKWATER\n\nRELAYS  {done} / 3     {}  {:.0}m\n\nHP {:03.0}    |    {:02} / {}   {}\n\n{}",
+                    if done == 3 { "EXTRACTION" } else { "UPLINK" },
+                    m.position.distance(target),
+                    m.health,
+                    m.ammo,
+                    m.reserve,
+                    if m.reload > 0. { "RELOADING" } else { "" },
+                    if m.position.distance(target + Vec3::Y * 1.3) < 3. {
+                        "[ E ] INTERACT"
+                    } else {
+                        ""
+                    }
+                )
+            }
+        };
     }
     if !v.view.is_empty() {
         v.capture += 1;
@@ -430,13 +486,21 @@ fn visuals(
 
 #[derive(Component)]
 struct SurfaceRipple(f32);
-fn surface_ripples(mission: Res<Mission>, mut ripples: Query<(&SurfaceRipple, &mut Transform)>) {
+fn surface_ripples(
+    time: Res<Time>,
+    mission: Res<Mission>,
+    mut ripples: Query<(&SurfaceRipple, &mut Transform)>,
+) {
     for (r, mut t) in &mut ripples {
         // Inspection views use a fixed phase for repeatable comparisons.
         let elapsed = if std::env::args().any(|a| a == "--inspect") {
             1.
         } else {
-            mission.elapsed
+            if mission.mode == Mode::Menu {
+                time.elapsed_secs()
+            } else {
+                mission.elapsed
+            }
         };
         let phase = (elapsed * 1.7 + r.0).fract();
         t.scale = Vec3::new(0.05 + phase * 0.7, 0.008 * (1. - phase), 0.05 + phase * 0.7);

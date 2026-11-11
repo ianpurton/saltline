@@ -46,3 +46,14 @@ Latest software Vulkan replay (optimized incremental debug profile): 268 frames,
 median 124.44 ms, p95 156.84 ms, 30.84 simulation seconds, all 10 enemies destroyed,
 victory asserted. These software timings were collected while captures also ran;
 they are functional diagnostics, not a hardware acceptance benchmark.
+
+The startup title screen uses the live procedural port with a separate looping
+cinematic camera. Click **Deploy** (or press Enter) to start, **Settings** to toggle
+camera motion with M, or **Controls** for the input legend. Esc closes subpanels.
+The foreground title stacks are presentation only and are hidden during gameplay.
+
+Run `scripts/title-screen.sh` to save two startup screenshots in
+`tmp/screenshots/title-{70,170}.png`. This uses software Vulkan under Xvfb;
+normal launches retain the selected hardware renderer. The Oswald font is embedded in the executable, so menu text does not depend on
+the launch directory or an external assets folder. Its SIL Open Font License is
+in `assets/fonts/OFL.txt`.
