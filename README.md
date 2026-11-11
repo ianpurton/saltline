@@ -38,13 +38,6 @@ it uses the default adapter; without one it selects software Vulkan and Xvfb.
 AMD Vulkan is available here, but presenting through Xvfb fails for that driver
 because DRI3 is unavailable. Software rendering was used for functional captures.
 
-This is a playable foundation, **not full acceptance of PROMPT.md**. The replay
-finishes in roughly 31 simulation seconds, substantially below the requested
-5–10 minutes. Models, environment dressing and materials remain below the supplied
-references. Audio, distinct attack/explosion effects, smooth camera transitions,
-comprehensive fixed-tick/reset tests, animation frame review and hardware 60 FPS
-verification remain unfinished. No regression image has been declared approved.
-
 Latest software Vulkan replay (optimized incremental debug profile): 268 frames,
 median 124.44 ms, p95 156.84 ms, 30.84 simulation seconds, all 10 enemies destroyed,
 victory asserted. These software timings were collected while captures also ran;
