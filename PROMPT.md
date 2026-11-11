@@ -158,17 +158,7 @@ Use this structure as a guide. Create additional modules only when their respons
 │   │       ├── export.rs        # Optional GLB exporter
 │   │       └── library/
 │   │           ├── mod.rs
-│   │           ├── rifle.rs     # Detailed first-person rifle
-│   │           ├── drone.rs     # Flying security drone
-│   │           ├── hound.rs     # Quadruped security robot
-│   │           ├── container.rs # Corrugated shipping containers
-│   │           ├── crane.rs     # Large industrial cargo cranes
-│   │           ├── warehouse.rs # Industrial buildings
-│   │           ├── ship.rs      # Docked cargo vessel
-│   │           ├── boat.rs      # Extraction boat
-│   │           ├── relay.rs     # Interactive objective terminal
-│   │           ├── barrel.rs    # Industrial barrels
-│   │           ├── fence.rs     # Fences and security barriers
+│   │           ├── *rifle.rs    # Each model in its own file
 │   │           └── props.rs     # Pipes, crates, lights, cables
 │   │
 │   └── world/                   # LEVEL + ENVIRONMENT GENERATION
