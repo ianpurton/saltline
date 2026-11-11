@@ -24,7 +24,7 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
         c,
         root,
         Vec3::new(65., -0.55, -40.),
-        Vec3::new(75., 0.1, 250.),
+        Vec3::new(2400., 0.1, 2400.),
         8,
     );
     for row in 0..8 {
@@ -41,6 +41,15 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
             port.walls
                 .push((Vec3::new(x, 2., z), Vec3::new(1.8, 4., 4.8)));
         }
+    }
+    for x in [-26., 26.] {
+        k.part(
+            c,
+            root,
+            Vec3::new(x, 0.12, -35.),
+            Vec3::new(0.6, 0.24, 104.),
+            9,
+        );
     }
     // Road lane markings, drainage grates, puddles and bollards.
     for i in 0..36 {
@@ -59,13 +68,16 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
     for i in 0..70 {
         let x = ((i * 37) % 47) as f32 - 23.;
         let z = 8. - ((i * 19) % 94) as f32;
-        k.part(
-            c,
-            root,
-            Vec3::new(x, 0.018, z),
-            Vec3::new(0.6 + (i % 5) as f32, 0.008, 0.4 + (i % 3) as f32),
-            8,
-        );
+        let puddle = c
+            .spawn((
+                Mesh3d(k.puddle.clone()),
+                MeshMaterial3d(k.mats[8].clone()),
+                Transform::from_xyz(x, 0.023, z)
+                    .with_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2))
+                    .with_scale(Vec3::new(1. + (i % 5) as f32, 0.7 + (i % 3) as f32, 1.)),
+            ))
+            .id();
+        c.entity(root).add_child(puddle);
     }
     for z in [-15., -45., -75.] {
         for x in [-22., 22.] {
@@ -111,6 +123,70 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
                 Vec3::new(0.09, 5., 0.08),
                 4,
             );
+        }
+    }
+    for z in [-25., -55.] {
+        k.part(
+            c,
+            root,
+            Vec3::new(-30., -0.15, z),
+            Vec3::new(10., 0.3, 20.),
+            9,
+        );
+        // Corrugated roof underside and loaded racks in the open dock sheds.
+        for i in 0..45 {
+            k.part(
+                c,
+                root,
+                Vec3::new(-30., 4.8, z - 9.8 + i as f32 * 0.44),
+                Vec3::new(9.8, 0.07, 0.07),
+                4,
+            );
+        }
+        for dz in [-7., 0., 7.] {
+            for y in [0.4, 1.8, 3.2] {
+                k.part(
+                    c,
+                    root,
+                    Vec3::new(-33., y, z + dz),
+                    Vec3::new(2.7, 0.1, 2.),
+                    1,
+                );
+                for dx in [-0.8, 0., 0.8] {
+                    k.part(
+                        c,
+                        root,
+                        Vec3::new(-33. + dx, y + 0.5, z + dz),
+                        Vec3::new(0.7, 0.9, 1.3),
+                        3,
+                    );
+                }
+            }
+            for dx in [-1.4, 1.4] {
+                k.part(
+                    c,
+                    root,
+                    Vec3::new(-33. + dx, 1.8, z + dz),
+                    Vec3::new(0.1, 3.6, 0.1),
+                    1,
+                );
+            }
+            k.part(
+                c,
+                root,
+                Vec3::new(-29., 4.55, z + dz),
+                Vec3::new(0.7, 0.08, 0.35),
+                7,
+            );
+            c.spawn((
+                PointLight {
+                    intensity: 18000.,
+                    range: 9.,
+                    color: Color::srgb(1., 0.78, 0.52),
+                    ..default()
+                },
+                Transform::from_xyz(-29., 4.3, z + dz),
+            ));
         }
     }
     // Quayside gantry cranes, cables and cross braces.
@@ -170,6 +246,59 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
             Vec3::new(22., 0.14, 0.14),
             4,
         );
+    }
+    // Non-colliding quayside dressing stays outside the playable road.
+    for i in 0..18 {
+        let z = 5. - i as f32 * 5.2;
+        for x in [-20., 20.] {
+            k.part(c, root, Vec3::new(x, 0.12, z), Vec3::new(1.4, 0.24, 0.9), 1);
+            for dz in [-0.32, 0., 0.32] {
+                k.part(
+                    c,
+                    root,
+                    Vec3::new(x, 0.27, z + dz),
+                    Vec3::new(1.5, 0.06, 0.15),
+                    3,
+                );
+            }
+            if i % 3 == 0 {
+                k.part(c, root, Vec3::new(x, 0.7, z), Vec3::new(0.95, 0.8, 0.8), 4);
+                for dx in [-0.35, 0.35] {
+                    k.part(
+                        c,
+                        root,
+                        Vec3::new(x + dx, 0.7, z + 0.41),
+                        Vec3::new(0.05, 0.8, 0.025),
+                        5,
+                    );
+                }
+            }
+        }
+    }
+    for z in [-22., -60., -100.] {
+        // Suspended trolley and hoist spreader, diagonal boom webbing.
+        k.part(c, root, Vec3::new(47., 24.6, z), Vec3::new(2.4, 1.1, 2.), 4);
+        k.part(c, root, Vec3::new(47., 9., z), Vec3::new(3.5, 0.35, 2.2), 3);
+        for x in [45.6, 48.4] {
+            for dz in [-0.8, 0.8] {
+                k.part(
+                    c,
+                    root,
+                    Vec3::new(x, 17., z + dz),
+                    Vec3::new(0.04, 15., 0.04),
+                    5,
+                );
+            }
+        }
+        for i in 0..9 {
+            let x = 20. + i as f32 * 3.5;
+            let beam = k.part(c, root, Vec3::new(x, 25., z), Vec3::new(4., 0.12, 0.15), 4);
+            c.entity(beam).insert(
+                Transform::from_xyz(x, 25., z)
+                    .with_scale(Vec3::new(4., 0.12, 0.15))
+                    .with_rotation(Quat::from_rotation_z(if i % 2 == 0 { 0.5 } else { -0.5 })),
+            );
+        }
     }
     // Moored freighter and deck cargo.
     k.part(

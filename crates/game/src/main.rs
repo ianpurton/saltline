@@ -33,7 +33,7 @@ fn main() {
         .insert_resource(ClearColor(Color::srgb(0.16, 0.22, 0.28)))
         .insert_resource(bevy::light::GlobalAmbientLight {
             color: Color::srgb(0.48, 0.65, 0.85),
-            brightness: 420.,
+            brightness: 2000.,
             ..default()
         })
         .insert_resource(DefaultOpaqueRendererMethod::deferred())
@@ -48,32 +48,53 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<StandardMaterial>>,
     mut images: ResMut<Assets<Image>>,
+    mut media: ResMut<Assets<bevy::light::atmosphere::ScatteringMedium>>,
 ) {
+    c.spawn(bevy::light::Atmosphere::earth(media.add(
+        bevy::light::atmosphere::ScatteringMedium::earth(128, 128),
+    )));
     let k = Kit::new(&mut meshes, &mut mats, &mut images);
+    for (y, height, density) in [(0.7, 1.4, 0.008), (4., 4., 0.002)] {
+        c.spawn((
+            bevy::light::FogVolume {
+                density_factor: density,
+                fog_color: Color::srgb(0.57, 0.65, 0.7),
+                ..default()
+            },
+            Transform::from_xyz(0., y, -48.).with_scale(Vec3::new(180., height, 220.)),
+        ));
+    }
     let port = saltline_world::build(&mut c, &k);
     c.insert_resource(port);
     c.spawn((
+        bevy::light::VolumetricLight,
         DirectionalLight {
-            illuminance: 3300.,
+            illuminance: 14000.,
             color: Color::srgb(1., 0.8, 0.63),
             shadow_maps_enabled: true,
+            contact_shadows_enabled: true,
             ..default()
         },
-        Transform::from_xyz(20., 25., -65.).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_xyz(65., 35., -80.).looking_at(Vec3::ZERO, Vec3::Y),
     ));
     let cam = c
         .spawn((
             Camera3d::default(),
+            bevy::pbr::AtmosphereSettings::default(),
+            bevy::light::AtmosphereEnvironmentMapLight::default(),
+            bevy::core_pipeline::tonemapping::Tonemapping::AcesFitted,
             Msaa::Off,
             ScreenSpaceReflections::default(),
+            bevy::pbr::ContactShadows::default(),
+            bevy::light::VolumetricFog::default(),
             bevy::anti_alias::taa::TemporalAntiAliasing::default(),
             Hdr,
             Bloom::default(),
             DistanceFog {
                 color: Color::srgb(0.19, 0.26, 0.32),
                 falloff: FogFalloff::Linear {
-                    start: 25.,
-                    end: 160.,
+                    start: 45.,
+                    end: 260.,
                 },
                 ..default()
             },
@@ -301,6 +322,8 @@ fn visuals(
                 match v.view.as_str() {
                     "port" => Transform::from_xyz(-38., 32., 25.)
                         .looking_at(Vec3::new(8., 2., -40.), Vec3::Y),
+                    "warehouse" => Transform::from_xyz(-27., 1.8, -12.)
+                        .looking_at(Vec3::new(-30., 2., -25.), Vec3::Y),
                     "hound" => Transform::from_xyz(7., 1.8, -25.)
                         .looking_at(Vec3::new(5., 0.8, -22.), Vec3::Y),
                     "drone" => Transform::from_xyz(-1., 5., -19.)
