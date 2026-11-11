@@ -75,23 +75,11 @@ fn setup(
                 brightness: 1800.,
                 ..default()
             },
-            bevy::light::GeneratedEnvironmentMapLight {
-                environment_map: sky,
-                intensity: 1000.,
-                ..default()
-            },
             Camera {
                 is_active: false,
                 ..default()
             },
-            bevy::camera::Hdr,
-            bevy::core_pipeline::tonemapping::Tonemapping::AcesFitted,
-            Msaa::Off,
-            bevy::pbr::ScreenSpaceReflections::default(),
-            bevy::pbr::ContactShadows::default(),
-            bevy::light::VolumetricFog::default(),
-            bevy::anti_alias::taa::TemporalAntiAliasing::default(),
-            bevy::post_process::bloom::Bloom::default(),
+            crate::rendering::camera_effects(sky, 1000.),
             DistanceFog {
                 color: Color::srgb(0.42, 0.38, 0.30),
                 falloff: FogFalloff::Linear {

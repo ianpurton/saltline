@@ -8,4 +8,4 @@ saltline-world = { path = "../world" }
 saltline-models = { path = "../models" }
 
 [target.'cfg(target_arch = "wasm32")'.dependencies]
-bevy = { workspace = true, features = ["webgpu"] }
+bevy = { workspace = true, features = ["webgl2"] }

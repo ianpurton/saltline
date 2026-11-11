@@ -1,5 +1,8 @@
 # SALTLINE
 
+
+![Saltline gameplay screenshot](.github/assets/saltline.png)
+
 A native Linux procedural port FPS built with Bevy 0.20.
 
 Run `cargo run -p saltline-game`. Enter deploys; WASD moves, mouse looks,

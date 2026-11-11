@@ -1,11 +1,10 @@
 mod driver;
 mod effects;
+mod rendering;
 mod title;
-use bevy::pbr::{DefaultOpaqueRendererMethod, ScreenSpaceReflections};
+use bevy::pbr::DefaultOpaqueRendererMethod;
 use bevy::{
-    camera::Hdr,
     input::mouse::AccumulatedMouseMotion,
-    post_process::bloom::Bloom,
     prelude::*,
     render::view::screenshot::{Screenshot, save_to_disk},
     window::{CursorGrabMode, CursorOptions},
@@ -40,7 +39,11 @@ fn main() {
             brightness: 2000.,
             ..default()
         })
-        .insert_resource(DefaultOpaqueRendererMethod::deferred())
+        .insert_resource(if cfg!(target_arch = "wasm32") {
+            DefaultOpaqueRendererMethod::forward()
+        } else {
+            DefaultOpaqueRendererMethod::deferred()
+        })
         .init_resource::<Mission>()
         .init_resource::<Actions>()
         .add_plugins(title::TitlePlugin)
@@ -61,6 +64,7 @@ fn setup(
         mesh: k.hard.armor.clone(),
         material: k.mats[7].clone(),
     });
+    #[cfg(not(target_arch = "wasm32"))]
     for (y, height, density) in [(0.7, 1.4, 0.008), (4., 4., 0.002)] {
         c.spawn((
             bevy::light::FogVolume {
@@ -85,12 +89,13 @@ fn setup(
     }
     c.insert_resource(port);
     c.spawn((
+        #[cfg(not(target_arch = "wasm32"))]
         bevy::light::VolumetricLight,
         DirectionalLight {
             illuminance: 10500.,
             color: Color::srgb(1., 0.87, 0.73),
             shadow_maps_enabled: true,
-            contact_shadows_enabled: true,
+            contact_shadows_enabled: !cfg!(target_arch = "wasm32"),
             ..default()
         },
         Transform::from_xyz(65., 35., -80.).looking_at(Vec3::ZERO, Vec3::Y),
@@ -104,19 +109,7 @@ fn setup(
                 brightness: 2800.,
                 ..default()
             },
-            bevy::light::GeneratedEnvironmentMapLight {
-                environment_map: sky,
-                intensity: 1400.,
-                ..default()
-            },
-            bevy::core_pipeline::tonemapping::Tonemapping::AcesFitted,
-            Msaa::Off,
-            ScreenSpaceReflections::default(),
-            bevy::pbr::ContactShadows::default(),
-            bevy::light::VolumetricFog::default(),
-            bevy::anti_alias::taa::TemporalAntiAliasing::default(),
-            Hdr,
-            Bloom::default(),
+            rendering::camera_effects(sky, 1400.),
             DistanceFog {
                 color: Color::srgb(0.19, 0.26, 0.32),
                 falloff: FogFalloff::Linear {

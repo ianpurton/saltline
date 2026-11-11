@@ -28,9 +28,11 @@
     window.addEventListener('error', event => fail(event.error || event.message));
     window.addEventListener('unhandledrejection', event => fail(event.reason));
     try {
-      if (!navigator.gpu || !await navigator.gpu.requestAdapter()) {
-        throw new Error('WebGPU is required. Use a WebGPU-capable browser with hardware acceleration enabled.');
+      const probe = document.createElement('canvas').getContext('webgl2');
+      if (!probe) {
+        throw new Error('WebGL 2 is required. Use a WebGL 2-capable browser with hardware acceleration enabled.');
       }
+      probe.getExtension('WEBGL_lose_context')?.loseContext();
       // The Wavedash host provides its SDK; local hosting also works without it.
       if (window.Wavedash) window.Wavedash.init({debug: false});
       await init();

@@ -1,8 +1,14 @@
 # Saltline releases and Wavedash
 
 The workflows build the `saltline-game` binary in this workspace. Browser builds
-use Bevy's WebGPU backend, the existing renderer, and the embedded Oswald font.
-They require a WebGPU-capable browser and HTTPS (or localhost for local testing).
+use Bevy's WebGL 2 backend and the embedded Oswald font. They require a
+WebGL 2-capable browser with hardware acceleration enabled. Serve the build over
+HTTPS (or localhost for local testing).
+
+Browser cameras use forward LDR rendering without HDR, bloom, screen-space
+reflections, contact shadows, volumetric fog, temporal anti-aliasing, or generated
+environment lighting. Skyboxes, distance fog, ambient/direct lighting and ordinary
+shadows remain enabled. Native builds retain their existing rendering effects.
 There are no fixture downloads or external game-data folders.
 
 ## Configure GitHub once
@@ -60,7 +66,21 @@ or the final hosted iframe; the uploaded playtest remains the final deployment c
 
 ## Verification for this adaptation
 
-Locally verified with Bevy 0.20.1:
+WebGL 2 migration verified locally with Bevy 0.20.1:
+
+- Native workspace check, all seven workspace tests, formatting and workflow validation pass.
+- The release browser build, archive CRCs and SHA-256 checksum pass.
+- The WASM feature graph enables `webgl2` and contains no `webgpu` feature.
+- Chromium with WebGPU disabled and `navigator.gpu` unavailable uses the AMD GPU
+  through the WebGL 2 backend. Title rendering, clicking Deploy, pointer lock,
+  movement/look/fire/reload and pause/resume were exercised without shader or GPU
+  validation errors. Captures are in `tmp/screenshots/webgl-{title,deployed,paused,resumed}.png`.
+- A browser with WebGL 2 unavailable displays the expected startup error.
+
+Performance on the affected user's hardware has not been measured; the backend
+switch and reduced effects do not establish a frame-rate improvement by themselves.
+
+Earlier checks, performed before the WebGL 2 migration:
 
 - `actionlint` validates all four workflow files.
 - `cargo fmt --all --check` and all seven `cargo test --locked --workspace` tests pass.

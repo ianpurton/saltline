@@ -86,7 +86,7 @@ jobs:
           version="$(python3 -c 'import tomllib; print(next(p["version"] for p in tomllib.load(open("Cargo.lock", "rb"))["package"] if p["name"] == "wasm-bindgen"))')"
           cargo install wasm-bindgen-cli --version "$version" --locked
 
-      - name: Build and package Saltline for WebGPU
+      - name: Build and package Saltline for WebGL 2
         run: scripts/build-web.sh
 
       - name: Tag and publish GitHub prerelease
