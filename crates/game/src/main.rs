@@ -105,10 +105,11 @@ fn main() {
         .init_resource::<presentation::PresentationClock>()
         .init_resource::<presentation::WeaponMotion>()
         .init_resource::<Mission>()
-        .init_resource::<benchmark::Benchmark>()
-        .add_systems(First, benchmark::begin)
-        .add_systems(Last, benchmark::end)
-        .init_resource::<Actions>()
+        .init_resource::<benchmark::Benchmark>();
+    #[cfg(not(target_arch = "wasm32"))]
+    app.add_systems(First, benchmark::begin)
+        .add_systems(Last, benchmark::end);
+    app.init_resource::<Actions>()
         .add_plugins(title::TitlePlugin)
         .add_systems(Startup, setup)
         .add_systems(PostStartup, hud::setup.after(capture::attach))
@@ -129,6 +130,7 @@ fn main() {
             Update,
             (
                 controls,
+                #[cfg(not(target_arch = "wasm32"))]
                 benchmark::route,
                 driver::drive,
                 simulate,

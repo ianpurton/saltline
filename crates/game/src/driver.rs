@@ -48,6 +48,7 @@ pub fn drive(
         for (name, mean, p95) in timings.summaries() {
             info!("CPU SYSTEM {name} mean_ms={mean:.3} p95_ms={p95:.3}");
         }
+        #[cfg(not(target_arch = "wasm32"))]
         crate::benchmark::report(&benchmark, &quality, &diagnostics, meshes.iter().count());
         info!(
             "MISSION DRIVER PASSED: kills={}, seconds={:.2}",

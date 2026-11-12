@@ -1,16 +1,22 @@
 //! Warmed, repeatable hardware route; captures are deliberately a separate mode.
-use bevy::{diagnostic::DiagnosticsStore, prelude::*};
+#[cfg(not(target_arch = "wasm32"))]
+use bevy::diagnostic::DiagnosticsStore;
+use bevy::prelude::*;
 use saltline_game::*;
-use std::{collections::BTreeMap, time::Instant};
+use std::collections::BTreeMap;
+#[cfg(not(target_arch = "wasm32"))]
+use std::time::Instant;
 #[derive(Resource)]
 pub struct Benchmark {
     pub enabled: bool,
     pub replay: bool,
     frame: usize,
+    #[cfg(not(target_arch = "wasm32"))]
     started: Instant,
     began: bool,
     samples: BTreeMap<&'static str, Vec<f32>>,
     stage: &'static str,
+    #[cfg(not(target_arch = "wasm32"))]
     cpu_start: Instant,
     cpu: Vec<f32>,
 }
@@ -20,26 +26,31 @@ impl Default for Benchmark {
             enabled: launch_args().any(|a| a == "--benchmark"),
             replay: false,
             frame: 0,
+            #[cfg(not(target_arch = "wasm32"))]
             started: Instant::now(),
             began: false,
             samples: BTreeMap::new(),
             stage: "title",
+            #[cfg(not(target_arch = "wasm32"))]
             cpu_start: Instant::now(),
             cpu: Vec::new(),
         }
     }
 }
+#[cfg(not(target_arch = "wasm32"))]
 pub fn begin(mut b: ResMut<Benchmark>) {
     if b.enabled {
         b.cpu_start = Instant::now();
     }
 }
+#[cfg(not(target_arch = "wasm32"))]
 pub fn end(mut b: ResMut<Benchmark>) {
     if b.enabled && b.began {
         let ms = b.cpu_start.elapsed().as_secs_f32() * 1000.;
         b.cpu.push(ms);
     }
 }
+#[cfg(not(target_arch = "wasm32"))]
 pub fn route(
     mut b: ResMut<Benchmark>,
     ready: Res<crate::capture::RenderReady>,
@@ -110,6 +121,7 @@ pub fn route(
         }
     }
 }
+#[cfg(not(target_arch = "wasm32"))]
 pub fn report(
     b: &Benchmark,
     quality: &crate::quality::RenderQuality,
@@ -146,6 +158,7 @@ pub fn report(
         }
     }
 }
+#[cfg(not(target_arch = "wasm32"))]
 fn print_stats(stage: &str, frames: &[f32]) {
     if frames.is_empty() {
         return;
