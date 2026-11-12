@@ -1,0 +1,10 @@
+{
+  "name": "saltline-browser-tests",
+  "private": true,
+  "scripts": {
+    "test:web": "node scripts/browser-smoke.cjs"
+  },
+  "devDependencies": {
+    "playwright": "1.65.0"
+  }
+}

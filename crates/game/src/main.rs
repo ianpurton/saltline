@@ -50,6 +50,15 @@ fn main() {
         },
         ..default()
     });
+    #[cfg(target_arch = "wasm32")]
+    let plugins = plugins.set(bevy::render::RenderPlugin {
+        render_creation: bevy::render::settings::WgpuSettings {
+            priority: bevy::render::settings::WgpuSettingsPriority::WebGL2,
+            ..default()
+        }
+        .into(),
+        ..default()
+    });
     let plugins = if capture::headless() || saltline_game::launch_args().any(|a| a == "--no-audio")
     {
         plugins.disable::<bevy::audio::AudioPlugin>()
@@ -219,7 +228,13 @@ fn setup(
         },
         bevy::light::CascadeShadowConfigBuilder {
             maximum_distance: if quality.high { 170. } else { 100. },
-            num_cascades: if quality.high { 4 } else { 2 },
+            num_cascades: if cfg!(target_arch = "wasm32") {
+                1
+            } else if quality.high {
+                4
+            } else {
+                2
+            },
             first_cascade_far_bound: 16.,
             ..default()
         }
@@ -415,6 +430,7 @@ fn visuals(
     capture_target: Res<capture::CaptureTarget>,
     ready: Res<capture::RenderReady>,
     mut transforms: Query<&mut Transform>,
+    mut visibility: Query<&mut Visibility>,
     camera: Query<Entity, With<title::GameplayCamera>>,
     clock: Res<presentation::PresentationClock>,
     motion: Res<presentation::WeaponMotion>,
@@ -521,10 +537,16 @@ fn visuals(
                 && v.view != "waterfront"
                 && v.view != "extraction")
         {
-            t.scale = Vec3::ZERO;
+            if let Ok(mut visible) = visibility.get_mut(v.rifle) {
+                *visible = Visibility::Hidden;
+            }
         } else {
-            t.scale = Vec3::splat(1.05);
+            if let Ok(mut visible) = visibility.get_mut(v.rifle) {
+                *visible = Visibility::Inherited;
+            }
         }
+        // Hidden meshes still need invertible transforms for render extraction.
+        t.scale = Vec3::splat(1.05);
     }
     if v.view == "rifle-side" {
         if let Ok(mut t) = transforms.get_mut(v.rifle) {
