@@ -64,7 +64,9 @@ pub fn legacy(
         for y in 0..n {
             for x in 0..n {
                 let h = height(x, y);
-                let rust = kind > 0 && kind < 4 && h < 0.60;
+                let cargo = (1..4).contains(&kind);
+                let rust =
+                    cargo && (h < 0.60 || (x % 85 < 3 && y % 256 < 40 + (x / 85 * 71) % 190));
                 let shade = (155. + h * 100.) as u8;
                 color.extend_from_slice(&if kind == 11 {
                     if ((x + y) / 64) % 2 == 0 {
@@ -86,7 +88,12 @@ pub fn legacy(
                 };
                 let dx = (height((x + 1) % n, y) - height((x + n - 1) % n, y)) * strength;
                 let dy = (height(x, (y + 1) % n) - height(x, (y + n - 1) % n)) * strength;
-                let nn = Vec3::new(-dx, -dy, 1.).normalize();
+                let rib = if cargo {
+                    0.28 * (x as f32 / n as f32 * std::f32::consts::TAU * 12.).cos()
+                } else {
+                    0.
+                };
+                let nn = Vec3::new(-dx - rib, -dy, 1.).normalize();
                 normal.extend_from_slice(&[
                     (nn.x * 127. + 128.) as u8,
                     (nn.y * 127. + 128.) as u8,

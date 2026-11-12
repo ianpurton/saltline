@@ -9,6 +9,7 @@ pub enum Value {
     Ammo,
     Prompt,
     Overlay,
+    Compass,
 }
 #[derive(Component)]
 pub struct PlayingPanel;
@@ -28,9 +29,9 @@ fn text(value: &str, size: f32, font: &Handle<Font>) -> impl Bundle {
 pub fn setup(
     mut c: Commands,
     mut fonts: ResMut<Assets<Font>>,
-    camera: Query<Entity, With<crate::title::GameplayCamera>>,
+    output: Res<crate::capture::OutputCamera>,
 ) {
-    let Ok(camera) = camera.single() else { return };
+    let camera = output.0;
     let font = fonts.add(Font::from_bytes(
         include_bytes!("../../../assets/fonts/Oswald.ttf").to_vec(),
     ));
@@ -85,7 +86,7 @@ pub fn setup(
                 px(28),
                 px(165),
                 28.,
-                "B4-07  /  AUTO",
+                "PAC-9  /  AUTO",
             ),
         ] {
             root.spawn((
@@ -97,13 +98,13 @@ pub fn setup(
                     top,
                     bottom,
                     width,
-                    padding: UiRect::all(px(14)),
+                    padding: UiRect::all(px(8)),
                     border: UiRect::left(px(2)),
                     flex_direction: FlexDirection::Column,
                     row_gap: px(3),
                     ..default()
                 },
-                BackgroundColor(Color::srgba(0.018, 0.026, 0.03, 0.75)),
+                BackgroundColor(Color::srgba(0.018, 0.026, 0.03, 0.18)),
                 BorderColor::all(Color::srgb(0.91, 0.57, 0.22)),
             ))
             .with_children(|panel| {
@@ -111,6 +112,70 @@ pub fn setup(
                 panel.spawn((value, text("", size, &font)));
             });
         }
+        root.spawn((
+            PlayingPanel,
+            Value::Compass,
+            text("", 15., &font),
+            TextLayout::justify(Justify::Center),
+            Node {
+                position_type: PositionType::Absolute,
+                left: percent(35.),
+                top: px(25),
+                width: percent(30.),
+                ..default()
+            },
+        ));
+        for i in 0..4 {
+            root.spawn((
+                PlayingPanel,
+                Marker(i),
+                text("", 14., &font),
+                Node {
+                    position_type: PositionType::Absolute,
+                    ..default()
+                },
+                TextLayout::justify(Justify::Center),
+            ));
+        }
+        for i in 0..10 {
+            root.spawn((
+                PlayingPanel,
+                IntegrityPip(i),
+                Node {
+                    position_type: PositionType::Absolute,
+                    left: px(40. + i as f32 * 13.),
+                    bottom: px(24),
+                    width: px(10),
+                    height: px(4),
+                    ..default()
+                },
+                BackgroundColor(Color::WHITE),
+            ));
+        }
+        for i in 0..4 {
+            root.spawn((
+                PlayingPanel,
+                CrossLine(i),
+                Node {
+                    position_type: PositionType::Absolute,
+                    width: px(if i < 2 { 7. } else { 1. }),
+                    height: px(if i < 2 { 1. } else { 7. }),
+                    ..default()
+                },
+                BackgroundColor(Color::srgb(0.91, 0.90, 0.85)),
+            ));
+        }
+        root.spawn((
+            PlayingPanel,
+            HitMarker,
+            text("×", 24., &font),
+            Node {
+                position_type: PositionType::Absolute,
+                left: percent(49.5),
+                top: percent(48.3),
+                ..default()
+            },
+        ));
         root.spawn((
             PlayingPanel,
             Value::Prompt,
@@ -144,7 +209,9 @@ pub fn update(
     mut values: Query<(&Value, &mut Text)>,
     mut panels: Query<&mut Visibility, With<PlayingPanel>>,
     mut damage: Query<&mut BorderColor, With<Damage>>,
+    timings: Option<Res<saltline_game::SystemTimings>>,
 ) {
+    let _cpu = timings.as_deref().and_then(|t| t.span("hud::update"));
     let inspect = saltline_game::launch_args().any(|a| a == "--inspect");
     for mut visibility in &mut panels {
         *visibility = if m.mode == Mode::Playing && !inspect {
@@ -167,6 +234,12 @@ pub fn update(
             String::new()
         } else {
             match value {
+                Value::Compass => {
+                    let heading = (-m.yaw.to_degrees()).rem_euclid(360.);
+                    let direction = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
+                        [((heading + 22.5) / 45.) as usize % 8];
+                    format!("·     ·     ·     {direction}  {heading:03.0}     ·     ·     ·")
+                }
                 Value::Objective => format!(
                     "UPLINKS  {done} / 3\n{}  ·  {:.0} m",
                     if done == 3 {
@@ -209,5 +282,91 @@ pub fn update(
     }
     for mut border in &mut damage {
         border.set_all(Color::srgba(0.8, 0.13, 0.06, (m.hurt * 2.).min(0.65)));
+    }
+}
+
+#[derive(Component)]
+pub struct Marker(usize);
+#[derive(Component)]
+pub struct IntegrityPip(usize);
+#[derive(Component)]
+pub struct CrossLine(usize);
+#[derive(Component)]
+pub struct HitMarker;
+pub fn feedback(
+    m: Res<Mission>,
+    actions: Res<saltline_game::Actions>,
+    motion: Res<crate::presentation::WeaponMotion>,
+    cameras: Query<(&Camera, &GlobalTransform), With<crate::title::GameplayCamera>>,
+    mut markers: Query<(&Marker, &mut Node, &mut Text, &mut Visibility)>,
+    mut pips: Query<(&IntegrityPip, &mut BackgroundColor)>,
+    mut lines: Query<(&CrossLine, &mut Node), Without<Marker>>,
+    mut hits: Query<&mut TextColor, With<HitMarker>>,
+) {
+    let inspect = saltline_game::launch_args().any(|a| a == "--inspect");
+    if let Ok((camera, transform)) = cameras.single() {
+        if let Some(size) = camera.logical_viewport_size() {
+            for (marker, mut node, mut text, mut visibility) in &mut markers {
+                let p = if marker.0 < 3 {
+                    RELAYS[marker.0] + Vec3::Y * 3.
+                } else {
+                    EXIT + Vec3::Y * 2.
+                };
+                let active = if marker.0 < 3 {
+                    !m.relays[marker.0]
+                } else {
+                    m.relays.iter().all(|x| *x)
+                };
+                let projected = camera.world_to_viewport(transform, p);
+                if active && !inspect && m.mode == Mode::Playing {
+                    if let Ok(screen) = projected {
+                        let uv = screen / size;
+                        if (0.04..0.94).contains(&uv.x) && (0.06..0.90).contains(&uv.y) {
+                            node.left = percent(uv.x * 100.);
+                            node.top = percent(uv.y * 100.);
+                            text.0 = format!(
+                                "◇ {}  {:.0} m",
+                                if marker.0 < 3 { "UPLINK" } else { "EXTRACT" },
+                                m.position.distance(p)
+                            );
+                            *visibility = Visibility::Inherited;
+                            continue;
+                        }
+                    }
+                }
+                *visibility = Visibility::Hidden;
+            }
+        }
+    }
+    for (pip, mut color) in &mut pips {
+        color.0 = if m.health > pip.0 as f32 * 10. {
+            Color::srgb(0.91, 0.90, 0.85)
+        } else {
+            Color::srgba(0.91, 0.90, 0.85, 0.15)
+        };
+    }
+    let gap = 5. + m.cooldown * 70. + if actions.sprint { 8. } else { 0. };
+    for (line, mut node) in &mut lines {
+        let (x, y) = match line.0 {
+            0 => (-gap - 7., 0.),
+            1 => (gap, 0.),
+            2 => (0., -gap - 7.),
+            _ => (0., gap),
+        };
+        node.left = Val::Percent(50.);
+        node.top = Val::Percent(50.);
+        node.margin = UiRect {
+            left: px(x),
+            top: px(y),
+            ..default()
+        };
+        node.display = if actions.aim {
+            Display::None
+        } else {
+            Display::Flex
+        };
+    }
+    for mut color in &mut hits {
+        color.0 = Color::srgba(1., 0.94, 0.8, (motion.hit / 0.08).min(1.));
     }
 }

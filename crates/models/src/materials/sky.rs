@@ -1,3 +1,4 @@
+pub const SUN_DIRECTION: bevy::prelude::Vec3 = bevy::prelude::Vec3::new(0.48, 0.225, -0.86);
 use bevy::{
     asset::RenderAssetUsages,
     prelude::*,
@@ -34,7 +35,7 @@ pub fn overcast(images: &mut Assets<Image>) -> Handle<Image> {
                 }
                 let horizon = (1. - d.y.max(0.)).powf(4.);
                 let sun = d
-                    .dot(Vec3::new(65., 35., -80.).normalize())
+                    .dot((SUN_DIRECTION * Vec3::new(1., 1., -1.)).normalize())
                     .max(0.)
                     .powf(24.);
                 let cloud = ((field + 0.2) * 1.5).clamp(0., 1.) * (0.3 + d.y.max(0.).sqrt());
@@ -87,11 +88,14 @@ pub fn photographic(images: &mut Assets<Image>) -> Handle<Image> {
                 .sum::<f32>()
                 .total_cmp(&b.2.0.iter().sum::<f32>())
         })
-        .map(|(x, _, _)| x)
-        .unwrap_or(w / 2);
-    let source_angle = (peak as f32 / w as f32 - 0.5) * std::f32::consts::TAU;
-    let desired_angle = (-0.86f32).atan2(0.48);
-    let rotation = Quat::from_rotation_y(desired_angle - source_angle);
+        .map(|(x, y, _)| (x, y))
+        .unwrap_or((w / 2, h / 4));
+    let theta = (peak.0 as f32 / w as f32 - 0.5) * std::f32::consts::TAU;
+    let phi = peak.1 as f32 / h as f32 * std::f32::consts::PI;
+    let source_direction = Vec3::new(phi.sin() * theta.cos(), phi.cos(), phi.sin() * theta.sin());
+    // Sampling maps world directions INTO the panorama, so this rotation maps
+    // the desired sun direction to its source direction (not the reverse).
+    let rotation = Quat::from_rotation_arc(SUN_DIRECTION.normalize(), source_direction);
     let n = 512u32;
     let mut bytes = Vec::with_capacity((n * n * 6 * 8) as usize);
     for face in 0..6 {
@@ -108,7 +112,8 @@ pub fn photographic(images: &mut Assets<Image>) -> Handle<Image> {
                     _ => Vec3::new(-u, -v, -1.),
                 }
                 .normalize();
-                let d = rotation * d;
+                // Bevy samples sky and environment cubemaps with flipped Z.
+                let d = rotation * (d * Vec3::new(1., 1., -1.));
                 let px = ((d.z.atan2(d.x) / std::f32::consts::TAU + 0.5) * w as f32)
                     .rem_euclid(w as f32);
                 let py = (d.y.acos() / std::f32::consts::PI * h as f32).clamp(0., h as f32 - 1.001);
@@ -144,4 +149,48 @@ pub fn photographic(images: &mut Assets<Image>) -> Handle<Image> {
         ..default()
     });
     images.add(image)
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod tests {
+    use super::*;
+    #[test]
+    fn photographic_sun_matches_the_directional_light() {
+        let mut images = Assets::<Image>::default();
+        let handle = photographic(&mut images);
+        let image = images.get(&handle).unwrap();
+        let n = image.width() as usize;
+        let data = image.data.as_ref().unwrap();
+        let peak = data
+            .chunks_exact(8)
+            .enumerate()
+            .max_by(|(_, a), (_, b)| {
+                let brightness = |p: &[u8]| {
+                    (0..3)
+                        .map(|c| half::f16::from_le_bytes([p[c * 2], p[c * 2 + 1]]).to_f32())
+                        .sum::<f32>()
+                };
+                brightness(a).total_cmp(&brightness(b))
+            })
+            .unwrap()
+            .0;
+        let face = peak / (n * n);
+        let x = peak % n;
+        let y = (peak / n) % n;
+        let u = 2. * (x as f32 + 0.5) / n as f32 - 1.;
+        let v = 2. * (y as f32 + 0.5) / n as f32 - 1.;
+        let cube = match face {
+            0 => Vec3::new(1., -v, -u),
+            1 => Vec3::new(-1., -v, u),
+            2 => Vec3::new(u, 1., v),
+            3 => Vec3::new(u, -1., -v),
+            4 => Vec3::new(u, -v, 1.),
+            _ => Vec3::new(-u, -v, -1.),
+        };
+        let world = (cube * Vec3::new(1., 1., -1.)).normalize();
+        assert!(
+            world.dot(SUN_DIRECTION.normalize()) > 0.99,
+            "sun direction {world:?}"
+        );
+    }
 }

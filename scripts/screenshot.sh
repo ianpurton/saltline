@@ -2,8 +2,12 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 mkdir -p tmp/screenshots tmp/logs
-export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json
+# Hardware offscreen captures by default; request software explicitly if needed.
+if [[ ${SALTLINE_SOFTWARE:-0} == 1 ]]; then
+  export VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json
+fi
 cargo build -p saltline-game
-for view in port rifle rifle-side hound drone relay warehouse; do
-  xvfb-run -a -s '-screen 0 1280x720x24' target/debug/saltline-game --inspect "$view" > "tmp/logs/$view.log" 2>&1
+for view in port deployment corridor waterfront extraction rifle rifle-side aim reload hound drone relay warehouse damage; do
+  target/debug/saltline-game --headless-render --inspect "$view" --resolution 1280x720 "$@" > "tmp/logs/$view.log" 2>&1
 done
+target/debug/saltline-game --headless-render --title-capture --resolution 1280x720 "$@" > tmp/logs/title.log 2>&1

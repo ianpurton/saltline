@@ -1,8 +1,14 @@
+mod audio;
+mod benchmark;
 mod capture;
 mod driver;
 mod effects;
+#[cfg(not(target_arch = "wasm32"))]
+mod finish;
 mod hud;
 mod presentation;
+mod quality;
+mod rain;
 mod rendering;
 mod title;
 use bevy::pbr::DefaultOpaqueRendererMethod;
@@ -26,6 +32,12 @@ struct Visuals {
 struct Hud;
 fn main() {
     let mut app = App::new();
+    let quality = quality::RenderQuality::from_args();
+    info!("RENDER QUALITY {quality:?}");
+    app.insert_resource(quality.clone());
+    app.insert_resource(SystemTimings::new(
+        saltline_game::launch_args().any(|a| a == "--benchmark" || a == "--profile"),
+    ));
     let plugins = DefaultPlugins.set(WindowPlugin {
         primary_window: (!capture::headless()).then_some(Window {
             title: "SALTLINE / port security incident".into(),
@@ -41,6 +53,12 @@ fn main() {
         },
         ..default()
     });
+    let plugins = if capture::headless() || saltline_game::launch_args().any(|a| a == "--no-audio")
+    {
+        plugins.disable::<bevy::audio::AudioPlugin>()
+    } else {
+        plugins
+    };
     if capture::headless() {
         app.add_plugins(plugins.disable::<bevy::winit::WinitPlugin>())
             .add_plugins(bevy::app::ScheduleRunnerPlugin::run_loop(
@@ -50,9 +68,20 @@ fn main() {
         app.add_plugins(plugins);
     }
     capture::readiness(&mut app);
+    benchmark::install_counters(&mut app);
+    app.add_plugins(rain::RainPlugin);
+    if !capture::headless() && !saltline_game::launch_args().any(|a| a == "--no-audio") {
+        app.add_plugins(audio::SoundPlugin);
+    }
+    if saltline_game::launch_args().any(|a| a == "--benchmark" || a == "--profile") {
+        app.add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin);
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    app.add_plugins(finish::FinishPlugin);
     #[cfg(not(target_arch = "wasm32"))]
     app.add_plugins(saltline_models::materials::wet::WetPlugin)
-        .add_systems(Update, presentation::water.after(presentation::clock));
+        .add_systems(Update, presentation::water.after(presentation::clock))
+        .add_systems(Update, rendering::freeze_environment_maps);
     if saltline_game::launch_args().any(|a| a == "--inspect" || a == "--title-capture") {
         app.insert_resource(bevy::time::TimeUpdateStrategy::ManualDuration(
             std::time::Duration::from_secs_f64(1. / 60.),
@@ -60,7 +89,7 @@ fn main() {
     }
     app.insert_resource(ClearColor(Color::srgb(0.16, 0.22, 0.28)))
         .insert_resource(bevy::light::GlobalAmbientLight {
-            color: Color::srgb(0.58, 0.70, 0.83),
+            color: Color::srgb(0.68, 0.73, 0.78),
             brightness: 160.,
             ..default()
         })
@@ -69,23 +98,42 @@ fn main() {
         } else {
             DefaultOpaqueRendererMethod::deferred()
         })
-        .insert_resource(bevy::light::DirectionalLightShadowMap { size: 4096 })
+        .insert_resource(bevy::light::DirectionalLightShadowMap {
+            size: quality.shadows as usize,
+        })
         .add_message::<PresentationEvent>()
         .init_resource::<presentation::PresentationClock>()
+        .init_resource::<presentation::WeaponMotion>()
         .init_resource::<Mission>()
+        .init_resource::<benchmark::Benchmark>()
+        .add_systems(First, benchmark::begin)
+        .add_systems(Last, benchmark::end)
         .init_resource::<Actions>()
         .add_plugins(title::TitlePlugin)
         .add_systems(Startup, setup)
-        .add_systems(PostStartup, hud::setup.before(capture::attach))
-        .add_systems(Update, hud::update.after(visuals))
-        .add_systems(PostStartup, capture::attach.after(title::setup))
+        .add_systems(PostStartup, hud::setup.after(capture::attach))
+        .add_systems(PostStartup, saltline_models::geometry::batch::assemble)
+        .add_systems(Update, capture::resize)
+        .add_systems(Update, (hud::update, hud::feedback).chain().after(visuals))
+        .add_systems(
+            PostStartup,
+            (title::setup, capture::attach, title::target_output).chain(),
+        )
+        .add_systems(PostStartup, (rain::setup, effects::setup))
+        .add_systems(
+            PostStartup,
+            (presentation::bind_rigs, presentation::bind_viewmodel),
+        )
+        .add_systems(PostStartup, rendering::configure.after(title::setup))
         .add_systems(
             Update,
             (
                 controls,
+                benchmark::route,
                 driver::drive,
                 simulate,
                 presentation::clock,
+                presentation::weapon,
                 visuals,
             )
                 .chain(),
@@ -96,7 +144,9 @@ fn main() {
                 surface_ripples,
                 effects::combat_effects,
                 presentation::rigs,
-                weather,
+                presentation::magazines,
+                rain::update,
+                saltline_models::geometry::batch::update_lod,
             )
                 .after(visuals),
         )
@@ -107,12 +157,14 @@ fn setup(
     mut meshes: ResMut<Assets<Mesh>>,
     mut mats: ResMut<Assets<StandardMaterial>>,
     mut images: ResMut<Assets<Image>>,
+    quality: Res<quality::RenderQuality>,
 ) {
     #[cfg(target_arch = "wasm32")]
     let sky = saltline_models::materials::sky::overcast(&mut images);
     #[cfg(not(target_arch = "wasm32"))]
     let sky = saltline_models::materials::sky::photographic(&mut images);
     c.insert_resource(rendering::SharedSky(sky.clone()));
+    info!("RENDER QUALITY {quality:?}");
     let k = Kit::new(&mut meshes, &mut mats, &mut images);
     c.insert_resource(effects::DebrisAssets {
         mesh: k.hard.armor.clone(),
@@ -124,9 +176,16 @@ fn setup(
             ..default()
         }),
         material: k.mats[7].clone(),
+        glow: mats.add(StandardMaterial {
+            emissive: LinearRgba::rgb(9., 4., 1.),
+            unlit: true,
+            ..default()
+        }),
     });
     #[cfg(not(target_arch = "wasm32"))]
-    rendering::mist(&mut c, &mut images);
+    if quality.volumetric {
+        rendering::mist(&mut c, &mut images);
+    }
     let port = saltline_world::build(&mut c, &k);
     // Foreground stacks frame the title shot; excluded from gameplay collision.
     for z in [-7., -17.] {
@@ -145,22 +204,28 @@ fn setup(
         bevy::light::VolumetricLight,
         DirectionalLight {
             illuminance: 9500.,
-            color: Color::srgb(1., 0.78, 0.52),
+            color: Color::srgb(1., 0.72, 0.42),
             shadow_maps_enabled: true,
-            contact_shadows_enabled: !cfg!(target_arch = "wasm32"),
+            contact_shadows_enabled: quality.contact && !cfg!(target_arch = "wasm32"),
             ..default()
         },
         bevy::light::CascadeShadowConfigBuilder {
-            maximum_distance: 170.,
+            maximum_distance: if quality.high { 170. } else { 100. },
+            num_cascades: if quality.high { 4 } else { 2 },
             first_cascade_far_bound: 16.,
             ..default()
         }
         .build(),
-        Transform::from_xyz(48., 16., -86.).looking_at(Vec3::ZERO, Vec3::Y),
+        Transform::from_translation(saltline_models::materials::sky::SUN_DIRECTION * 100.)
+            .looking_at(Vec3::ZERO, Vec3::Y),
     ));
     let cam = c
         .spawn((
             Camera3d::default(),
+            Projection::Perspective(PerspectiveProjection {
+                fov: 74_f32.to_radians(),
+                ..default()
+            }),
             title::GameplayCamera,
             bevy::light::Skybox {
                 image: Some(sky.clone()),
@@ -177,7 +242,7 @@ fn setup(
         .spawn((
             PointLight {
                 color: Color::srgb(0.68, 0.77, 0.86),
-                intensity: 12.,
+                intensity: 100.,
                 range: 1.8,
                 ..default()
             },
@@ -189,27 +254,6 @@ fn setup(
     if !saltline_game::launch_args().any(|a| a == "rifle-side") {
         k.gloves(&mut c, rifle);
     }
-    c.spawn((
-        title::Crosshair,
-        Text::new("+"),
-        if saltline_game::launch_args().any(|a| a == "--inspect") {
-            Visibility::Hidden
-        } else {
-            Visibility::Visible
-        },
-        TextFont {
-            font_size: FontSize::Px(24.),
-            ..default()
-        },
-        TextColor(Color::srgba(0.8, 0.95, 0.9, 0.6)),
-        Node {
-            position_type: PositionType::Absolute,
-            left: percent(49.6),
-            top: percent(48.),
-            ..default()
-        },
-    ));
-
     let flash = c
         .spawn((
             Muzzle,
@@ -219,10 +263,10 @@ fn setup(
                 range: 6.,
                 ..default()
             },
-            Transform::from_xyz(0.20, -0.23, -1.35),
+            Transform::from_xyz(0., 0., -1.02),
         ))
         .id();
-    c.entity(cam).add_child(flash);
+    c.entity(rifle).add_child(flash);
     let mut relays = vec![];
     for p in RELAYS {
         relays.push(saltline_models::library::relay::build(&mut c, &k, p));
@@ -270,32 +314,6 @@ fn setup(
             .with_scale(Vec3::new(0.2, 0.015, 0.2)),
         ));
     }
-    // A pale translucent material keeps backlit rain visible against the stacks.
-    let rain_material = mats.add(StandardMaterial {
-        base_color: Color::srgba(0.67, 0.74, 0.78, 0.32),
-        unlit: true,
-        alpha_mode: AlphaMode::Blend,
-        ..default()
-    });
-    // Rain streaks use a single cached mesh.
-    for i in 0..1400 {
-        let p = Vec3::new(
-            ((i * 73) % 480) as f32 * 0.1 - 24.,
-            ((i * 31) % 160) as f32 * 0.1,
-            12. - ((i * 43) % 1000) as f32 * 0.1,
-        );
-        let e = k.root(&mut c, p);
-        let streak = k.part(&mut c, e, Vec3::ZERO, Vec3::new(0.004, 0.33, 0.004), 4);
-        c.entity(streak).insert((
-            MeshMaterial3d(rain_material.clone()),
-            bevy::light::NotShadowCaster,
-        ));
-        c.entity(streak).insert(
-            Transform::from_rotation(Quat::from_rotation_z(-0.12))
-                .with_scale(Vec3::new(0.004, 0.33, 0.004)),
-        );
-        c.entity(e).insert(Rain);
-    }
     #[cfg(not(target_arch = "wasm32"))]
     std::fs::create_dir_all(
         capture::option("--output-dir").unwrap_or_else(|| "tmp/screenshots".into()),
@@ -313,8 +331,6 @@ fn setup(
     });
 }
 #[derive(Component)]
-struct Rain;
-#[derive(Component)]
 struct Muzzle;
 fn controls(
     keys: Res<ButtonInput<KeyCode>>,
@@ -324,7 +340,9 @@ fn controls(
     mut m: ResMut<Mission>,
     mut a: ResMut<Actions>,
     mut enemies: Query<(&mut Enemy, &mut Transform)>,
+    timings: Option<Res<saltline_game::SystemTimings>>,
 ) {
+    let _cpu = timings.as_deref().and_then(|t| t.span("main::controls"));
     if keys.just_pressed(KeyCode::Enter) && m.mode != Mode::Playing {
         if m.mode != Mode::Paused {
             *m = Mission::default();
@@ -385,19 +403,29 @@ fn visuals(
     mut transforms: Query<&mut Transform>,
     camera: Query<Entity, With<title::GameplayCamera>>,
     clock: Res<presentation::PresentationClock>,
+    motion: Res<presentation::WeaponMotion>,
     mut lights: Query<&mut PointLight, With<Muzzle>>,
+    timings: Option<Res<saltline_game::SystemTimings>>,
 ) {
+    let _cpu = timings.as_deref().and_then(|t| t.span("main::visuals"));
     let Ok(cam) = camera.single() else { return };
     if let Ok(mut t) = transforms.get_mut(cam) {
         *t = Transform::from_translation(m.position).with_rotation(Quat::from_euler(
             EulerRot::YXZ,
             m.yaw,
-            m.pitch,
-            0.,
+            m.pitch + motion.recoil,
+            motion.phase.sin() * 0.003 * (1. - motion.ads),
         ));
+        t.translation.y -= motion.land;
         if !v.view.is_empty() {
             *t =
                 match v.view.as_str() {
+                    "corridor" => Transform::from_xyz(0., 1.7, -28.)
+                        .looking_at(Vec3::new(0., 1.7, -65.), Vec3::Y),
+                    "waterfront" => Transform::from_xyz(21., 1.7, -40.)
+                        .looking_at(Vec3::new(65., 4., -60.), Vec3::Y),
+                    "extraction" => Transform::from_xyz(0., 1.7, -75.)
+                        .looking_at(saltline_world::EXIT + Vec3::Y, Vec3::Y),
                     "port" => Transform::from_xyz(-38., 32., 25.)
                         .looking_at(Vec3::new(8., 2., -40.), Vec3::Y),
                     "warehouse" => Transform::from_xyz(-26., 1.8, -23.)
@@ -419,25 +447,40 @@ fn visuals(
         let reload = if v.view == "reload" { 0.7 } else { m.reload };
         let moving = a.movement.length().min(1.);
         let sway = Vec3::new(
-            (clock.elapsed * 6.).sin() * 0.005,
-            (clock.elapsed * 12.).cos() * 0.004,
+            motion.phase.sin() * 0.012,
+            (motion.phase * 2.).cos() * 0.009,
             0.,
         ) * moving;
+        let ads = if inspecting {
+            aim as u32 as f32
+        } else {
+            motion.ads
+        };
+        let reload_phase = (1. - reload / 1.8).clamp(0., 1.);
+        let reload_dip = if reload > 0. {
+            (reload_phase * std::f32::consts::PI).sin()
+        } else {
+            0.
+        };
         let pose = Vec3::new(
-            if aim { 0. } else { 0.24 },
-            if aim { -0.112 } else { -0.25 },
-            if aim { -0.66 } else { -0.78 },
+            0.24 * (1. - ads),
+            -0.25 + 0.04 * ads - reload_dip * 0.10,
+            -0.78 + 0.12 * ads,
         ) + sway
-            + Vec3::Z * m.cooldown * 0.23;
+            + Vec3::Z * motion.kick;
         let rotation = Quat::from_euler(
             EulerRot::YXZ,
-            if aim { 0. } else { -0.10 },
+            -0.10 * (1. - ads),
             if reload > 0. {
-                -0.42
+                -0.65 * reload_dip
             } else {
-                m.cooldown * 0.32
+                motion.recoil * 2.
             },
-            if reload > 0. { -0.40 } else { 0.025 },
+            if reload > 0. {
+                -0.55 * reload_dip
+            } else {
+                0.025 * (1. - ads)
+            },
         );
         let blend = if inspecting {
             1.
@@ -451,11 +494,16 @@ fn visuals(
                 && v.view != "rifle"
                 && v.view != "rifle-side"
                 && v.view != "aim"
-                && v.view != "reload")
+                && v.view != "reload"
+                && v.view != "deployment"
+                && v.view != "damage"
+                && v.view != "corridor"
+                && v.view != "waterfront"
+                && v.view != "extraction")
         {
             t.scale = Vec3::ZERO;
         } else {
-            t.scale = Vec3::splat(0.65);
+            t.scale = Vec3::splat(1.05);
         }
     }
     if v.view == "rifle-side" {
@@ -507,35 +555,5 @@ fn surface_ripples(
             0.004 * (1. - phase),
             0.03 + phase * 0.45,
         );
-    }
-}
-
-fn weather(
-    clock: Res<presentation::PresentationClock>,
-    cameras: Query<(&Camera, &GlobalTransform)>,
-    mut rain: Query<(&mut Transform, &mut Visibility), With<Rain>>,
-) {
-    let Some((_, camera)) = cameras.iter().find(|(c, _)| c.is_active) else {
-        return;
-    };
-    let origin = camera.translation();
-    for (mut t, mut visibility) in &mut rain {
-        t.translation += Vec3::new(-1.8, -16., 0.6) * clock.dt;
-        t.translation.x = origin.x + (t.translation.x - origin.x + 22.).rem_euclid(44.) - 22.;
-        t.translation.z = origin.z + (t.translation.z - origin.z + 22.).rem_euclid(44.) - 22.;
-        if t.translation.y < 0. {
-            t.translation.y = 18.;
-        }
-        let roofed = t.translation.x > -35.
-            && t.translation.x < -25.
-            && t.translation.y < 6.4
-            && [-25.0f32, -55.0]
-                .iter()
-                .any(|z| (t.translation.z - z).abs() < 10.);
-        *visibility = if roofed {
-            Visibility::Hidden
-        } else {
-            Visibility::Visible
-        };
     }
 }

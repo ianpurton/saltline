@@ -9,11 +9,23 @@ pub fn drive(
     enemies: Query<(&Enemy, &Transform)>,
     time: Res<Time<Real>>,
     mut frames: Local<Vec<f32>>,
+    benchmark: Res<crate::benchmark::Benchmark>,
+    quality: Res<crate::quality::RenderQuality>,
+    batches: Res<crate::benchmark::BatchCounters>,
+    timings: Res<SystemTimings>,
+    ready: Res<crate::capture::RenderReady>,
+    diagnostics: Res<bevy::diagnostic::DiagnosticsStore>,
+    meshes: Query<(), With<Mesh3d>>,
 ) {
-    if !saltline_game::launch_args().any(|x| x == "--mission-test") {
+    if !saltline_game::launch_args().any(|x| x == "--mission-test" || x == "--benchmark") {
         return;
     }
-    frames.push(time.delta_secs() * 1000.);
+    if benchmark.enabled && (!ready.ready() || !benchmark.replay) {
+        return;
+    }
+    if ready.ready() {
+        frames.push(time.delta_secs() * 1000.);
+    }
     if m.mode == Mode::Menu {
         m.mode = Mode::Playing;
     }
@@ -22,13 +34,21 @@ pub fn drive(
         let n = frames.len();
         if n > 0 {
             info!(
-                "FRAME TIMINGS debug optimized: samples={}, median_ms={:.2}, p95_ms={:.2}",
+                "FRAME TIMINGS: samples={}, median_ms={:.2}, p95_ms={:.2}",
                 n,
                 frames[n / 2],
                 frames[(n - 1) * 95 / 100]
             );
         }
 
+        info!(
+            "DRAW SUBMISSIONS main opaque multidraw batches + transparent items = {} (before GPU culling; excludes shadow/UI passes)",
+            batches.0.load(std::sync::atomic::Ordering::Relaxed)
+        );
+        for (name, mean, p95) in timings.summaries() {
+            info!("CPU SYSTEM {name} mean_ms={mean:.3} p95_ms={p95:.3}");
+        }
+        crate::benchmark::report(&benchmark, &quality, &diagnostics, meshes.iter().count());
         info!(
             "MISSION DRIVER PASSED: kills={}, seconds={:.2}",
             m.kills, m.elapsed

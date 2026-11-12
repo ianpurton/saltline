@@ -15,7 +15,11 @@ impl Kit {
                 c,
                 parent,
                 name,
-                mesh.clone(),
+                if *mesh == h.armor && s.max_element() > 0.25 {
+                    h.hero_armor.clone()
+                } else {
+                    mesh.clone()
+                },
                 self.industrial[mat].clone(),
                 Transform::from_translation(p)
                     .with_scale(s)

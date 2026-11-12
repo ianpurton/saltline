@@ -33,7 +33,6 @@ impl Plugin for TitlePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TitleState>()
             .init_resource::<CaptureCount>()
-            .add_systems(PostStartup, setup)
             .add_systems(Update, update.after(crate::visuals))
             .add_systems(Update, capture);
     }
@@ -247,5 +246,15 @@ fn capture(
     }
     if *frame > 3000 {
         panic!("title capture timed out");
+    }
+}
+
+/// Menus stay at output resolution while the world scales independently.
+pub fn target_output(
+    output: Res<crate::capture::OutputCamera>,
+    mut targets: Query<&mut UiTargetCamera>,
+) {
+    for mut target in &mut targets {
+        target.0 = output.0;
     }
 }

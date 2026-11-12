@@ -11,7 +11,11 @@ impl Kit {
             c,
             e,
             "rifle mechanism",
-            self.hard.armor.clone(),
+            if s.max_element() > 0.15 {
+                self.hard.hero_armor.clone()
+            } else {
+                self.hard.armor.clone()
+            },
             if mat == 3 {
                 self.mats[3].clone()
             } else {
@@ -119,13 +123,29 @@ impl Kit {
                 5,
             );
         }
+        // Magazine is independently animated during withdrawal and insertion.
+        let magazine = self.root(c, Vec3::ZERO);
+        c.entity(e).add_child(magazine);
+        c.entity(magazine).insert(ReloadMagazine);
         // Curved magazine sections and pressed ribs.
         for i in 0..6 {
             let y = -0.12 - i as f32 * 0.045;
             let z = 0.01 - i as f32 * i as f32 * 0.0015;
-            self.rifle_part(c, e, Vec3::new(0., y, z), Vec3::new(0.092, 0.05, 0.15), 3);
+            self.rifle_part(
+                c,
+                magazine,
+                Vec3::new(0., y, z),
+                Vec3::new(0.092, 0.05, 0.15),
+                3,
+            );
             for x in [-0.048, 0.048] {
-                self.rifle_part(c, e, Vec3::new(x, y, z), Vec3::new(0.006, 0.012, 0.12), 4);
+                self.rifle_part(
+                    c,
+                    magazine,
+                    Vec3::new(x, y, z),
+                    Vec3::new(0.006, 0.012, 0.12),
+                    4,
+                );
             }
         }
         for x in [-0.069, 0.069] {
@@ -187,22 +207,40 @@ impl Kit {
                 .with_rotation(Quat::from_rotation_y(std::f32::consts::FRAC_PI_2))
                 .with_scale(Vec3::splat(0.038)),
         );
-        // Open rear aperture, rather than a solid block obscuring the aim line.
-        for x in [-0.028, 0.028] {
+        // Open holographic sight: frame, tinted glass and a small emissive reticle.
+        for x in [-0.052, 0.052] {
             self.rifle_part(
                 c,
                 e,
-                Vec3::new(x, 0.157, -0.06),
-                Vec3::new(0.012, 0.055, 0.018),
+                Vec3::new(x, 0.20, -0.06),
+                Vec3::new(0.016, 0.10, 0.07),
                 4,
             );
         }
-        self.rifle_part(
+        for y in [0.145, 0.255] {
+            self.rifle_part(
+                c,
+                e,
+                Vec3::new(0., y, -0.06),
+                Vec3::new(0.12, 0.014, 0.07),
+                4,
+            );
+        }
+        geometry::assembly::component(
             c,
             e,
-            Vec3::new(0., 0.185, -0.06),
-            Vec3::new(0.065, 0.012, 0.018),
-            4,
+            "optic lens",
+            self.cube.clone(),
+            self.optic_glass.clone(),
+            Transform::from_xyz(0., 0.20, -0.065).with_scale(Vec3::new(0.087, 0.086, 0.002)),
+        );
+        geometry::assembly::component(
+            c,
+            e,
+            "optic reticle",
+            self.cube.clone(),
+            self.mats[7].clone(),
+            Transform::from_xyz(0., 0.20, -0.025).with_scale(Vec3::splat(0.003)),
         );
         e
     }

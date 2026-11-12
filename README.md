@@ -33,15 +33,16 @@ Verification performed in this devcontainer:
 - Port, rifle, Hound, drone and relay PNGs were captured and visually inspected.
 
 `./scripts/window-smoke.sh` repeats window input checks. `./scripts/benchmark.sh`
-runs the mission replay and reports median/p95 frame times. With a real `DISPLAY`
-it uses the default adapter; without one it selects software Vulkan and Xvfb.
-AMD Vulkan is available here, but presenting through Xvfb fails for that driver
-because DRI3 is unavailable. Software rendering was used for functional captures.
+runs a release-build hardware route three times and checks the 16.7 ms p95 budget.
+It supports offscreen Vulkan without a display; software timing runs do not count
+as hardware acceptance.
 
-Latest software Vulkan replay (optimized incremental debug profile): 268 frames,
-median 124.44 ms, p95 156.84 ms, 30.84 simulation seconds, all 10 enemies destroyed,
-victory asserted. These software timings were collected while captures also ran;
-they are functional diagnostics, not a hardware acceptance benchmark.
+Rendering now defaults to the Medium quality profile. Static containers use cached
+assemblies and distance detail, rain runs on the GPU, and the static environment
+map is filtered once after warmup. World resolution scales independently of UI.
+Use `--quality high` for the additional screen-space and volumetric effects.
+See [rendering and performance](docs/performance.md) for controls, benchmark
+methodology, and visual inspection views.
 
 The startup title screen uses the live procedural port with a separate looping
 cinematic camera. Click **Deploy** (or press Enter) to start, **Settings** to toggle

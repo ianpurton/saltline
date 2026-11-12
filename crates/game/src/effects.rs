@@ -8,6 +8,7 @@ pub struct DebrisAssets {
     pub sphere: Handle<Mesh>,
     pub material: Handle<StandardMaterial>,
     pub smoke: Handle<StandardMaterial>,
+    pub glow: Handle<StandardMaterial>,
 }
 #[derive(Component)]
 pub struct Particle {
@@ -16,17 +17,46 @@ pub struct Particle {
     total: f32,
     smoke: bool,
 }
+pub const PARTICLE_CAPACITY: usize = 256;
+pub fn setup(mut c: Commands, assets: Res<DebrisAssets>) {
+    for _ in 0..PARTICLE_CAPACITY {
+        c.spawn((
+            Particle {
+                velocity: Vec3::ZERO,
+                life: 0.,
+                total: 1.,
+                smoke: false,
+            },
+            Mesh3d(assets.mesh.clone()),
+            MeshMaterial3d(assets.material.clone()),
+            Transform::from_scale(Vec3::ZERO),
+            Visibility::Hidden,
+            bevy::light::NotShadowCaster,
+        ));
+    }
+}
 pub fn combat_effects(
-    mut c: Commands,
     clock: Res<PresentationClock>,
     mission: Res<Mission>,
     assets: Res<DebrisAssets>,
     mut messages: MessageReader<PresentationEvent>,
-    mut particles: Query<(Entity, &mut Particle, &mut Transform)>,
+    mut particles: Query<(
+        &mut Particle,
+        &mut Transform,
+        &mut Visibility,
+        &mut Mesh3d,
+        &mut MeshMaterial3d<StandardMaterial>,
+    )>,
+    timings: Option<Res<saltline_game::SystemTimings>>,
 ) {
+    let _cpu = timings
+        .as_deref()
+        .and_then(|t| t.span("effects::combat_effects"));
     if clock.reset || mission.mode == Mode::Menu {
-        for (e, _, _) in &mut particles {
-            c.entity(e).despawn();
+        for (mut p, mut t, mut v, _, _) in &mut particles {
+            p.life = 0.;
+            t.scale = Vec3::ZERO;
+            *v = Visibility::Hidden;
         }
         messages.clear();
         return;
@@ -34,65 +64,14 @@ pub fn combat_effects(
     if clock.dt == 0. {
         return;
     }
-    for event in messages.read() {
-        let (position, count, smoke_count) = match *event {
-            PresentationEvent::Shot { origin, direction } => {
-                let side = direction.cross(Vec3::Y).normalize_or_zero();
-                (
-                    origin + direction * 1.2 + side * 0.15 - Vec3::Y * 0.11,
-                    3,
-                    2,
-                )
-            }
-            PresentationEvent::Impact {
-                position,
-                destroyed,
-            } => (
-                position,
-                if destroyed { 28 } else { 9 },
-                if destroyed { 9 } else { 1 },
-            ),
-            PresentationEvent::RelayCut { position } => (position, 12, 3),
-        };
-        for i in 0..count + smoke_count {
-            let smoke = i >= count;
-            let a = i as f32 * 2.39996;
-            let life = if smoke {
-                0.6 + (i % 5) as f32 * 0.2
-            } else {
-                0.18 + (i % 7) as f32 * 0.06
-            };
-            c.spawn((
-                Particle {
-                    velocity: Vec3::new(a.cos(), if smoke { 0.5 } else { 1.8 }, a.sin())
-                        * if smoke { 0.35 } else { 2.1 },
-                    life,
-                    total: life,
-                    smoke,
-                },
-                Mesh3d(if smoke {
-                    assets.sphere.clone()
-                } else {
-                    assets.mesh.clone()
-                }),
-                MeshMaterial3d(if smoke {
-                    assets.smoke.clone()
-                } else {
-                    assets.material.clone()
-                }),
-                Transform::from_translation(position).with_scale(if smoke {
-                    Vec3::splat(0.07)
-                } else {
-                    Vec3::new(0.012, 0.012, 0.075)
-                }),
-                bevy::light::NotShadowCaster,
-            ));
+    for (mut p, mut t, mut v, _, _) in &mut particles {
+        if p.life <= 0. {
+            continue;
         }
-    }
-    for (entity, mut p, mut t) in &mut particles {
         p.life -= clock.dt;
         if p.life <= 0. {
-            c.entity(entity).despawn();
+            *v = Visibility::Hidden;
+            t.scale = Vec3::ZERO;
             continue;
         }
         if !p.smoke {
@@ -109,6 +88,73 @@ pub fn combat_effects(
         } else {
             t.rotation = Quat::from_rotation_arc(Vec3::Z, p.velocity.normalize_or_zero());
             t.scale.x = 0.012 * (p.life / p.total);
+        }
+    }
+    for event in messages.read() {
+        let (position, count, smoke_count, shot) = match *event {
+            PresentationEvent::Shot { origin, direction } => (
+                origin + direction * 1.2 + direction.cross(Vec3::Y) * 0.15 - Vec3::Y * 0.11,
+                3,
+                2,
+                Some(direction),
+            ),
+            PresentationEvent::Impact {
+                position,
+                destroyed,
+            } => (
+                position,
+                if destroyed { 28 } else { 9 },
+                if destroyed { 9 } else { 1 },
+                None,
+            ),
+            PresentationEvent::RelayCut { position } => (position, 12, 3, None),
+        };
+        let mut free = particles.iter_mut().filter(|(p, _, _, _, _)| p.life <= 0.);
+        for i in 0..count + smoke_count {
+            let Some((mut p, mut t, mut v, mut mesh, mut material)) = free.next() else {
+                break;
+            };
+            let smoke = i >= count;
+            let angle = i as f32 * 2.39996;
+            let life = if smoke {
+                0.6 + (i % 5) as f32 * 0.2
+            } else {
+                0.18 + (i % 7) as f32 * 0.06
+            };
+            let tracer = shot.is_some() && i == 0;
+            let life = if tracer { 0.055 } else { life };
+            *p = Particle {
+                velocity: if tracer {
+                    shot.unwrap_or(Vec3::NEG_Z) * 100.
+                } else {
+                    Vec3::new(angle.cos(), if smoke { 0.5 } else { 1.8 }, angle.sin())
+                        * if smoke { 0.35 } else { 2.1 }
+                },
+                life,
+                total: life,
+                smoke,
+            };
+            *t = Transform::from_translation(position).with_scale(if smoke {
+                Vec3::splat(0.07)
+            } else {
+                Vec3::new(0.012, 0.012, if tracer { 1.8 } else { 0.075 })
+            });
+            if tracer {
+                t.rotation = Quat::from_rotation_arc(Vec3::Z, shot.unwrap_or(Vec3::NEG_Z));
+            }
+            mesh.0 = if smoke {
+                assets.sphere.clone()
+            } else {
+                assets.mesh.clone()
+            };
+            material.0 = if smoke {
+                assets.smoke.clone()
+            } else if tracer {
+                assets.glow.clone()
+            } else {
+                assets.material.clone()
+            };
+            *v = Visibility::Inherited;
         }
     }
 }
@@ -130,6 +176,7 @@ mod tests {
                 sphere: default(),
                 material: default(),
                 smoke: default(),
+                glow: default(),
             })
             .add_systems(Update, combat_effects);
         let particle = app
@@ -142,6 +189,9 @@ mod tests {
                     smoke: false,
                 },
                 Transform::from_xyz(1., 2., 3.),
+                Visibility::Inherited,
+                Mesh3d::default(),
+                MeshMaterial3d::<StandardMaterial>::default(),
             ))
             .id();
         app.update();
@@ -153,6 +203,60 @@ mod tests {
         app.world_mut().resource_mut::<PresentationClock>().reset = true;
         app.world_mut().resource_mut::<Mission>().mode = Mode::Playing;
         app.update();
-        assert!(app.world().get_entity(particle).is_err());
+        assert_eq!(app.world().get::<Particle>(particle).unwrap().life, 0.);
+        assert_eq!(
+            *app.world().get::<Visibility>(particle).unwrap(),
+            Visibility::Hidden
+        );
+    }
+    #[test]
+    fn event_bursts_cannot_grow_the_particle_pool() {
+        let mut app = App::new();
+        let mut clock = PresentationClock::default();
+        clock.dt = 1. / 60.;
+        app.add_message::<PresentationEvent>()
+            .insert_resource(clock)
+            .insert_resource(Mission {
+                mode: Mode::Playing,
+                ..default()
+            })
+            .insert_resource(DebrisAssets {
+                mesh: default(),
+                sphere: default(),
+                material: default(),
+                smoke: default(),
+                glow: default(),
+            })
+            .add_systems(Startup, setup)
+            .add_systems(Update, combat_effects);
+        app.update();
+        for _ in 0..100 {
+            app.world_mut().write_message(PresentationEvent::Impact {
+                position: Vec3::Y,
+                destroyed: true,
+            });
+        }
+        app.update();
+        assert_eq!(
+            app.world_mut()
+                .query::<&Particle>()
+                .iter(app.world())
+                .count(),
+            PARTICLE_CAPACITY
+        );
+        assert!(
+            app.world_mut()
+                .query::<&Particle>()
+                .iter(app.world())
+                .all(|p| p.life > 0.)
+        );
+        app.world_mut().resource_mut::<PresentationClock>().reset = true;
+        app.update();
+        assert!(
+            app.world_mut()
+                .query::<&Particle>()
+                .iter(app.world())
+                .all(|p| p.life == 0.)
+        );
     }
 }

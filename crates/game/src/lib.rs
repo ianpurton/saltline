@@ -96,7 +96,9 @@ pub fn simulate(
     port: Res<Port>,
     mut presentation: MessageWriter<PresentationEvent>,
     mut enemies: Query<(&mut Enemy, &mut Transform)>,
+    timings: Option<Res<SystemTimings>>,
 ) {
+    let _cpu = timings.as_deref().and_then(|t| t.span("lib::simulate"));
     if m.mode != Mode::Playing {
         return;
     }
@@ -251,5 +253,65 @@ pub fn launch_args() -> impl Iterator<Item = String> {
     #[cfg(target_arch = "wasm32")]
     {
         std::iter::empty()
+    }
+}
+
+/// Optional bounded CPU samples for individual gameplay/presentation systems.
+/// Profiling is disabled during ordinary play.
+#[derive(Resource, Default)]
+pub struct SystemTimings {
+    enabled: bool,
+    samples:
+        std::sync::Mutex<std::collections::BTreeMap<&'static str, std::collections::VecDeque<f64>>>,
+}
+impl SystemTimings {
+    pub fn new(enabled: bool) -> Self {
+        Self {
+            enabled,
+            ..default()
+        }
+    }
+    pub fn span(&self, name: &'static str) -> Option<CpuSpan<'_>> {
+        self.enabled.then(|| CpuSpan {
+            timings: self,
+            name,
+            started: std::time::Instant::now(),
+        })
+    }
+    pub fn summaries(&self) -> Vec<(&'static str, f64, f64)> {
+        let Ok(samples) = self.samples.lock() else {
+            return Vec::new();
+        };
+        samples
+            .iter()
+            .filter_map(|(&name, samples)| {
+                if samples.is_empty() {
+                    return None;
+                }
+                let mut sorted: Vec<_> = samples.iter().copied().collect();
+                sorted.sort_by(f64::total_cmp);
+                Some((
+                    name,
+                    sorted.iter().sum::<f64>() / sorted.len() as f64,
+                    sorted[(sorted.len() - 1) * 95 / 100],
+                ))
+            })
+            .collect()
+    }
+}
+pub struct CpuSpan<'a> {
+    timings: &'a SystemTimings,
+    name: &'static str,
+    started: std::time::Instant,
+}
+impl Drop for CpuSpan<'_> {
+    fn drop(&mut self) {
+        if let Ok(mut samples) = self.timings.samples.lock() {
+            let samples = samples.entry(self.name).or_default();
+            if samples.len() == 120 {
+                samples.pop_front();
+            }
+            samples.push_back(self.started.elapsed().as_secs_f64() * 1000.);
+        }
     }
 }

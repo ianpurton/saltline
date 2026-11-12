@@ -12,6 +12,7 @@ pub struct HardSurface {
     pub hull: Handle<Mesh>,
     pub gable: Handle<Mesh>,
     pub armor: Handle<Mesh>,
+    pub hero_armor: Handle<Mesh>,
     pub panel: Handle<Mesh>,
     pub limb: Handle<Mesh>,
     pub hub: Handle<Mesh>,
@@ -39,7 +40,8 @@ impl HardSurface {
                 1.,
             )),
 
-            armor: m.add(bevel::beveled_box(Vec3::ONE, 0.12, 3, true)),
+            armor: m.add(bevel::beveled_box(Vec3::ONE, 0.12, 1, true)),
+            hero_armor: m.add(bevel::beveled_box(Vec3::ONE, 0.12, 3, true)),
             panel: m.add(extrusion::extrude(
                 &[
                     Vec2::new(-0.5, -0.35),
@@ -176,3 +178,5 @@ mod tests {
         }
     }
 }
+
+pub mod batch;

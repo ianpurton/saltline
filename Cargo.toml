@@ -2,7 +2,7 @@
 members = ["crates/game", "crates/world", "crates/models"]
 resolver = "3"
 [workspace.dependencies]
-bevy = { version = "0.20", default-features = false, features = ["3d", "ui", "default_font", "x11", "png", "multi_threaded"] }
+bevy = { version = "0.20", default-features = false, features = ["3d", "2d", "audio", "wav", "ui", "default_font", "x11", "png", "multi_threaded"] }
 [profile.dev]
 opt-level = 1
 [profile.dev.package."*"]

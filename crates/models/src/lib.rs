@@ -14,6 +14,7 @@ pub struct Kit {
     pub surfaces: SurfacePalette,
     pub hard: geometry::HardSurface,
     pub labels: std::collections::HashMap<&'static str, Handle<Mesh>>,
+    pub optic_glass: Handle<StandardMaterial>,
     pub stencil_paint: Handle<StandardMaterial>,
     pub industrial: Vec<Handle<StandardMaterial>>,
     pub cube: Handle<Mesh>,
@@ -56,6 +57,12 @@ impl Kit {
                 .into_iter()
                 .map(|s| (s, m.add(geometry::stencil::mesh(s))))
                 .collect(),
+            optic_glass: a.add(StandardMaterial {
+                base_color: Color::srgba(0.12, 0.27, 0.35, 0.16),
+                alpha_mode: AlphaMode::Blend,
+                unlit: true,
+                ..default()
+            }),
             stencil_paint: a.add(StandardMaterial {
                 base_color: Color::srgb(0.77, 0.75, 0.62),
                 perceptual_roughness: 0.72,
@@ -177,3 +184,6 @@ pub struct Knee {
 
 #[derive(Component)]
 pub struct Rotor(pub f32);
+
+#[derive(Component)]
+pub struct ReloadMagazine;

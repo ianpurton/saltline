@@ -18,7 +18,7 @@ pub fn resolution() -> (u32, u32) {
             Some((w.parse().ok()?, h.parse().ok()?))
         })
         .filter(|(w, h)| *w > 0 && *h > 0)
-        .unwrap_or((1280, 720))
+        .unwrap_or((1920, 1080))
 }
 pub fn output(name: &str) -> String {
     format!(
@@ -34,27 +34,99 @@ pub fn screenshot(target: &CaptureTarget) -> Screenshot {
         .map(|h| Screenshot::image(h.clone()))
         .unwrap_or_else(Screenshot::primary_window)
 }
+#[derive(Resource)]
+pub struct OutputCamera(pub Entity);
+#[derive(Component)]
+pub struct Composite;
+#[derive(Resource)]
+pub struct SceneTarget(Handle<Image>);
 pub fn attach(
     mut c: Commands,
     mut images: ResMut<Assets<Image>>,
     cameras: Query<Entity, With<Camera3d>>,
+    quality: Res<crate::quality::RenderQuality>,
 ) {
+    use bevy::camera::visibility::RenderLayers;
+    let (w, h) = resolution();
+    let scene = images.add(Image::new_target_texture(
+        (w as f32 * quality.scale) as u32,
+        (h as f32 * quality.scale) as u32,
+        bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb,
+        None,
+    ));
+    for e in &cameras {
+        c.entity(e)
+            .insert(RenderTarget::Image(scene.clone().into()));
+    }
+    let mut output = c.spawn((
+        Camera2d,
+        Camera {
+            order: 1,
+            ..default()
+        },
+        RenderLayers::layer(31),
+    ));
     let mut target = CaptureTarget::default();
     if headless() {
-        let (w, h) = resolution();
         let image = images.add(Image::new_target_texture(
             w,
             h,
             bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb,
             None,
         ));
-        for e in &cameras {
-            c.entity(e)
-                .insert(RenderTarget::Image(image.clone().into()));
-        }
+        output.insert(RenderTarget::Image(image.clone().into()));
         target.0 = Some(image);
     }
+    let output = output.id();
+    c.spawn((
+        Sprite {
+            image: scene.clone(),
+            custom_size: Some(Vec2::new(w as f32, h as f32)),
+            ..default()
+        },
+        Transform::default(),
+        Composite,
+        RenderLayers::layer(31),
+    ));
+    c.insert_resource(OutputCamera(output));
+    c.insert_resource(SceneTarget(scene));
     c.insert_resource(target);
+}
+pub fn resize(
+    time: Res<Time<Real>>,
+    ready: Res<RenderReady>,
+    mut quality: ResMut<crate::quality::RenderQuality>,
+    windows: Query<&Window>,
+    scene: Res<SceneTarget>,
+    mut images: ResMut<Assets<Image>>,
+    mut sprites: Query<&mut Sprite, With<Composite>>,
+) {
+    if ready.ready() {
+        quality.adapt(time.delta_secs());
+    }
+    let (w, h) = windows
+        .iter()
+        .next()
+        .map(|w| (w.physical_width(), w.physical_height()))
+        .unwrap_or_else(resolution);
+    let size = bevy::render::render_resource::Extent3d {
+        width: ((w as f32 * quality.scale) as u32).max(1),
+        height: ((h as f32 * quality.scale) as u32).max(1),
+        depth_or_array_layers: 1,
+    };
+    if let Some(mut image) = images.get_mut(&scene.0) {
+        if image.texture_descriptor.size != size {
+            image.resize(size);
+        }
+    }
+    let display_size = windows
+        .iter()
+        .next()
+        .map(|window| Vec2::new(window.width(), window.height()))
+        .unwrap_or(Vec2::new(w as f32, h as f32));
+    for mut sprite in &mut sprites {
+        sprite.custom_size = Some(display_size);
+    }
 }
 
 /// Capture clocks start only after GPU pipelines have settled.

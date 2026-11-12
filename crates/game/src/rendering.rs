@@ -11,17 +11,41 @@ pub fn camera_effects(sky: Handle<Image>, intensity: f32) -> impl Bundle {
         },
         Tonemapping::AcesFitted,
         Msaa::Off,
-        bevy::pbr::ScreenSpaceReflections::default(),
-        bevy::pbr::ContactShadows::default(),
-        bevy::pbr::ScreenSpaceAmbientOcclusion::default(),
-        bevy::light::VolumetricFog::default(),
-        bevy::anti_alias::taa::TemporalAntiAliasing::default(),
         bevy::camera::Hdr,
-        bevy::post_process::bloom::Bloom {
-            intensity: 0.07,
-            ..default()
-        },
+        bevy::core_pipeline::prepass::DeferredPrepass,
+        bevy::core_pipeline::prepass::DepthPrepass,
     )
+}
+#[cfg(not(target_arch = "wasm32"))]
+pub fn configure(
+    mut c: Commands,
+    quality: Res<crate::quality::RenderQuality>,
+    cameras: Query<Entity, With<Camera3d>>,
+) {
+    for e in &cameras {
+        let mut camera = c.entity(e);
+        if quality.ssr {
+            camera.insert(bevy::pbr::ScreenSpaceReflections::default());
+        }
+        if quality.ao {
+            camera.insert(bevy::pbr::ScreenSpaceAmbientOcclusion::default());
+        }
+        if quality.contact {
+            camera.insert(bevy::pbr::ContactShadows::default());
+        }
+        if quality.volumetric {
+            camera.insert(bevy::light::VolumetricFog::default());
+        }
+        if quality.taa {
+            camera.insert(bevy::anti_alias::taa::TemporalAntiAliasing::default());
+        }
+        if quality.bloom {
+            camera.insert(bevy::post_process::bloom::Bloom {
+                intensity: 0.045,
+                ..default()
+            });
+        }
+    }
 }
 
 // WebGL 2 uses forward LDR rendering without compute or extra screen-space passes.
@@ -86,4 +110,32 @@ pub fn mist(c: &mut Commands, images: &mut Assets<Image>) {
         },
         Transform::from_xyz(35., 9., -145.).with_scale(Vec3::new(320., 40., 280.)),
     ));
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn configure() {}
+
+/// The sky is static. Retain the filtered textures and retire the realtime GPU
+/// convolution once startup pipelines have settled (for BOTH camera views).
+#[cfg(not(target_arch = "wasm32"))]
+pub fn freeze_environment_maps(
+    mut c: Commands,
+    ready: Res<crate::capture::RenderReady>,
+    cameras: Query<
+        (Entity, &bevy::light::EnvironmentMapLight),
+        With<bevy::light::GeneratedEnvironmentMapLight>,
+    >,
+) {
+    if !ready.ready() {
+        return;
+    }
+    let Some((_, shared)) = cameras.iter().next() else {
+        return;
+    };
+    for (entity, _) in &cameras {
+        c.entity(entity)
+            .remove::<bevy::light::GeneratedEnvironmentMapLight>()
+            .insert(shared.clone());
+    }
+    info!("ENVIRONMENT cached static sky; disabled per-frame diffuse/specular convolution");
 }

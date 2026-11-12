@@ -2,6 +2,8 @@ use crate::*;
 impl Kit {
     pub fn container(&self, c: &mut Commands, p: Vec3, mat: usize) -> Entity {
         let e = self.root(c, p);
+        c.entity(e)
+            .insert(crate::geometry::batch::StaticContainer(mat));
         self.part(c, e, Vec3::new(0., 1.4, 0.), Vec3::new(3., 2.8, 9.), mat);
         // Roof corrugations, corner castings and split doors.
         for i in 0..25 {
@@ -118,18 +120,7 @@ impl Kit {
                     .with_rotation(Quat::from_rotation_y(sign * std::f32::consts::FRAC_PI_2))
                     .with_scale(Vec3::splat(0.23)),
             );
-            // Thin downward rust trails and seam chips, with variation by stack position.
-            for i in 0..12 {
-                let z = -4.1 + i as f32 * 0.7;
-                let len = 0.12 + ((i * 17 + p.z.abs() as usize) % 9) as f32 * 0.055;
-                self.part(
-                    c,
-                    e,
-                    Vec3::new(sign * 1.554, 2.65 - len * 0.5, z),
-                    Vec3::new(0.008, len, 0.015),
-                    1,
-                );
-            }
+            // Rust trails and corrugation normals are baked into the shared paint maps.
         }
         e
     }
