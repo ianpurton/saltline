@@ -66,12 +66,13 @@ jobs:
           RC: ${{ steps.version.outputs.rc }}
         run: |
           set -euo pipefail
+          mkdir -p tmp
           gh release download "$RC" --repo "$GITHUB_REPOSITORY" \
-            --pattern 'saltline-web.zip*' --dir .
-          test -s saltline-web.zip
-          test -s saltline-web.zip.sha256
-          sha256sum --check saltline-web.zip.sha256
-          unzip -tq saltline-web.zip
+            --pattern 'saltline-web.zip*' --dir tmp
+          test -s tmp/saltline-web.zip
+          test -s tmp/saltline-web.zip.sha256
+          (cd tmp && sha256sum --check saltline-web.zip.sha256)
+          unzip -tq tmp/saltline-web.zip
 
       - name: Promote unchanged build to stable GitHub release
         env:
@@ -85,12 +86,12 @@ jobs:
             "repos/$GITHUB_REPOSITORY/git/refs" \
             -f "ref=refs/tags/$VERSION" \
             -f "sha=$sha"
-          gh release create "$VERSION" saltline-web.zip saltline-web.zip.sha256 \
+          gh release create "$VERSION" tmp/saltline-web.zip tmp/saltline-web.zip.sha256 \
             --repo "$GITHUB_REPOSITORY" --title "$VERSION" --latest --verify-tag \
             --notes "Promoted unchanged from $RC ($sha)."
           {
             echo "### $VERSION"
             echo "Promoted from: $RC"
             echo "Commit: $sha"
-            echo "SHA-256: $(cut -d' ' -f1 saltline-web.zip.sha256)"
+            echo "SHA-256: $(cut -d' ' -f1 tmp/saltline-web.zip.sha256)"
           } >> "$GITHUB_STEP_SUMMARY"

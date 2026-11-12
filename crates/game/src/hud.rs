@@ -209,9 +209,15 @@ pub fn update(
     mut values: Query<(&Value, &mut Text)>,
     mut panels: Query<&mut Visibility, With<PlayingPanel>>,
     mut damage: Query<&mut BorderColor, With<Damage>>,
-    timings: Option<Res<saltline_game::SystemTimings>>,
+    performance: Option<Res<saltline_game::performance::PerformanceSettings>>,
+    diagnostics: Option<bevy::diagnostic::Diagnostics>,
 ) {
-    let _cpu = timings.as_deref().and_then(|t| t.span("hud::update"));
+    let _trace = info_span!("hud::update").entered();
+    let _cpu = saltline_game::performance::CpuMeasurement::new(
+        performance.as_deref(),
+        diagnostics,
+        "saltline/system/hud/update_ms",
+    );
     let inspect = saltline_game::launch_args().any(|a| a == "--inspect");
     for mut visibility in &mut panels {
         *visibility = if m.mode == Mode::Playing && !inspect {

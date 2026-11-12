@@ -38,24 +38,30 @@ Deploy uses `contents: read` to download the selected stable release.
    **publish** on a deployment run to also make that uploaded build live.
 
 Artifacts are consistently named `saltline-web.zip` and
-`saltline-web.zip.sha256`. The ZIP root contains `index.html`, `saltline.js`,
+`saltline-web.zip.sha256`. Local builds write both into the ignored `tmp/`
+directory. Workflow downloads also use `tmp/`; published asset names stay the same.
+The ZIP root contains `index.html`, `saltline.js`,
 `saltline_bg.wasm`, generated bindings, and `FONT-LICENSE.txt`. Reference images,
 source code, and native binaries are not uploaded to Wavedash.
 
 ## Build locally
 
-Install the browser target and the wasm-bindgen CLI version selected by Cargo.lock:
+Install `just`, the browser target, and the wasm-bindgen CLI version selected by Cargo.lock:
 
 ```bash
+cargo install just --locked
 rustup target add wasm32-unknown-unknown
 version=$(python3 -c 'import tomllib; print(next(p["version"] for p in tomllib.load(open("Cargo.lock", "rb"))["package"] if p["name"] == "wasm-bindgen"))')
 cargo install wasm-bindgen-cli --version "$version" --locked
-scripts/build-web.sh
-python3 -m http.server 8000 --directory dist/web
+just build-web
+just run-web
 ```
 
-Open `http://localhost:8000`. `WEB_PROFILE=dev scripts/build-web.sh` is also
-supported for debugging. CI and release candidates always use the release profile.
+Open `http://localhost:8000`. `just run-web` builds first and serves `dist/web` on
+loopback; stop it with Ctrl+C. Use `just run-web 8080` for another port.
+`WEB_PROFILE=dev just run-web` builds and serves a debug version.
+`just build-web` invokes `.github/workflows/build-web.sh`, the same script used by CI.
+CI and release candidates always use the release profile.
 The CLI version check prevents incompatible JS/WASM bindings after lockfile updates.
 
 The deployment command and environment configuration follow the official
@@ -84,7 +90,7 @@ Earlier checks, performed before the WebGL 2 migration:
 
 - `actionlint` validates all four workflow files.
 - `cargo fmt --all --check` and all seven `cargo test --locked --workspace` tests pass.
-- WASM checking and the exact release `scripts/build-web.sh` build pass.
+- WASM checking and the exact release `.github/workflows/build-web.sh` build pass.
 - The release archive's checksum, ZIP CRCs, and required entrypoints verify.
 - Chromium with a Vulkan WebGPU adapter renders the title and enters gameplay
   through Deploy. Captures are in `tmp/screenshots/web-title.png` and

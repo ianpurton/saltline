@@ -83,9 +83,15 @@ pub fn update(
     clock: Res<crate::presentation::PresentationClock>,
     cameras: Query<(&Camera, &GlobalTransform), With<Camera3d>>,
     mut materials: ResMut<Assets<RainMaterial>>,
-    timings: Option<Res<saltline_game::SystemTimings>>,
+    performance: Option<Res<saltline_game::performance::PerformanceSettings>>,
+    diagnostics: Option<bevy::diagnostic::Diagnostics>,
 ) {
-    let _cpu = timings.as_deref().and_then(|t| t.span("rain::update"));
+    let _trace = info_span!("rain::update").entered();
+    let _cpu = saltline_game::performance::CpuMeasurement::new(
+        performance.as_deref(),
+        diagnostics,
+        "saltline/system/rain/update_ms",
+    );
     let Some((_, camera)) = cameras.iter().find(|(c, _)| c.is_active) else {
         return;
     };

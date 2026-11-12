@@ -168,7 +168,7 @@ pub fn legacy(
         .iter()
         .enumerate()
         .map(|(i, &(r, g, b))| {
-            let mut material = StandardMaterial {
+            let material = StandardMaterial {
                 base_color: Color::srgb(r, g, b),
                 base_color_texture: if i == 6 || i == 7 {
                     None
@@ -198,19 +198,23 @@ pub fn legacy(
                 ..default()
             };
             #[cfg(not(target_arch = "wasm32"))]
-            if i == 0 || i == 9 {
-                let maps = &authored[if i == 0 { 0 } else { 1 }];
-                material.base_color = Color::srgb(0.7, 0.72, 0.73);
-                material.base_color_texture = Some(maps.0.clone());
-                material.normal_map_texture = Some(maps.1.clone());
-                material.metallic_roughness_texture = Some(maps.2.clone());
-                material.occlusion_texture = Some(maps.2.clone());
-                material.uv_transform = bevy::math::Affine2::from_scale(if i == 0 {
-                    Vec2::new(40.5, 52.5)
-                } else {
-                    Vec2::new(5., 10.)
-                });
-            }
+            let material = {
+                let mut material = material;
+                if i == 0 || i == 9 {
+                    let maps = &authored[if i == 0 { 0 } else { 1 }];
+                    material.base_color = Color::srgb(0.7, 0.72, 0.73);
+                    material.base_color_texture = Some(maps.0.clone());
+                    material.normal_map_texture = Some(maps.1.clone());
+                    material.metallic_roughness_texture = Some(maps.2.clone());
+                    material.occlusion_texture = Some(maps.2.clone());
+                    material.uv_transform = bevy::math::Affine2::from_scale(if i == 0 {
+                        Vec2::new(40.5, 52.5)
+                    } else {
+                        Vec2::new(5., 10.)
+                    });
+                }
+                material
+            };
             a.add(material)
         })
         .collect()

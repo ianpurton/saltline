@@ -87,7 +87,7 @@ jobs:
           cargo install wasm-bindgen-cli --version "$version" --locked
 
       - name: Build and package Saltline for WebGL 2
-        run: scripts/build-web.sh
+        run: .github/workflows/build-web.sh
 
       - name: Tag and publish GitHub prerelease
         env:
@@ -102,12 +102,12 @@ jobs:
             "repos/$GITHUB_REPOSITORY/git/refs" \
             -f "ref=refs/tags/$TAG" \
             -f "sha=$GITHUB_SHA"
-          gh release create "$TAG" saltline-web.zip saltline-web.zip.sha256 \
+          gh release create "$TAG" tmp/saltline-web.zip tmp/saltline-web.zip.sha256 \
             --repo "$GITHUB_REPOSITORY" --title "$TAG" --prerelease --generate-notes \
             --verify-tag
           {
             echo "### $TAG"
             echo "Commit: $(git rev-parse HEAD)"
-            echo "SHA-256: $(cut -d' ' -f1 saltline-web.zip.sha256)"
+            echo "SHA-256: $(cut -d' ' -f1 tmp/saltline-web.zip.sha256)"
             echo "Release: https://github.com/$GITHUB_REPOSITORY/releases/tag/$TAG"
           } >> "$GITHUB_STEP_SUMMARY"

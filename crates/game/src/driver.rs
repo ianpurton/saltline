@@ -9,13 +9,9 @@ pub fn drive(
     enemies: Query<(&Enemy, &Transform)>,
     time: Res<Time<Real>>,
     mut frames: Local<Vec<f32>>,
-    benchmark: Res<crate::benchmark::Benchmark>,
-    quality: Res<crate::quality::RenderQuality>,
+    mut benchmark: ResMut<crate::benchmark::Benchmark>,
     batches: Res<crate::benchmark::BatchCounters>,
-    timings: Res<SystemTimings>,
     ready: Res<crate::capture::RenderReady>,
-    diagnostics: Res<bevy::diagnostic::DiagnosticsStore>,
-    meshes: Query<(), With<Mesh3d>>,
 ) {
     if !saltline_game::launch_args().any(|x| x == "--mission-test" || x == "--benchmark") {
         return;
@@ -45,16 +41,15 @@ pub fn drive(
             "DRAW SUBMISSIONS main opaque multidraw batches + transparent items = {} (before GPU culling; excludes shadow/UI passes)",
             batches.0.load(std::sync::atomic::Ordering::Relaxed)
         );
-        for (name, mean, p95) in timings.summaries() {
-            info!("CPU SYSTEM {name} mean_ms={mean:.3} p95_ms={p95:.3}");
-        }
-        #[cfg(not(target_arch = "wasm32"))]
-        crate::benchmark::report(&benchmark, &quality, &diagnostics, meshes.iter().count());
         info!(
             "MISSION DRIVER PASSED: kills={}, seconds={:.2}",
             m.kills, m.elapsed
         );
-        c.write_message(AppExit::Success);
+        if benchmark.enabled {
+            benchmark.completed = true;
+        } else {
+            c.write_message(AppExit::Success);
+        }
         return;
     }
     assert!(m.mode != Mode::Dead, "mission driver died");

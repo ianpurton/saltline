@@ -50,11 +50,12 @@ jobs:
       - name: Download exact stable release build
         run: |
           set -euo pipefail
+          mkdir -p tmp
           gh release download "$VERSION" --repo "$GITHUB_REPOSITORY" \
-            --pattern 'saltline-web.zip*' --dir .
-          sha256sum --check saltline-web.zip.sha256
+            --pattern 'saltline-web.zip*' --dir tmp
+          (cd tmp && sha256sum --check saltline-web.zip.sha256)
           mkdir dist
-          unzip -q saltline-web.zip -d dist
+          unzip -q tmp/saltline-web.zip -d dist
           test -s dist/index.html
           test -s dist/saltline_bg.wasm
           test -s dist/saltline.js

@@ -3,11 +3,16 @@ use bevy::prelude::*;
 #[derive(Resource, Clone, Debug)]
 pub struct RenderQuality {
     pub high: bool,
+    #[cfg(not(target_arch = "wasm32"))]
     pub ssr: bool,
+    #[cfg(not(target_arch = "wasm32"))]
     pub ao: bool,
     pub contact: bool,
+    #[cfg(not(target_arch = "wasm32"))]
     pub volumetric: bool,
+    #[cfg(not(target_arch = "wasm32"))]
     pub bloom: bool,
+    #[cfg(not(target_arch = "wasm32"))]
     pub taa: bool,
     pub shadows: u32,
     pub scale: f32,
@@ -30,11 +35,16 @@ impl RenderQuality {
         };
         Self {
             high,
+            #[cfg(not(target_arch = "wasm32"))]
             ssr: flag("--ssr", high),
+            #[cfg(not(target_arch = "wasm32"))]
             ao: flag("--ao", high),
             contact: flag("--contact-shadows", high),
+            #[cfg(not(target_arch = "wasm32"))]
             volumetric: flag("--volumetric", high),
+            #[cfg(not(target_arch = "wasm32"))]
             bloom: flag("--bloom", true),
+            #[cfg(not(target_arch = "wasm32"))]
             taa: flag("--taa", true),
             shadows: option("--shadow-size")
                 .and_then(|s| s.parse::<u32>().ok())
@@ -102,6 +112,7 @@ impl RenderQuality {
 mod tests {
     use super::*;
     #[test]
+    #[cfg(not(target_arch = "wasm32"))]
     fn presets_and_overrides() {
         let q = RenderQuality::parse(&[]);
         assert!(!q.ssr && !q.volumetric);

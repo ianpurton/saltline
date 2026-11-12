@@ -35,9 +35,6 @@ fn main() {
     let quality = quality::RenderQuality::from_args();
     info!("RENDER QUALITY {quality:?}");
     app.insert_resource(quality.clone());
-    app.insert_resource(SystemTimings::new(
-        saltline_game::launch_args().any(|a| a == "--benchmark" || a == "--profile"),
-    ));
     let plugins = DefaultPlugins.set(WindowPlugin {
         primary_window: (!capture::headless()).then_some(Window {
             title: "SALTLINE / port security incident".into(),
@@ -73,9 +70,10 @@ fn main() {
     if !capture::headless() && !saltline_game::launch_args().any(|a| a == "--no-audio") {
         app.add_plugins(audio::SoundPlugin);
     }
-    if saltline_game::launch_args().any(|a| a == "--benchmark" || a == "--profile") {
-        app.add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin);
-    }
+    app.add_plugins(saltline_game::performance::PerformancePlugin {
+        enabled: saltline_game::launch_args().any(|a| a == "--benchmark" || a == "--profile")
+            && !saltline_game::launch_args().any(|a| a == "--no-instrumentation"),
+    });
     #[cfg(not(target_arch = "wasm32"))]
     app.add_plugins(finish::FinishPlugin);
     #[cfg(not(target_arch = "wasm32"))]
@@ -107,8 +105,16 @@ fn main() {
         .init_resource::<Mission>()
         .init_resource::<benchmark::Benchmark>();
     #[cfg(not(target_arch = "wasm32"))]
-    app.add_systems(First, benchmark::begin)
-        .add_systems(Last, benchmark::end);
+    app.add_systems(First, benchmark::begin).add_systems(
+        Last,
+        (
+            benchmark::end,
+            ApplyDeferred,
+            benchmark::collect,
+            benchmark::finalize,
+        )
+            .chain(),
+    );
     app.init_resource::<Actions>()
         .add_plugins(title::TitlePlugin)
         .add_systems(Startup, setup)
@@ -342,9 +348,15 @@ fn controls(
     mut m: ResMut<Mission>,
     mut a: ResMut<Actions>,
     mut enemies: Query<(&mut Enemy, &mut Transform)>,
-    timings: Option<Res<saltline_game::SystemTimings>>,
+    performance: Option<Res<saltline_game::performance::PerformanceSettings>>,
+    diagnostics: Option<bevy::diagnostic::Diagnostics>,
 ) {
-    let _cpu = timings.as_deref().and_then(|t| t.span("main::controls"));
+    let _trace = info_span!("main::controls").entered();
+    let _cpu = saltline_game::performance::CpuMeasurement::new(
+        performance.as_deref(),
+        diagnostics,
+        "saltline/system/main/controls_ms",
+    );
     if keys.just_pressed(KeyCode::Enter) && m.mode != Mode::Playing {
         if m.mode != Mode::Paused {
             *m = Mission::default();
@@ -407,9 +419,15 @@ fn visuals(
     clock: Res<presentation::PresentationClock>,
     motion: Res<presentation::WeaponMotion>,
     mut lights: Query<&mut PointLight, With<Muzzle>>,
-    timings: Option<Res<saltline_game::SystemTimings>>,
+    performance: Option<Res<saltline_game::performance::PerformanceSettings>>,
+    diagnostics: Option<bevy::diagnostic::Diagnostics>,
 ) {
-    let _cpu = timings.as_deref().and_then(|t| t.span("main::visuals"));
+    let _trace = info_span!("main::visuals").entered();
+    let _cpu = saltline_game::performance::CpuMeasurement::new(
+        performance.as_deref(),
+        diagnostics,
+        "saltline/system/main/visuals_ms",
+    );
     let Ok(cam) = camera.single() else { return };
     if let Ok(mut t) = transforms.get_mut(cam) {
         *t = Transform::from_translation(m.position).with_rotation(Quat::from_euler(

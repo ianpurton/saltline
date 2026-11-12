@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Produce the exact archive consumed by the release and Wavedash workflows.
 set -euo pipefail
-cd "$(dirname "$0")/.."
+cd "$(dirname "$0")/../.."
 profile="${WEB_PROFILE:-release}"
 bindgen_version="$(python3 - <<'PY'
 import tomllib
@@ -31,10 +31,11 @@ root = Path('dist/web')
 for name in ('index.html', 'saltline.js', 'saltline_bg.wasm', 'FONT-LICENSE.txt'):
     assert (root / name).stat().st_size > 0, f'Missing web file: {name}'
 assert (root / 'saltline_bg.wasm').read_bytes()[:8] == b'\0asm\x01\0\0\0'
-archive = Path('saltline-web.zip')
+archive = Path('tmp/saltline-web.zip')
+archive.parent.mkdir(parents=True, exist_ok=True)
 with ZipFile(archive, 'w', ZIP_DEFLATED) as z:
     for file in sorted(root.rglob('*')):
         if file.is_file():
             z.write(file, file.relative_to(root))
-Path('saltline-web.zip.sha256').write_text(hashlib.sha256(archive.read_bytes()).hexdigest() + '  saltline-web.zip\n')
+Path('tmp/saltline-web.zip.sha256').write_text(hashlib.sha256(archive.read_bytes()).hexdigest() + '  saltline-web.zip\n')
 PY

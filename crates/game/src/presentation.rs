@@ -73,11 +73,15 @@ pub fn rigs(
         ),
         Without<Enemy>,
     >,
-    timings: Option<Res<saltline_game::SystemTimings>>,
+    performance: Option<Res<saltline_game::performance::PerformanceSettings>>,
+    diagnostics: Option<bevy::diagnostic::Diagnostics>,
 ) {
-    let _cpu = timings
-        .as_deref()
-        .and_then(|t| t.span("presentation::rigs"));
+    let _trace = info_span!("presentation::rigs").entered();
+    let _cpu = saltline_game::performance::CpuMeasurement::new(
+        performance.as_deref(),
+        diagnostics,
+        "saltline/system/presentation/rigs_ms",
+    );
     for (_, t, mut motion) in &mut roots {
         if clock.reset {
             *motion = RigMotion::default();

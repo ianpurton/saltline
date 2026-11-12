@@ -47,11 +47,15 @@ pub fn combat_effects(
         &mut Mesh3d,
         &mut MeshMaterial3d<StandardMaterial>,
     )>,
-    timings: Option<Res<saltline_game::SystemTimings>>,
+    performance: Option<Res<saltline_game::performance::PerformanceSettings>>,
+    diagnostics: Option<bevy::diagnostic::Diagnostics>,
 ) {
-    let _cpu = timings
-        .as_deref()
-        .and_then(|t| t.span("effects::combat_effects"));
+    let _trace = info_span!("effects::combat_effects").entered();
+    let _cpu = saltline_game::performance::CpuMeasurement::new(
+        performance.as_deref(),
+        diagnostics,
+        "saltline/system/effects/combat_effects_ms",
+    );
     if clock.reset || mission.mode == Mode::Menu {
         for (mut p, mut t, mut v, _, _) in &mut particles {
             p.life = 0.;
