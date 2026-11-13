@@ -24,8 +24,15 @@ def map_svg(data):
  for x,z,w,h,name in [(-40,-30,16,60,'GATE'),(-24,-10,40,40,'YARD'),(-24,-30,40,20,'SHED ZONE'),(16,-30,24,60,'QUAY')]:
   X,Y=p(x,z);d.rect(X,Y,w*sx,h*sy);d.text(X+5,Y+15,name,11)
  sh=data['objects']['no'];X,Y=p(sh['X0'],sh['Z0']);d.rect(X,Y,(sh['X1']-sh['X0'])*sx,(sh['Z1']-sh['Z0'])*sy,'#e9e4d9');d.text(X+5,Y+30,'WAREHOUSE / RIDGE 9.5 m',10)
- for st in data['stacks']:
-  length=6.058 if st['type']=='20' else 12.192;X,Y=p(st['x']-length/2,st['z']-1.219);d.rect(X,Y,length*sx,2.438*sy,'#dce3e6')
+ for st in data['assembly']['stacks']:
+  x,z,tiers=st[:3];yaw=st[3] if len(st)>3 else 0
+  length=6.06 if tiers[0][0]==20 else 12.19
+  X,Y=p(x,z);w,h=length*sx,2.438*sy
+  d.s.append(f'<g transform="translate({X},{Y}) rotate({-yaw*180/math.pi})">')
+  d.rect(-w/2,-h/2,w,h,'#dce3e6')
+  top=sum(2.9 if t[0]=='hc' else 2.59 for t in tiers)
+  d.text(-w/2+2,3,f'{len(tiers)} / {top:.2f}m',7)
+  d.s.append('</g>')
  for sp in data['spawns']:
   x,y=p(sp['pos'][0],sp['pos'][2]);
   if sp['type']=='air': d.rect(x-2,y-2,4,4,'none',RUST)
@@ -37,7 +44,7 @@ def map_svg(data):
  for a,b in zip(route,route[1:]):d.line(*p(a[0],a[2]),*p(b[0],b[2]),AMBER,1.3,True)
  d.text(75,565,'X → east / Z ↓ south / metres / Y is elevation',12)
  d.text(75,585,'● Ground spawn   □ Air spawn   ● Amber: mission location',11)
- d.text(75,605,'Container rectangles: first-tier footprints; stack heights, rotated stacks and props omitted.',11)
+ d.text(75,605,'Container labels: tier count / top height. See placement schedules for offsets and dressing.',11)
  d.text(75,625,'Dashed connections explain mission flow; they are not verified walkable routes.',11)
  d.save('level-map.svg')
 def diagrams(data):

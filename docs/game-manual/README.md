@@ -60,6 +60,16 @@ The importer uses Acorn to locate original top-level builder declarations and re
 - `assets/thumbnails/specification.json`: dimension/rig metadata read from the running asset JavaScript.
 - `assets/*.svg`: map, warehouse section, mission flow, rig hierarchy, gait explanation and HUD schematic. These explain relationships; they do not construct assets.
 
-The map omits stack height, some rotations/offsets and dressing; dashed links do not certify walkable routes. Gameplay reconstruction still uses the HTML reference. Asset changes use the extracted JavaScript. JSON and PNG outputs are regenerated reports, not editable model definitions.
+The map labels stack count and height and rotates the authored footprints; detailed tier and prop schedules in the PDF supply offsets and dressing. Dashed links indicate mission locations, not certified walking routes. Gameplay reconstruction uses the PDF; the HTML is maintenance evidence. Asset changes use the extracted JavaScript. JSON and PNG outputs are regenerated reports, not editable model definitions.
 
 Validation renders every registered asset, fails on missing builders/blank captures/browser errors, checks PNG dimensions and frame coverage, parses SVGs and compiles the PDF. This does not certify gameplay equivalence.
+
+## Design evidence and maintenance
+
+The PDF is the standalone design specification. `details.typ` supplies detailed combat, motion and placement sheets. Source navigation stays here and in `data/reference.json` (anchors and fingerprint).
+
+Maintenance anchor map: player `Pi`, `Mt`, `x_`; mission `Yi`, `mM`; weapon `dm`, combat `zv`; hound `iM`, gull `Q_`, shared perception `Em` and tuning `Ui`; level assembly `C1`, yard `hR`, gate `fR`, warehouse `ab`, quay `cb`, stack helper `ob`; presentation `hM`, `pM`, `u_`, materials `Gg`, weather `O1`.
+
+The extractor records yard assembly with inert methods and scans static warehouse/quay placement calls with Acorn. It never executes the game. Container schedule argument five is jitter strength, **not elevation**: all stacks begin at zero and tier heights accumulate (2.59 m standard, 2.9 m HC). Nominal catalogue bounds may differ slightly from these assembly heights.
+
+Reconstruction review covers shot distribution, recoil retention, reload transfer timing, melee bypass of ranged ownership, sight/hearing delays, blocked-wave retries, water rescue, scoring, stacking and elevations. Cosmetic texture noise and individual particle random samples are intentionally nondeterministic.

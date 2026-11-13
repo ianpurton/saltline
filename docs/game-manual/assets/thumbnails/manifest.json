@@ -16,7 +16,7 @@
     "filename": "hound.png",
     "view": "three-quarter",
     "coverage": 0.07442474365234375,
-    "sourceSha256": "4f8ff8fda2bda58677e7befd76ac17d7bd34d44fb7fc491dab3964eeb5e473e5"
+    "sourceSha256": "b75a24e719f978edfdfa6db8d996ac81e79ea0717b2f38ec8bbe50245c5842ef"
   },
   {
     "id": "gull",
@@ -35,7 +35,7 @@
     "filename": "gull.png",
     "view": "three-quarter",
     "coverage": 0.06273651123046875,
-    "sourceSha256": "214cc0d2d38439e830874aecff6ee966dca4a4ff3ffe65a47264f9b80358589e"
+    "sourceSha256": "5a8f21513f84bcc1b6dd2aa21077eb462552af86ee07156fee50e22540999bbd"
   },
   {
     "id": "pac9",
@@ -54,7 +54,7 @@
     "filename": "pac9.png",
     "view": "three-quarter",
     "coverage": 0.07549667358398438,
-    "sourceSha256": "97c47cf77b8a0ce8f79930c7e93558a3975fd1abe97005a70361a8d1e4eb9863"
+    "sourceSha256": "1cb28c3880f0a736ca8e3268285079ce986c3e9fe92d5fcc0a634e5d37f7b1b5"
   },
   {
     "id": "container20",
@@ -73,7 +73,7 @@
     "filename": "container20.png",
     "view": "three-quarter",
     "coverage": 0.2787284851074219,
-    "sourceSha256": "9276d50b9b643bb78f1969ba527d86a8de6af29a27e7cde9494ae11abea9fe03"
+    "sourceSha256": "bc9934a40275da9fc8c19f8d5f1dd2d1f5079026d8ec0b157655be21c3eef94d"
   },
   {
     "id": "container40",
@@ -92,7 +92,7 @@
     "filename": "container40.png",
     "view": "three-quarter",
     "coverage": 0.15582656860351562,
-    "sourceSha256": "9276d50b9b643bb78f1969ba527d86a8de6af29a27e7cde9494ae11abea9fe03"
+    "sourceSha256": "bc9934a40275da9fc8c19f8d5f1dd2d1f5079026d8ec0b157655be21c3eef94d"
   },
   {
     "id": "container40hc",
@@ -111,7 +111,7 @@
     "filename": "container40hc.png",
     "view": "three-quarter",
     "coverage": 0.16830062866210938,
-    "sourceSha256": "9276d50b9b643bb78f1969ba527d86a8de6af29a27e7cde9494ae11abea9fe03"
+    "sourceSha256": "bc9934a40275da9fc8c19f8d5f1dd2d1f5079026d8ec0b157655be21c3eef94d"
   },
   {
     "id": "jersey_barrier",
@@ -130,7 +130,7 @@
     "filename": "jersey_barrier.png",
     "view": "three-quarter",
     "coverage": 0.15996551513671875,
-    "sourceSha256": "ae03954575fd5d8a342d981e4b40b032b214dce468a8f7e169e5a18c9f718ec4"
+    "sourceSha256": "75f0faeddced0a75fee42cbf8b4b5a3bd3008d3e26d0a5cb6b61bd083e85baa6"
   },
   {
     "id": "light_mast",
@@ -149,7 +149,7 @@
     "filename": "light_mast.png",
     "view": "three-quarter",
     "coverage": 0.01548004150390625,
-    "sourceSha256": "d879a83caac79ecbf785a5fcee1260c013eae44c0a841388d3a1755855c919b6"
+    "sourceSha256": "4d14732a36263a255a5cf39e780b16b3b89d2ed86d95ca7c695339cf684cf679"
   },
   {
     "id": "fence_panel",
@@ -168,7 +168,7 @@
     "filename": "fence_panel.png",
     "view": "three-quarter",
     "coverage": 0.1091461181640625,
-    "sourceSha256": "9c825cabab240185e1201925157ded930633896cc0e8e123673e4a12a11a7cf7"
+    "sourceSha256": "3b080c10f3d4ff765c682125e973b954b20e3a8d9bf630fa3310a7a0d87c1df8"
   },
   {
     "id": "guard_booth",
@@ -187,7 +187,7 @@
     "filename": "guard_booth.png",
     "view": "three-quarter",
     "coverage": 0.3040885925292969,
-    "sourceSha256": "f469061f55f35bb71d45cd4c9d282ae94bc70ec776b51a1fc3e88c199942480e"
+    "sourceSha256": "add5c2f1404ae2679f060cc574e867cc060e3f9bc39dd4b989d2f04b5deaf5a6"
   },
   {
     "id": "gate_arm",
@@ -206,7 +206,7 @@
     "filename": "gate_arm.png",
     "view": "three-quarter",
     "coverage": 0.02184295654296875,
-    "sourceSha256": "16dff141fda3604f85b119cb7cd71b17a069ea1508b59c0ad88e44131d4b8620"
+    "sourceSha256": "e99ff54499c4a90c90b4f8d34db333f556f466b55dca9be31fd9e894618c43c2"
   },
   {
     "id": "bollard_mooring",
@@ -225,7 +225,7 @@
     "filename": "bollard_mooring.png",
     "view": "three-quarter",
     "coverage": 0.17840194702148438,
-    "sourceSha256": "6e790c8a4408023207553f5b92518fe83580cff5fcdc354c07807b360a4c44e4"
+    "sourceSha256": "14bfbd348983a105a21be2b7d2766eefd13f7d85d86a1fd8c9be7fc24f93f8df"
   },
   {
     "id": "bollard_post",
@@ -244,7 +244,7 @@
     "filename": "bollard_post.png",
     "view": "three-quarter",
     "coverage": 0.11179733276367188,
-    "sourceSha256": "f5985e84f164a3d8e55a454769a9cbbdb75da1446760b7c3a2fb2a407cdcd83f"
+    "sourceSha256": "b66a1df0d404a2fb68d8033339111065b69c74e1baec4dd05be2c63303c81976"
   },
   {
     "id": "relay_node",
@@ -263,7 +263,7 @@
     "filename": "relay_node.png",
     "view": "three-quarter",
     "coverage": 0.10018157958984375,
-    "sourceSha256": "7ba4e0c88530c7a72587b48475d9eb94fa2e23c3ebf7a95b2104d7e8c7b3b836"
+    "sourceSha256": "33201e9ae3083fad367e7d09dcccb88331d0692e4ddb18c8111dc3abec74deeb"
   },
   {
     "id": "shelf_rack",
@@ -282,7 +282,7 @@
     "filename": "shelf_rack.png",
     "view": "three-quarter",
     "coverage": 0.2759590148925781,
-    "sourceSha256": "06ad5ad183c3e12b452ef412a0504634ae507fbf81ea04579f287acd9a21fe75"
+    "sourceSha256": "af44148c7b86014c6a5b2dbec3d1d664c62d439a94650ac4656d639eeafcfd0e"
   },
   {
     "id": "stairs_metal",
@@ -301,7 +301,7 @@
     "filename": "stairs_metal.png",
     "view": "three-quarter",
     "coverage": 0.09738922119140625,
-    "sourceSha256": "f96fcec705917be3d99108c9802233d7fe4d8b55ff97f55db29848058d36a056"
+    "sourceSha256": "a12c33d525dbcd01082446bc7de8780ed10e2c3c9fe511ab8846441a207edf0b"
   },
   {
     "id": "catwalk",
@@ -320,7 +320,7 @@
     "filename": "catwalk.png",
     "view": "three-quarter",
     "coverage": 0.14502716064453125,
-    "sourceSha256": "d9e54c6ea87c367741eb110da1897aa10f3c29de3380fe2270ed1a08959b2818"
+    "sourceSha256": "e032ce64d4d7dceb34b1f9b08cc54dc67d6ab417272108d7be75f29078a8ee7d"
   },
   {
     "id": "reefer_unit",
@@ -339,7 +339,7 @@
     "filename": "reefer_unit.png",
     "view": "three-quarter",
     "coverage": 0.3053474426269531,
-    "sourceSha256": "e58e157bd5099585ea333f1c5acea02802eeba7cc38ac92864327610aef8deca"
+    "sourceSha256": "4f580bd4170c4142ce6f330237f30c7a8403b82719bde6f69bfab43d1ebeb0f3"
   },
   {
     "id": "barrel",
@@ -358,7 +358,7 @@
     "filename": "barrel.png",
     "view": "three-quarter",
     "coverage": 0.27231597900390625,
-    "sourceSha256": "a035ede35ccd9a5b5d38cfef58819c9fdef446ed45e418a29ac9c4a602db8800"
+    "sourceSha256": "6c5008a016c51bbfe7074f8b3ee8577ad980dd0b395fc243a95110c239955a59"
   },
   {
     "id": "pallet",
@@ -377,7 +377,7 @@
     "filename": "pallet.png",
     "view": "three-quarter",
     "coverage": 0.15015029907226562,
-    "sourceSha256": "276c42e607bb8dad225f2d8a1c75add7a82d0b10170afecef4cc8f427fb31ad6"
+    "sourceSha256": "f18337306335a6fea3d3f4428dcab7b1b73167d1287082b7728eca152856ae18"
   },
   {
     "id": "pallet_stack",
@@ -396,7 +396,7 @@
     "filename": "pallet_stack.png",
     "view": "three-quarter",
     "coverage": 0.36261749267578125,
-    "sourceSha256": "93608077d64a95fcd3ec89481245aa1861b5df6ad5ba731c5230fa455bf16ddb"
+    "sourceSha256": "d9d68a2ce65c501abbd62a04dad437524e044c9e9de95074a07a3fb244bf7634"
   },
   {
     "id": "crate_wood",
@@ -415,7 +415,7 @@
     "filename": "crate_wood.png",
     "view": "three-quarter",
     "coverage": 0.3753929138183594,
-    "sourceSha256": "f380fe163cfcc4be2e205180fc547c42b54f41f37292b3a0255bcc538c6aa1a7"
+    "sourceSha256": "871e17637c407b5f48e814e4a847359f7034a16027cc3b8664f12671adeec060"
   },
   {
     "id": "crate_stack",
@@ -434,7 +434,7 @@
     "filename": "crate_stack.png",
     "view": "three-quarter",
     "coverage": 0.291046142578125,
-    "sourceSha256": "19003fe0fe6e30a3ce558b4d2312764342afb2f2f5d164ee054b23569eac8941"
+    "sourceSha256": "490b03f5aeb696b5b4800a64c575d438ceedace3a8cfbc9b088daefe26df7f61"
   },
   {
     "id": "ibc_tote",
@@ -453,7 +453,7 @@
     "filename": "ibc_tote.png",
     "view": "three-quarter",
     "coverage": 0.2733917236328125,
-    "sourceSha256": "de0ced40d8b2dbb4aa169b7a9dfc4608bc9a6f846d15c4347d25d7626b623c79"
+    "sourceSha256": "914ea72c9bf7f6ccb7d1363b8642792c93bbb4d61e4ebda97c44662d3b5263c5"
   },
   {
     "id": "forklift",
@@ -472,7 +472,7 @@
     "filename": "forklift.png",
     "view": "three-quarter",
     "coverage": 0.1579437255859375,
-    "sourceSha256": "9760cb39b8d0fa543aeb0bb55b672c415c11ee8a9c98e79c3d187f30a264d241"
+    "sourceSha256": "62cea432103b74b6ba11187772f3fce8aea935b7f842574da10040d429981d53"
   },
   {
     "id": "cable_reel",
@@ -491,7 +491,7 @@
     "filename": "cable_reel.png",
     "view": "three-quarter",
     "coverage": 0.2966575622558594,
-    "sourceSha256": "d5e2d967bfcdefdc0fde4e84fdc533cac503b0613cef12320fbb7f165eec571f"
+    "sourceSha256": "8f6e06ecae6bbf0c123625a40883a2f787683991731f8bcdd48d7137dd52e676"
   },
   {
     "id": "tire_stack",
@@ -510,7 +510,7 @@
     "filename": "tire_stack.png",
     "view": "three-quarter",
     "coverage": 0.27384185791015625,
-    "sourceSha256": "a67e1f25e32d7bb498094768e1414094f556026a29a3dc2b49f921168a1074fb"
+    "sourceSha256": "743fe738d660f30a0d276aad0941a84a304c1ab3c5e7ff66373ee635341bb0c4"
   },
   {
     "id": "dumpster",
@@ -529,7 +529,7 @@
     "filename": "dumpster.png",
     "view": "three-quarter",
     "coverage": 0.24224090576171875,
-    "sourceSha256": "3736d8fbb9858927d1780fc06bf76f1f24eb29c8143179009373eb3ba4c61f60"
+    "sourceSha256": "b3d364708232a6cb77a62767ff58bd9a51e1958eb3ae4684c9c78cddf02c9f67"
   },
   {
     "id": "generator",
@@ -548,7 +548,7 @@
     "filename": "generator.png",
     "view": "three-quarter",
     "coverage": 0.24936294555664062,
-    "sourceSha256": "6b2e92de551d7da025dd5f87cdd89d197e893d80044b3a045592bc667be5b842"
+    "sourceSha256": "f925078d58fe0fc1d0ab2327bfc0b2a365492f79de1af752d27c17df3b25389d"
   },
   {
     "id": "jerry_can",
@@ -567,7 +567,7 @@
     "filename": "jerry_can.png",
     "view": "three-quarter",
     "coverage": 0.273193359375,
-    "sourceSha256": "91780629f6a05f792b692d155bdc70dc306ada8d00441c05fb7dc2dfda8b6c6e"
+    "sourceSha256": "2ade15f6f4a1f3b0ca81790356cf15b80c4822f7e4596bb7f91873f8bbdc02bd"
   },
   {
     "id": "traffic_cone",
@@ -586,7 +586,7 @@
     "filename": "traffic_cone.png",
     "view": "three-quarter",
     "coverage": 0.14046096801757812,
-    "sourceSha256": "680d66c8ed05087e064450191c56125319c250d4af4e59c88d95a623023d991e"
+    "sourceSha256": "7059e797ed6124b1bcea5125adbd35d582192abb2d6b6eedfe2ea3f540873558"
   },
   {
     "id": "gas_cylinders",
@@ -605,7 +605,7 @@
     "filename": "gas_cylinders.png",
     "view": "three-quarter",
     "coverage": 0.21062850952148438,
-    "sourceSha256": "46096b3d86fb6af4bec76ac53752e9c88dd4521bb0b35e054b950bad7f2936fd"
+    "sourceSha256": "608991e2f57c89c5e6e3010b5a3a27e9f9859ed415f36001225aa354c4c2eaf8"
   },
   {
     "id": "tarp_cargo",
@@ -624,7 +624,7 @@
     "filename": "tarp_cargo.png",
     "view": "three-quarter",
     "coverage": 0.26860809326171875,
-    "sourceSha256": "dadc448d873ad33b7b5ab1b520d1c09a9e1bc4996443ec02a8972664d42cf5a5"
+    "sourceSha256": "007aa52883dc2cff721deb245a399df6dff2a2ac31902dca188306004a8e8dbd"
   },
   {
     "id": "sandbags",
@@ -643,7 +643,7 @@
     "filename": "sandbags.png",
     "view": "three-quarter",
     "coverage": 0.24020767211914062,
-    "sourceSha256": "be9d3ebf85523060d11aa7cd6fe739b6548656d4ae2e22c66adec13b8294bd88"
+    "sourceSha256": "e84b5613c1856a82401a1e276a30b3911d3b501a14ce6322bf5ddf7e4902c460"
   },
   {
     "id": "toolbox_cart",
@@ -662,7 +662,7 @@
     "filename": "toolbox_cart.png",
     "view": "three-quarter",
     "coverage": 0.25453948974609375,
-    "sourceSha256": "54d6fb42c59c35a298f0fe613d9e171c33b04119178f6b9a08122b0baa5a4114"
+    "sourceSha256": "f647b2c44af7c6e69cfc197f312954ac17c8c71016d916992d8fccb662394fcf"
   },
   {
     "id": "floodlight_stand",
@@ -681,7 +681,7 @@
     "filename": "floodlight_stand.png",
     "view": "three-quarter",
     "coverage": 0.034244537353515625,
-    "sourceSha256": "1aa1edd82896437b6bfc74eb0e2b7f0051f51a4b44d84e5f072a7b515ec42672"
+    "sourceSha256": "ea8236cf31f9f7a4e21c2858e0062d48c3a1f7da0880ffdd6defbbc4d167ddb7"
   },
   {
     "id": "cardboard_boxes",
@@ -700,7 +700,7 @@
     "filename": "cardboard_boxes.png",
     "view": "three-quarter",
     "coverage": 0.230865478515625,
-    "sourceSha256": "091d855bc34b99cb1f526b3f4fef8a6a008a00637672bf2a3e59a6fb341e278a"
+    "sourceSha256": "74e1867dfc34792a968b1b8109533a3c7a27fe5bdd0a99770a8b15a22d7acc4d"
   },
   {
     "id": "pipe_stack",
@@ -719,7 +719,7 @@
     "filename": "pipe_stack.png",
     "view": "three-quarter",
     "coverage": 0.09053421020507812,
-    "sourceSha256": "26fcd568a0bb2ffba6722dcb77d72ee926cbfe3f51f8fee473df80e995476499"
+    "sourceSha256": "dd81d39d97bef8c16bac5bee02a02e7e08818a92b77c738caf1b6f49cd6b115a"
   },
   {
     "id": "sign_post",
@@ -738,7 +738,7 @@
     "filename": "sign_post.png",
     "view": "three-quarter",
     "coverage": 0.0497589111328125,
-    "sourceSha256": "7d63e7d24a01242a96928a248c37ea3ffbf5d6c30886a7eecd83900496b1b58e"
+    "sourceSha256": "852a4d2b2efa87d80c9af1f45c297240d17af59628a1308c66519502b9000e28"
   },
   {
     "id": "hound",
@@ -757,7 +757,7 @@
     ],
     "filename": "hound-side.png",
     "coverage": 0.09395599365234375,
-    "sourceSha256": "4f8ff8fda2bda58677e7befd76ac17d7bd34d44fb7fc491dab3964eeb5e473e5"
+    "sourceSha256": "b75a24e719f978edfdfa6db8d996ac81e79ea0717b2f38ec8bbe50245c5842ef"
   },
   {
     "id": "hound",
@@ -776,7 +776,7 @@
     ],
     "filename": "hound-front.png",
     "coverage": 0.0452117919921875,
-    "sourceSha256": "4f8ff8fda2bda58677e7befd76ac17d7bd34d44fb7fc491dab3964eeb5e473e5"
+    "sourceSha256": "b75a24e719f978edfdfa6db8d996ac81e79ea0717b2f38ec8bbe50245c5842ef"
   },
   {
     "id": "hound",
@@ -795,7 +795,7 @@
     ],
     "filename": "hound-top.png",
     "coverage": 0.044391632080078125,
-    "sourceSha256": "4f8ff8fda2bda58677e7befd76ac17d7bd34d44fb7fc491dab3964eeb5e473e5"
+    "sourceSha256": "b75a24e719f978edfdfa6db8d996ac81e79ea0717b2f38ec8bbe50245c5842ef"
   },
   {
     "id": "pac9",
@@ -814,6 +814,6 @@
     ],
     "filename": "pac9-side.png",
     "coverage": 0.07464981079101562,
-    "sourceSha256": "97c47cf77b8a0ce8f79930c7e93558a3975fd1abe97005a70361a8d1e4eb9863"
+    "sourceSha256": "1cb28c3880f0a736ca8e3268285079ce986c3e9fe92d5fcc0a634e5d37f7b1b5"
   }
 ]
