@@ -48,6 +48,16 @@ impl Kit {
                 2,
             );
         }
+        for sign in [-1., 1.] {
+            self.label(
+                c,
+                e,
+                "H-03",
+                Transform::from_xyz(sign * 0.385, 0.97, -0.20)
+                    .with_rotation(Quat::from_rotation_y(sign * std::f32::consts::FRAC_PI_2))
+                    .with_scale(Vec3::splat(0.16)),
+            );
+        }
         let side = Quat::from_rotation_y(std::f32::consts::FRAC_PI_2);
         let axle = Quat::from_rotation_z(std::f32::consts::FRAC_PI_2);
         part(
@@ -66,7 +76,7 @@ impl Kit {
             "upper deck",
             &h.armor,
             Vec3::new(0., 1.15, 0.),
-            Vec3::new(0.78, 0.09, 1.42),
+            Vec3::new(0.78, 0.07, 1.42),
             Quat::IDENTITY,
             0,
         );
@@ -338,7 +348,7 @@ impl Kit {
             "forward optical housing",
             &h.armor,
             Vec3::new(0., 1.28, -0.92),
-            Vec3::new(0.43, 0.24, 0.35),
+            Vec3::new(0.39, 0.21, 0.35),
             Quat::IDENTITY,
             0,
         );

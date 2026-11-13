@@ -101,7 +101,15 @@ impl Kit {
                     Vec3::new(0.7, 0.06, 0.08),
                     0,
                 );
-                self.shaped(c, e, Vec3::new(x, 0.12, z), Vec3::new(0.8, 0.025, 0.13), 5);
+                let rotor = self.shaped(
+                    c,
+                    e,
+                    Vec3::new(x, 0.17, z),
+                    Vec3::new(0.73, 0.015, 0.075),
+                    5,
+                );
+                c.entity(rotor)
+                    .insert(Rotor(if x * z > 0. { 1. } else { -1. }));
                 self.joint(c, e, Vec3::new(x, 0., z), 0.22);
                 let ring = c
                     .spawn((

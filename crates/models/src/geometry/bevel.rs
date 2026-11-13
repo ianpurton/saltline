@@ -46,6 +46,15 @@ pub fn beveled_box(size: Vec3, radius: f32, segments: usize, smooth: bool) -> Me
                     project(x[1], y[1]),
                     project(x[0], y[1]),
                 ]);
+                // UVs cover the whole face, including its bevels. A subdivision
+                // must not repeat the entire texture independently.
+                for i in start..b.positions.len() {
+                    let p = Vec3::from(b.positions[i]);
+                    b.uvs[i] = [
+                        p.dot(u) / u.abs().dot(size) + 0.5,
+                        p.dot(v) / v.abs().dot(size) + 0.5,
+                    ];
+                }
                 if smooth {
                     for i in start..b.positions.len() {
                         let p = Vec3::from(b.positions[i]);
@@ -56,4 +65,30 @@ pub fn beveled_box(size: Vec3, radius: f32, segments: usize, smooth: bool) -> Me
         }
     }
     b.finish()
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use bevy::mesh::VertexAttributeValues;
+    #[test]
+    fn subdivisions_keep_continuous_face_uvs() {
+        let m = beveled_box(Vec3::ONE, 0.12, 3, true);
+        let Some(VertexAttributeValues::Float32x3(p)) = m.attribute(Mesh::ATTRIBUTE_POSITION)
+        else {
+            panic!("positions")
+        };
+        let Some(VertexAttributeValues::Float32x2(uv)) = m.attribute(Mesh::ATTRIBUTE_UV_0) else {
+            panic!("UVs")
+        };
+        let mut checked = 0;
+        for (p, uv) in p.iter().zip(uv) {
+            if (p[0] - 0.5).abs() < 1e-5 && p[1].abs() < 0.37 && p[2].abs() < 0.37 {
+                assert!((uv[0] - (p[1] + 0.5)).abs() < 1e-5);
+                assert!((uv[1] - (p[2] + 0.5)).abs() < 1e-5);
+                checked += 1;
+            }
+        }
+        assert!(checked > 0);
+    }
 }

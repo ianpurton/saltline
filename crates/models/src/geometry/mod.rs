@@ -3,12 +3,14 @@ pub mod bevel;
 pub mod extrusion;
 pub mod lathe;
 pub mod mesh;
+pub mod stencil;
 pub mod tapered;
 pub mod tube;
 use bevy::prelude::*;
 /// Shared immutable mesh palette, allocated once per Kit, reused by all instances.
 pub struct HardSurface {
     pub hull: Handle<Mesh>,
+    pub gable: Handle<Mesh>,
     pub armor: Handle<Mesh>,
     pub panel: Handle<Mesh>,
     pub limb: Handle<Mesh>,
@@ -20,6 +22,7 @@ pub struct HardSurface {
 impl HardSurface {
     pub fn new(m: &mut Assets<Mesh>) -> Self {
         Self {
+            gable: m.add(extrusion::extrude(&[Vec2::new(-0.5,0.),Vec2::new(0.5,0.),Vec2::new(0.,1.)],1.)),
             hull: m.add(extrusion::extrude(
                 &[
                     Vec2::new(-0.5, -0.5),

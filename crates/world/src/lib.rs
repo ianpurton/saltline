@@ -1,3 +1,4 @@
+mod dressing;
 use bevy::prelude::*;
 use saltline_models::Kit;
 #[derive(Resource, Default)]
@@ -13,13 +14,19 @@ pub const EXIT: Vec3 = Vec3::new(18., 0., -75.);
 pub fn build(c: &mut Commands, k: &Kit) -> Port {
     let mut port = Port::default();
     let root = k.root(c, Vec3::ZERO);
-    k.part(
+    let ground = k.part(
         c,
         root,
         Vec3::new(-12., -0.25, -35.),
         Vec3::new(81., 0.5, 105.),
         0,
     );
+    c.entity(ground)
+        .insert(MeshMaterial3d(k.surfaces.asphalt.clone()));
+    #[cfg(not(target_arch = "wasm32"))]
+    c.entity(ground)
+        .insert(saltline_models::materials::wet::WetSurface(false));
+    let _ = ground;
     let ocean = k.part(
         c,
         root,
@@ -27,7 +34,11 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
         Vec3::new(2400., 0.1, 2400.),
         8,
     );
-    c.entity(ocean).insert(MeshMaterial3d(k.sea.clone()));
+    c.entity(ocean)
+        .insert(MeshMaterial3d(k.surfaces.water.clone()));
+    #[cfg(not(target_arch = "wasm32"))]
+    c.entity(ocean)
+        .insert(saltline_models::materials::wet::WetSurface(true));
     for row in 0..8 {
         for side in [-1., 1.] {
             let x = side * (12. + (row % 2) as f32 * 3.);
@@ -101,6 +112,7 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
             k.part(c, root, Vec3::new(x, 0.3, z), Vec3::new(0.18, 0.6, 0.18), 3);
         }
     }
+    #[cfg(target_arch = "wasm32")]
     for i in 0..70 {
         let x = ((i * 37) % 47) as f32 - 23.;
         let z = 8. - ((i * 19) % 94) as f32;
@@ -150,5 +162,6 @@ pub fn build(c: &mut Commands, k: &Kit) -> Port {
     saltline_models::library::crane::details(c, k, root);
     saltline_models::library::ship::build(c, k, root);
     saltline_models::library::boat::build(c, k, root, EXIT);
+    dressing::build(c, k, root);
     port
 }

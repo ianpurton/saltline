@@ -68,6 +68,12 @@ pub fn build(c: &mut Commands, k: &Kit, p: Vec3) -> Entity {
         k.mats[5].clone(),
         Transform::from_xyz(0.35, 0.4, 0.2).with_scale(Vec3::splat(2.)),
     );
+    k.label(
+        c,
+        e,
+        "UPLINK",
+        Transform::from_xyz(0., 1.52, 0.352).with_scale(Vec3::splat(0.16)),
+    );
     let indicator = k.part(c, e, Vec3::new(0., 1.8, 0.), Vec3::new(0.4, 0.1, 0.4), 7);
     indicator
 }

@@ -71,7 +71,13 @@ pub fn build(c: &mut Commands, k: &Kit, root: Entity) {
     );
     for i in 0..5 {
         for x in [49., 53., 57.] {
-            k.container(c, Vec3::new(x, 4.8, -28. - i as f32 * 10.), 2);
+            for layer in 0..(2 + i % 2) {
+                k.container(
+                    c,
+                    Vec3::new(x, 4.8 + layer as f32 * 2.85, -28. - i as f32 * 10.),
+                    1 + (i + layer) % 3,
+                );
+            }
         }
     }
     k.part(c, root, Vec3::new(53., 9., -76.), Vec3::new(11., 9., 8.), 4);

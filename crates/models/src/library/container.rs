@@ -101,6 +101,36 @@ impl Kit {
                 );
             }
         }
+        for sign in [-1., 1.] {
+            self.label(
+                c,
+                e,
+                "SALTLINE",
+                Transform::from_xyz(sign * 1.565, 1.65, -0.2)
+                    .with_rotation(Quat::from_rotation_y(sign * std::f32::consts::FRAC_PI_2))
+                    .with_scale(Vec3::splat(0.8)),
+            );
+            self.label(
+                c,
+                e,
+                "B4-07",
+                Transform::from_xyz(sign * 1.566, 0.7, 2.1)
+                    .with_rotation(Quat::from_rotation_y(sign * std::f32::consts::FRAC_PI_2))
+                    .with_scale(Vec3::splat(0.23)),
+            );
+            // Thin downward rust trails and seam chips, with variation by stack position.
+            for i in 0..12 {
+                let z = -4.1 + i as f32 * 0.7;
+                let len = 0.12 + ((i * 17 + p.z.abs() as usize) % 9) as f32 * 0.055;
+                self.part(
+                    c,
+                    e,
+                    Vec3::new(sign * 1.554, 2.65 - len * 0.5, z),
+                    Vec3::new(0.008, len, 0.015),
+                    1,
+                );
+            }
+        }
         e
     }
 }

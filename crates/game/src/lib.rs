@@ -82,11 +82,19 @@ pub fn visible(a: Vec3, b: Vec3, port: &Port) -> bool {
             .any(|(c, h)| (p.x - c.x).abs() < h.x && (p.z - c.z).abs() < h.z && p.y < h.y * 2.)
     })
 }
+/// Confirmed simulation outcomes consumed by visual effects.
+#[derive(Message, Clone, Copy, Debug)]
+pub enum PresentationEvent {
+    Shot { origin: Vec3, direction: Vec3 },
+    Impact { position: Vec3, destroyed: bool },
+    RelayCut { position: Vec3 },
+}
 pub fn simulate(
     time: Res<Time>,
     mut m: ResMut<Mission>,
     mut a: ResMut<Actions>,
     port: Res<Port>,
+    mut presentation: MessageWriter<PresentationEvent>,
     mut enemies: Query<(&mut Enemy, &mut Transform)>,
 ) {
     if m.mode != Mode::Playing {
@@ -139,6 +147,10 @@ pub fn simulate(
         m.ammo -= 1;
         m.cooldown = 0.11;
         let forward = Quat::from_euler(EulerRot::YXZ, m.yaw, m.pitch, 0.) * Vec3::NEG_Z;
+        presentation.write(PresentationEvent::Shot {
+            origin: m.position,
+            direction: forward,
+        });
         let target = enemies
             .iter()
             .enumerate()
@@ -151,8 +163,12 @@ pub fn simulate(
             .min_by(|a, b| a.1.total_cmp(&b.1))
             .map(|x| x.0);
         if let Some(i) = target {
-            if let Some((mut e, _)) = enemies.iter_mut().nth(i) {
+            if let Some((mut e, t)) = enemies.iter_mut().nth(i) {
                 e.health -= 34.;
+                presentation.write(PresentationEvent::Impact {
+                    position: t.translation + Vec3::Y * 0.7,
+                    destroyed: e.health <= 0.,
+                });
                 if e.health <= 0. {
                     m.kills += 1;
                 }
@@ -205,6 +221,11 @@ pub fn simulate(
             if m.position.distance(*p + Vec3::Y * 1.3) < 3.
                 && visible(m.position, *p + Vec3::Y * 1.3, &port)
             {
+                if !m.relays[i] {
+                    presentation.write(PresentationEvent::RelayCut {
+                        position: *p + Vec3::Y * 1.8,
+                    });
+                }
                 m.relays[i] = true;
             }
         }

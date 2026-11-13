@@ -1,0 +1,32 @@
+{
+  "asphalt-color.png": {
+    "source": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/asphalt_03/asphalt_03_diff_2k.png",
+    "source_sha256": "acb2fa9219e539ea14e4b53368b17b99d964b775bfc358b3e08e530b78924a74",
+    "sha256": "d44bcdcc3c64e274ca7339f8c4223f063f6410774485292c5a9781271bc75fe2"
+  },
+  "asphalt-normal.png": {
+    "source": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/asphalt_03/asphalt_03_nor_gl_2k.png",
+    "source_sha256": "dd79099053896af558c3e99568b34a4677f613764c9da8676ae412d66c8ef01c",
+    "sha256": "e47fae9423fc33211662fc19fe250cc050d67171480cec7ed13bb2337249cd7c"
+  },
+  "asphalt-arm.png": {
+    "source": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/asphalt_03/asphalt_03_arm_2k.png",
+    "source_sha256": "42457a1e2d583cc47b41a4f9a985b82697e283f28021e651761bb095816506a6",
+    "sha256": "e8664c487b929c496bb36451ffd0247abe53c844f6e4125cd49c6420cc4e2638"
+  },
+  "concrete-color.png": {
+    "source": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/concrete_floor_02/concrete_floor_02_diff_2k.png",
+    "source_sha256": "c438815b55874b9bbab5befa559c9ef2b635f674ebf9415c7341f6865156b03b",
+    "sha256": "fd9b84d766e696e860342254f145b46e23043a57b25336135234b7b833f7c4aa"
+  },
+  "concrete-normal.png": {
+    "source": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/concrete_floor_02/concrete_floor_02_nor_gl_2k.png",
+    "source_sha256": "0b13102bbf79daef40b7230c20aaca402620b618e043413f1ff677c47acc2861",
+    "sha256": "567ea82cf6e8447948af92e9b1d83228d897d98a2642fd040c1cf3fdcb54be4b"
+  },
+  "concrete-arm.png": {
+    "source": "https://dl.polyhaven.org/file/ph-assets/Textures/png/2k/concrete_floor_02/concrete_floor_02_arm_2k.png",
+    "source_sha256": "e191d359dc99575393d314a8195f67007661b49e313131693accecf022584256",
+    "sha256": "4d798651c60342c860b2ea9715fd0ad5d8364e1f4046bd85a131dd309922abb0"
+  }
+}

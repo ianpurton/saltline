@@ -4763,6 +4763,8 @@ name = "saltline-models"
 version = "0.1.0"
 dependencies = [
  "bevy",
+ "half",
+ "image",
 ]
 
 [[package]]

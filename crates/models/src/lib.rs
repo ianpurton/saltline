@@ -3,8 +3,18 @@ use bevy::prelude::*;
 pub mod geometry;
 pub mod library;
 pub mod materials;
+pub struct SurfacePalette {
+    pub asphalt: Handle<StandardMaterial>,
+    pub concrete: Handle<StandardMaterial>,
+    pub steel: Handle<StandardMaterial>,
+    pub graphite: Handle<StandardMaterial>,
+    pub water: Handle<StandardMaterial>,
+}
 pub struct Kit {
+    pub surfaces: SurfacePalette,
     pub hard: geometry::HardSurface,
+    pub labels: std::collections::HashMap<&'static str, Handle<Mesh>>,
+    pub stencil_paint: Handle<StandardMaterial>,
     pub industrial: Vec<Handle<StandardMaterial>>,
     pub cube: Handle<Mesh>,
     pub ball: Handle<Mesh>,
@@ -35,6 +45,22 @@ impl Kit {
             }
         }
         Self {
+            surfaces: SurfacePalette {
+                asphalt: mats[0].clone(),
+                concrete: mats[9].clone(),
+                steel: mats[4].clone(),
+                graphite: mats[5].clone(),
+                water: sea.clone(),
+            },
+            labels: ["SALTLINE", "B4-07", "H-03", "UPLINK", "PORT 04", "CARGO"]
+                .into_iter()
+                .map(|s| (s, m.add(geometry::stencil::mesh(s))))
+                .collect(),
+            stencil_paint: a.add(StandardMaterial {
+                base_color: Color::srgb(0.77, 0.75, 0.62),
+                perceptual_roughness: 0.72,
+                ..default()
+            }),
             cube: m.add({
                 let mut mesh = Mesh::from(Cuboid::default());
                 let _ = mesh.generate_tangents();
@@ -61,6 +87,24 @@ impl Kit {
             sea,
             hard,
             industrial,
+        }
+    }
+    pub fn label(
+        &self,
+        c: &mut Commands,
+        parent: Entity,
+        text: &'static str,
+        transform: Transform,
+    ) {
+        if let Some(mesh) = self.labels.get(text) {
+            geometry::assembly::component(
+                c,
+                parent,
+                text,
+                mesh.clone(),
+                self.stencil_paint.clone(),
+                transform,
+            );
         }
     }
     pub fn part(&self, c: &mut Commands, parent: Entity, p: Vec3, s: Vec3, mat: usize) -> Entity {
@@ -130,3 +174,6 @@ pub struct Leg {
 pub struct Knee {
     pub phase: f32,
 }
+
+#[derive(Component)]
+pub struct Rotor(pub f32);

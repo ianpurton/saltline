@@ -87,12 +87,12 @@ pub fn build(c: &mut Commands, k: &Kit, root: Entity) {
     // Quayside gantry cranes, cables and cross braces.
     for z in [-22., -60., -100.] {
         for x in [26., 43.] {
-            k.part(c, root, Vec3::new(x, 13., z), Vec3::new(0.9, 26., 0.9), 3);
+            k.part(c, root, Vec3::new(x, 13., z), Vec3::new(1.5, 26., 1.5), 3);
             for h in [5., 13., 21.] {
                 k.part(c, root, Vec3::new(x, h, z), Vec3::new(1.3, 0.3, 5.), 0);
             }
         }
-        k.part(c, root, Vec3::new(36., 26., z), Vec3::new(36., 1.2, 1.2), 3);
+        k.part(c, root, Vec3::new(36., 26., z), Vec3::new(36., 2.0, 3.2), 3);
         k.part(
             c,
             root,

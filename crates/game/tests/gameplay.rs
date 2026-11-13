@@ -8,6 +8,7 @@ fn app() -> App {
         .insert_resource(TimeUpdateStrategy::ManualDuration(Duration::from_secs_f32(
             1. / 60.,
         )))
+        .add_message::<PresentationEvent>()
         .init_resource::<Mission>()
         .init_resource::<Actions>()
         .init_resource::<Port>()

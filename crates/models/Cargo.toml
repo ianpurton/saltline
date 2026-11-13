@@ -4,3 +4,7 @@ version = "0.1.0"
 edition = "2024"
 [dependencies]
 bevy.workspace = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies]
+image = { version = "0.25.10", default-features = false, features = ["hdr", "png"] }
+half = "2"

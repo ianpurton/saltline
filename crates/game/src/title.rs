@@ -32,6 +32,7 @@ pub struct TitlePlugin;
 impl Plugin for TitlePlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<TitleState>()
+            .init_resource::<CaptureCount>()
             .add_systems(PostStartup, setup)
             .add_systems(Update, update.after(crate::visuals))
             .add_systems(Update, capture);
@@ -55,13 +56,13 @@ fn label(text: &str, size: f32, font: &Handle<Font>, color: Color) -> impl Bundl
         TextColor(color),
     )
 }
-fn setup(
+pub(crate) fn setup(
     mut c: Commands,
     mut fonts: ResMut<Assets<Font>>,
     visuals: Res<Visuals>,
-    mut images: ResMut<Assets<Image>>,
+    shared_sky: Res<crate::rendering::SharedSky>,
 ) {
-    let sky = saltline_models::materials::sky::overcast(&mut images);
+    let sky = shared_sky.0.clone();
     // Keep menu text available in copied builds and from any working directory.
     let font = fonts.add(Font::from_bytes(
         include_bytes!("../../../assets/fonts/Oswald.ttf").to_vec(),
@@ -72,22 +73,15 @@ fn setup(
             Camera3d::default(),
             bevy::light::Skybox {
                 image: Some(sky.clone()),
-                brightness: 1800.,
+                brightness: crate::rendering::SKY_BRIGHTNESS,
                 ..default()
             },
             Camera {
                 is_active: false,
                 ..default()
             },
-            crate::rendering::camera_effects(sky, 1000.),
-            DistanceFog {
-                color: Color::srgb(0.42, 0.38, 0.30),
-                falloff: FogFalloff::Linear {
-                    start: 24.,
-                    end: 150.,
-                },
-                ..default()
-            },
+            crate::rendering::camera_effects(sky, crate::rendering::ENVIRONMENT_BRIGHTNESS),
+            crate::rendering::fog(),
             Transform::default(),
         ))
         .id();
@@ -130,7 +124,7 @@ fn setup(
     });
 }
 fn update(
-    time: Res<Time>,
+    clock: Res<crate::presentation::PresentationClock>,
     keys: Res<ButtonInput<KeyCode>>,
     m: Res<Mission>,
     v: Res<Visuals>,
@@ -159,7 +153,7 @@ fn update(
         state.reduced_motion = !state.reduced_motion;
     }
     if menu && !state.reduced_motion {
-        state.clock += time.delta_secs();
+        state.clock += clock.dt;
     }
     for (mut camera, mut transform, title) in &mut cameras {
         camera.is_active = if title { menu } else { !menu };
@@ -218,19 +212,40 @@ fn update(
 }
 
 // Bounded capture of the actual startup flow, including UI, for visual review.
-fn capture(mut c: Commands, mut frame: Local<u32>) {
+#[derive(Resource, Default)]
+struct CaptureCount(u32);
+fn capture(
+    mut c: Commands,
+    target: Res<crate::capture::CaptureTarget>,
+    ready: Res<crate::capture::RenderReady>,
+    mut frame: Local<u32>,
+) {
     if !saltline_game::launch_args().any(|a| a == "--title-capture") {
         return;
     }
-    *frame += 1;
-    if *frame == 70 || *frame == 170 {
-        c.spawn(bevy::render::view::screenshot::Screenshot::primary_window())
-            .observe(bevy::render::view::screenshot::save_to_disk(format!(
-                "tmp/screenshots/title-{}.png",
-                *frame
-            )));
+    if !ready.ready() {
+        return;
     }
-    if *frame == 200 {
-        c.write_message(AppExit::Success);
+    *frame += 1;
+    if *frame == 180 || *frame == 360 {
+        c.spawn(crate::capture::screenshot(&target))
+            .observe(bevy::render::view::screenshot::save_to_disk(
+                crate::capture::output(&format!("title-{}", *frame)),
+            ))
+            .observe(
+                |_: On<bevy::render::view::screenshot::ScreenshotCaptured>,
+                 mut done: ResMut<CaptureCount>,
+                 mut c: Commands| {
+                    done.0 += 1;
+                    // Each screenshot owns its observer; use its filename-independent completion
+                    // to keep the app alive until both asynchronous requests have drained.
+                    if done.0 == 2 {
+                        c.write_message(AppExit::Success);
+                    }
+                },
+            );
+    }
+    if *frame > 3000 {
+        panic!("title capture timed out");
     }
 }

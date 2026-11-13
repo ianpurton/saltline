@@ -1,5 +1,9 @@
+#[cfg(not(target_arch = "wasm32"))]
+pub mod embedded;
 pub mod industrial;
 pub mod sky;
+#[cfg(not(target_arch = "wasm32"))]
+pub mod wet;
 use bevy::prelude::*;
 pub fn legacy(
     a: &mut Assets<StandardMaterial>,
@@ -50,7 +54,7 @@ pub fn legacy(
                 } else if kind == 5 {
                     0.55 + grain * 0.025
                 } else {
-                    0.5 + patch * 0.4 + grain * 0.04
+                    0.65 + patch * 0.14 + grain * 0.025
                 }
             }
         };
@@ -60,7 +64,7 @@ pub fn legacy(
         for y in 0..n {
             for x in 0..n {
                 let h = height(x, y);
-                let rust = kind > 0 && kind < 4 && h < 0.39;
+                let rust = kind > 0 && kind < 4 && h < 0.60;
                 let shade = (155. + h * 100.) as u8;
                 color.extend_from_slice(&if kind == 11 {
                     if ((x + y) / 64) % 2 == 0 {
@@ -69,7 +73,7 @@ pub fn legacy(
                         [22, 26, 28, 255]
                     }
                 } else if rust {
-                    [130, 81, 47, 255]
+                    [145, 108, 78, 255]
                 } else {
                     [shade, shade, shade, 255]
                 });
@@ -78,7 +82,7 @@ pub fn legacy(
                 } else if kind == 0 {
                     0.045
                 } else {
-                    0.35
+                    0.10
                 };
                 let dx = (height((x + 1) % n, y) - height((x + n - 1) % n, y)) * strength;
                 let dy = (height(x, (y + 1) % n) - height(x, (y + n - 1) % n)) * strength;
@@ -151,11 +155,13 @@ pub fn legacy(
         (0.9, 0.9, 0.9),
         (0.08, 0.16, 0.2),
     ];
+    #[cfg(not(target_arch = "wasm32"))]
+    let authored = embedded::surfaces(images);
     colors
         .iter()
         .enumerate()
         .map(|(i, &(r, g, b))| {
-            a.add(StandardMaterial {
+            let mut material = StandardMaterial {
                 base_color: Color::srgb(r, g, b),
                 base_color_texture: if i == 6 || i == 7 {
                     None
@@ -175,7 +181,7 @@ pub fn legacy(
                 } else {
                     2.
                 })),
-                metallic: if i == 0 || i >= 8 { 0. } else { 0.7 },
+                metallic: if i == 4 || i == 5 { 0.75 } else { 0. },
                 perceptual_roughness: 1.,
                 emissive: if i == 6 || i == 7 {
                     LinearRgba::rgb(r * 2., g * 2., b * 2.)
@@ -183,7 +189,22 @@ pub fn legacy(
                     LinearRgba::BLACK
                 },
                 ..default()
-            })
+            };
+            #[cfg(not(target_arch = "wasm32"))]
+            if i == 0 || i == 9 {
+                let maps = &authored[if i == 0 { 0 } else { 1 }];
+                material.base_color = Color::srgb(0.7, 0.72, 0.73);
+                material.base_color_texture = Some(maps.0.clone());
+                material.normal_map_texture = Some(maps.1.clone());
+                material.metallic_roughness_texture = Some(maps.2.clone());
+                material.occlusion_texture = Some(maps.2.clone());
+                material.uv_transform = bevy::math::Affine2::from_scale(if i == 0 {
+                    Vec2::new(40.5, 52.5)
+                } else {
+                    Vec2::new(5., 10.)
+                });
+            }
+            a.add(material)
         })
         .collect()
 }
