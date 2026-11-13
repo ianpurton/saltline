@@ -1,0 +1,228 @@
+{
+  "reference": "references/index.html",
+  "sha256": "f34e6debbfa7526b72be2daa24595c2f195e102a7aede4f22e59138c99cd6852",
+  "files": {
+    "assets/hound.js": [
+      {
+        "symbol": "Z_",
+        "anchor": "function Z_("
+      }
+    ],
+    "assets/gull.js": [
+      {
+        "symbol": "j_",
+        "anchor": "function j_("
+      }
+    ],
+    "assets/pac9.js": [
+      {
+        "symbol": "w_",
+        "anchor": "function w_("
+      }
+    ],
+    "assets/containers.js": [
+      {
+        "symbol": "M3",
+        "anchor": "function M3("
+      }
+    ],
+    "assets/jersey_barrier.js": [
+      {
+        "symbol": "S3",
+        "anchor": "function S3("
+      }
+    ],
+    "assets/light_mast.js": [
+      {
+        "symbol": "T3",
+        "anchor": "function T3("
+      }
+    ],
+    "assets/fence_panel.js": [
+      {
+        "symbol": "A3",
+        "anchor": "function A3("
+      }
+    ],
+    "assets/guard_booth.js": [
+      {
+        "symbol": "R3",
+        "anchor": "function R3("
+      }
+    ],
+    "assets/gate_arm.js": [
+      {
+        "symbol": "C3",
+        "anchor": "function C3("
+      }
+    ],
+    "assets/bollard_mooring.js": [
+      {
+        "symbol": "P3",
+        "anchor": "function P3("
+      }
+    ],
+    "assets/bollard_post.js": [
+      {
+        "symbol": "I3",
+        "anchor": "function I3("
+      }
+    ],
+    "assets/sign_post.js": [
+      {
+        "symbol": "z3",
+        "anchor": "function z3("
+      }
+    ],
+    "assets/floodlight_stand.js": [
+      {
+        "symbol": "D3",
+        "anchor": "function D3("
+      }
+    ],
+    "assets/stairs_metal.js": [
+      {
+        "symbol": "k3",
+        "anchor": "function k3("
+      }
+    ],
+    "assets/catwalk.js": [
+      {
+        "symbol": "F3",
+        "anchor": "function F3("
+      }
+    ],
+    "assets/shelf_rack.js": [
+      {
+        "symbol": "U3",
+        "anchor": "function U3("
+      }
+    ],
+    "assets/reefer_unit.js": [
+      {
+        "symbol": "N3",
+        "anchor": "function N3("
+      }
+    ],
+    "assets/relay_node.js": [
+      {
+        "symbol": "B3",
+        "anchor": "function B3("
+      }
+    ],
+    "assets/barrel.js": [
+      {
+        "symbol": "HA",
+        "anchor": "function HA("
+      }
+    ],
+    "assets/pallet.js": [
+      {
+        "symbol": "VA",
+        "anchor": "function VA("
+      }
+    ],
+    "assets/pallet_stack.js": [
+      {
+        "symbol": "WA",
+        "anchor": "function WA("
+      }
+    ],
+    "assets/crate_wood.js": [
+      {
+        "symbol": "GA",
+        "anchor": "function GA("
+      }
+    ],
+    "assets/crate_stack.js": [
+      {
+        "symbol": "qA",
+        "anchor": "function qA("
+      }
+    ],
+    "assets/ibc_tote.js": [
+      {
+        "symbol": "XA",
+        "anchor": "function XA("
+      }
+    ],
+    "assets/cable_reel.js": [
+      {
+        "symbol": "YA",
+        "anchor": "function YA("
+      }
+    ],
+    "assets/tire_stack.js": [
+      {
+        "symbol": "$A",
+        "anchor": "function $A("
+      }
+    ],
+    "assets/jerry_can.js": [
+      {
+        "symbol": "ZA",
+        "anchor": "function ZA("
+      }
+    ],
+    "assets/traffic_cone.js": [
+      {
+        "symbol": "jA",
+        "anchor": "function jA("
+      }
+    ],
+    "assets/gas_cylinders.js": [
+      {
+        "symbol": "JA",
+        "anchor": "function JA("
+      }
+    ],
+    "assets/pipe_stack.js": [
+      {
+        "symbol": "KA",
+        "anchor": "function KA("
+      }
+    ],
+    "assets/tarp_cargo.js": [
+      {
+        "symbol": "QA",
+        "anchor": "function QA("
+      }
+    ],
+    "assets/sandbags.js": [
+      {
+        "symbol": "tR",
+        "anchor": "function tR("
+      }
+    ],
+    "assets/cardboard_boxes.js": [
+      {
+        "symbol": "nR",
+        "anchor": "function nR("
+      }
+    ],
+    "assets/forklift.js": [
+      {
+        "symbol": "oR",
+        "anchor": "function oR("
+      }
+    ],
+    "assets/generator.js": [
+      {
+        "symbol": "rR",
+        "anchor": "function rR("
+      }
+    ],
+    "assets/dumpster.js": [
+      {
+        "symbol": "aR",
+        "anchor": "function aR("
+      }
+    ],
+    "assets/toolbox_cart.js": [
+      {
+        "symbol": "lR",
+        "anchor": "function lR("
+      }
+    ]
+  }
+}

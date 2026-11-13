@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width"><title>SALTLINE asset gallery</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f5f1e8;color:#27343c;font:14px system-ui}header{padding:20px 24px;border-bottom:1px solid #d3cec4}h1{margin:0 0 6px}header p{margin:0;color:#50758a}.layout{display:grid;grid-template-columns:220px 1fr;height:calc(100vh - 110px)}nav{overflow:auto;padding:12px}nav button{display:block;width:100%;text-align:left;border:0;background:transparent;padding:8px;cursor:pointer}nav button[aria-pressed=true]{background:#e0d6bd}.viewer{position:relative;min-width:0;overflow:auto}canvas{display:block;width:min(100%,680px);height:auto}#status{padding:12px 24px}#details{padding:8px 24px;color:#50758a}#controls{padding:8px 24px}label,button{margin-right:12px}.error{color:#a94c30}
+@media(max-width:650px){.layout{grid-template-columns:150px 1fr}}
+</style><header><h1>SALTLINE / Asset gallery</h1><p>Original JavaScript geometry and procedural materials. Drag to orbit; scroll to zoom.</p></header>
+<div class="layout"><nav aria-label="Assets" id="assets"></nav><main class="viewer"><div id="status">Preparing renderer…</div><canvas id="preview" width="512" height="512" aria-label="Interactive asset preview"></canvas><div id="details"></div><div id="controls"><label><input type="checkbox" id="wireframe"> Wireframe</label><button id="reset">Reset camera</button><button id="download">Download PNG</button></div></main></div>
+<script src="assets/hound.js"></script>
+<script src="assets/gull.js"></script>
+<script src="assets/pac9.js"></script>
+<script src="assets/containers.js"></script>
+<script src="assets/jersey_barrier.js"></script>
+<script src="assets/light_mast.js"></script>
+<script src="assets/fence_panel.js"></script>
+<script src="assets/guard_booth.js"></script>
+<script src="assets/gate_arm.js"></script>
+<script src="assets/bollard_mooring.js"></script>
+<script src="assets/bollard_post.js"></script>
+<script src="assets/sign_post.js"></script>
+<script src="assets/floodlight_stand.js"></script>
+<script src="assets/stairs_metal.js"></script>
+<script src="assets/catwalk.js"></script>
+<script src="assets/shelf_rack.js"></script>
+<script src="assets/reefer_unit.js"></script>
+<script src="assets/relay_node.js"></script>
+<script src="assets/barrel.js"></script>
+<script src="assets/pallet.js"></script>
+<script src="assets/pallet_stack.js"></script>
+<script src="assets/crate_wood.js"></script>
+<script src="assets/crate_stack.js"></script>
+<script src="assets/ibc_tote.js"></script>
+<script src="assets/cable_reel.js"></script>
+<script src="assets/tire_stack.js"></script>
+<script src="assets/jerry_can.js"></script>
+<script src="assets/traffic_cone.js"></script>
+<script src="assets/gas_cylinders.js"></script>
+<script src="assets/pipe_stack.js"></script>
+<script src="assets/tarp_cargo.js"></script>
+<script src="assets/sandbags.js"></script>
+<script src="assets/cardboard_boxes.js"></script>
+<script src="assets/forklift.js"></script>
+<script src="assets/generator.js"></script>
+<script src="assets/dumpster.js"></script>
+<script src="assets/toolbox_cart.js"></script>
+<script src="shared/reference.js"></script>
+<script src="registry.js"></script>
+<script src="gallery.js"></script></html>

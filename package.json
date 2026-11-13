@@ -2,9 +2,13 @@
   "name": "saltline-browser-tests",
   "private": true,
   "scripts": {
-    "test:web": "node scripts/browser-smoke.cjs"
+    "test:web": "node scripts/browser-smoke.cjs",
+    "manual:build": "python3 docs/game-manual/build.py",
+    "manual:thumbnails": "node docs/game-manual/render-thumbnails.cjs",
+    "manual:rip-assets": "node docs/game-manual/rip-assets.cjs"
   },
   "devDependencies": {
+    "acorn": "8.15.0",
     "playwright": "1.65.0"
   }
 }

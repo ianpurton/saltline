@@ -1,0 +1,922 @@
+{
+  "source": "references/index.html",
+  "sha256": "f34e6debbfa7526b72be2daa24595c2f195e102a7aede4f22e59138c99cd6852",
+  "objects": {
+    "Pi": {
+      "eye": 1.68,
+      "crouchEye": 1.05,
+      "radius": 0.32,
+      "height": 1.8,
+      "fov": 74,
+      "viewFov": 54
+    },
+    "Mt": {
+      "walk": 3.8,
+      "sprint": 6.4,
+      "crouch": 1.9,
+      "ads": 2.4,
+      "accelGround": 34,
+      "decelGround": 26,
+      "accelAir": 9,
+      "gravity": 21,
+      "jumpApex": 1,
+      "coyote": 0.12,
+      "jumpBuffer": 0.13,
+      "standHeight": 1.8,
+      "crouchHeight": 1.15,
+      "eyeRate": 11,
+      "stride": {
+        "walk": 1.55,
+        "sprint": 2.1,
+        "crouch": 1.05
+      },
+      "bobY": 0.024,
+      "bobX": 0.013,
+      "bobSprint": 1.9,
+      "bobAds": 0.22,
+      "rollStrafe": 0.02,
+      "landDip": 0.36,
+      "landDipMax": 0.2,
+      "fovSprint": 6,
+      "fovAds": 52,
+      "adsLook": 0.6,
+      "regenDelay": 4,
+      "regenRate": 25,
+      "recoilKeep": 0.35,
+      "recoilApply": 34,
+      "recoilRecover": 6.5,
+      "recoilHold": 0.09,
+      "shakeDecay": 1.7,
+      "shakePitch": 0.03,
+      "shakeYaw": 0.03,
+      "shakeRoll": 0.045,
+      "pitchLimit": 1.5
+    },
+    "Yi": {
+      "introSeconds": 3.5,
+      "retryIntroSeconds": 1.3,
+      "interactRange": 2.2,
+      "interactFacing": 0.45,
+      "cutSeconds": 2.4,
+      "patrol": {
+        "gull": 2,
+        "hound": 1
+      },
+      "waves": [
+        {
+          "gull": 3,
+          "hound": 1
+        },
+        {
+          "gull": 3,
+          "hound": 2
+        },
+        {
+          "gull": 4,
+          "hound": 3
+        }
+      ],
+      "maxAlive": 9,
+      "spawnStagger": 0.85,
+      "spawnFar": 18,
+      "pursuitEvery": 7,
+      "pursuitMinAlive": 4,
+      "pursuitExtra": 5,
+      "titleSpeed": 1.15,
+      "titleFov": 50
+    },
+    "Kv": {
+      "hp": 140,
+      "shotDamage": 5,
+      "burst": 4,
+      "burstGap": 0.11,
+      "telegraph": 0.5,
+      "cooldown": [
+        1.8,
+        3
+      ],
+      "runSpeed": 4.5,
+      "stalkSpeed": 2,
+      "patrolSpeed": 1.5,
+      "accel": 7,
+      "turnRate": 2.5,
+      "rangeMin": 8,
+      "rangeMax": 18,
+      "spreadFar": 0.12,
+      "spreadNear": 0.045,
+      "lungeRange": 3,
+      "lungeDamage": 15,
+      "lungeCooldown": 3.5,
+      "lungeSpeed": 9.5,
+      "replan": 0.6,
+      "smokeBelow": 0.4
+    },
+    "Zv": {
+      "hp": 45,
+      "boltDamage": 7,
+      "boltSpeed": 70,
+      "burst": 3,
+      "burstGap": 0.12,
+      "telegraph": 0.55,
+      "cooldown": [
+        1.9,
+        3.3
+      ],
+      "rangeMin": 12,
+      "rangeMax": 25,
+      "altMin": 4,
+      "altMax": 8,
+      "maxSpeed": 8,
+      "patrolSpeed": 3,
+      "accel": 11,
+      "spreadFar": 0.065,
+      "spreadNear": 0.018,
+      "fireRange": 42,
+      "explodeRadius": 3,
+      "explodeDamage": 30
+    },
+    "no": {
+      "X0": -16,
+      "X1": 12,
+      "Z0": -28,
+      "Z1": -11,
+      "EAVE": 7,
+      "RIDGE": 9.5,
+      "ZR": -19.5,
+      "FLOOR": 0.03
+    },
+    "lb": {
+      "X": 30,
+      "LADDER_Z": 20,
+      "RAILS": [
+        18.5,
+        28.5
+      ],
+      "Z0": -30,
+      "Z1": 28
+    },
+    "Pr": {
+      "test": {
+        "name": "test",
+        "scale": 1,
+        "msaa": 0,
+        "shadow": 1024,
+        "tex": 256,
+        "volSteps": 10,
+        "ao": true,
+        "planar": 0.5,
+        "bloom": true,
+        "motionBlur": false,
+        "rain": 0.4
+      },
+      "low": {
+        "name": "low",
+        "scale": 0.7,
+        "msaa": 0,
+        "shadow": 2048,
+        "tex": 512,
+        "volSteps": 12,
+        "ao": false,
+        "planar": 0,
+        "bloom": true,
+        "motionBlur": false,
+        "rain": 0.5
+      },
+      "medium": {
+        "name": "medium",
+        "scale": 0.85,
+        "msaa": 2,
+        "shadow": 2048,
+        "tex": 1024,
+        "volSteps": 16,
+        "ao": true,
+        "planar": 0.5,
+        "bloom": true,
+        "motionBlur": false,
+        "rain": 0.8
+      },
+      "high": {
+        "name": "high",
+        "scale": 1,
+        "msaa": 4,
+        "shadow": 4096,
+        "tex": 1024,
+        "volSteps": 24,
+        "ao": true,
+        "planar": 0.5,
+        "bloom": true,
+        "motionBlur": true,
+        "rain": 1
+      },
+      "ultra": {
+        "name": "ultra",
+        "scale": 1,
+        "msaa": 4,
+        "shadow": 4096,
+        "tex": 2048,
+        "volSteps": 40,
+        "ao": true,
+        "planar": 1,
+        "bloom": true,
+        "motionBlur": true,
+        "rain": 1
+      }
+    }
+  },
+  "anchors": {
+    "Pi": {
+      "anchor": "Pi={",
+      "line": 4180
+    },
+    "Mt": {
+      "anchor": "Mt={",
+      "line": 5928
+    },
+    "Yi": {
+      "anchor": "Yi={",
+      "line": 6182
+    },
+    "Kv": {
+      "anchor": "Kv={",
+      "line": 6054
+    },
+    "Zv": {
+      "anchor": "Zv={",
+      "line": 6054
+    },
+    "no": {
+      "anchor": "no={",
+      "line": 5442
+    },
+    "lb": {
+      "anchor": "lb={",
+      "line": 5442
+    },
+    "Pr": {
+      "anchor": "Pr={",
+      "line": 4180
+    },
+    "Gv": {
+      "anchor": "Gv=30",
+      "line": 6054
+    },
+    "B_": {
+      "anchor": "B_=150",
+      "line": 6054
+    },
+    "O_": {
+      "anchor": "O_=720",
+      "line": 6054
+    },
+    "H_": {
+      "anchor": "H_=26",
+      "line": 6054
+    },
+    "V_": {
+      "anchor": "V_=300",
+      "line": 6054
+    },
+    "W_": {
+      "anchor": "W_=2.1",
+      "line": 6054
+    },
+    "G_": {
+      "anchor": "G_=2.72",
+      "line": 6054
+    },
+    "C1": {
+      "anchor": "function C1(",
+      "line": 5442
+    },
+    "hR": {
+      "anchor": "function hR(",
+      "line": 5442
+    },
+    "ab": {
+      "anchor": "function ab(",
+      "line": 5442
+    },
+    "cb": {
+      "anchor": "function cb(",
+      "line": 5442
+    },
+    "d3": {
+      "anchor": "function d3(",
+      "line": 5442
+    },
+    "x_": {
+      "anchor": "function x_(",
+      "line": 5928
+    },
+    "dm": {
+      "anchor": "function dm(",
+      "line": 6054
+    },
+    "iM": {
+      "anchor": "function iM(",
+      "line": 6054
+    },
+    "Q_": {
+      "anchor": "function Q_(",
+      "line": 6054
+    },
+    "Em": {
+      "anchor": "function Em(",
+      "line": 6054
+    },
+    "mM": {
+      "anchor": "function mM(",
+      "line": 6182
+    },
+    "hM": {
+      "anchor": "function hM(",
+      "line": 6076
+    },
+    "pM": {
+      "anchor": "function pM(",
+      "line": 6099
+    },
+    "Gg": {
+      "anchor": "function Gg(",
+      "line": 5442
+    },
+    "O1": {
+      "anchor": "function O1(",
+      "line": 5814
+    },
+    "Cf": {
+      "anchor": "function Cf(",
+      "line": 5928
+    },
+    "u_": {
+      "anchor": "function u_(",
+      "line": 5928
+    },
+    "Z_": {
+      "anchor": "function Z_(",
+      "line": 6054
+    }
+  },
+  "weapon": {
+    "Gv": 30,
+    "B_": 150,
+    "O_": 720,
+    "H_": 26,
+    "V_": 300,
+    "W_": 2.1,
+    "G_": 2.72
+  },
+  "spawns": [
+    {
+      "type": "ground",
+      "pos": [
+        -19,
+        0,
+        -1.4
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        3.5,
+        0,
+        -1.6
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        14.2,
+        0,
+        16.4
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        -3.2,
+        0,
+        16.6
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        -16,
+        0,
+        26
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        6,
+        0,
+        26
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        4.2,
+        0,
+        -5.12
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        -7.8,
+        0,
+        21.4
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        -11.3,
+        0,
+        12.5
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        17.5,
+        0,
+        22.2
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "air",
+      "pos": [
+        10,
+        11,
+        23.5
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "air",
+      "pos": [
+        2,
+        11,
+        21.5
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "air",
+      "pos": [
+        13,
+        9,
+        11
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "air",
+      "pos": [
+        -4,
+        12.5,
+        -4.5
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "air",
+      "pos": [
+        9,
+        10,
+        1.5
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "air",
+      "pos": [
+        -10,
+        12,
+        24.5
+      ],
+      "zone": "yard"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        -12.4,
+        0,
+        -24.8
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        9.6,
+        0,
+        -25.3
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        -13.4,
+        0,
+        -19.6
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        4.6,
+        0,
+        -13.8
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        -21,
+        0,
+        -27.2
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        -18.6,
+        0,
+        -22
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        13.6,
+        0,
+        -24
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        -26.6,
+        0,
+        -15
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "air",
+      "pos": [
+        -8,
+        5.4,
+        -20.5
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "air",
+      "pos": [
+        5,
+        5.2,
+        -18
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "air",
+      "pos": [
+        -20,
+        10.5,
+        -20
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "air",
+      "pos": [
+        14.5,
+        10,
+        -22
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "air",
+      "pos": [
+        -2,
+        12.5,
+        -8.5
+      ],
+      "zone": "shed"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        27.7,
+        0,
+        -24.2
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        18.3,
+        0,
+        -25.4
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        27.2,
+        0,
+        -12.6
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        20.2,
+        0,
+        14
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        23.4,
+        0,
+        23.2
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        18,
+        0,
+        24.4
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "ground",
+      "pos": [
+        27.4,
+        0,
+        11.6
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "air",
+      "pos": [
+        36,
+        9,
+        4
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "air",
+      "pos": [
+        38,
+        11,
+        -6
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "air",
+      "pos": [
+        35,
+        8.5,
+        16
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "air",
+      "pos": [
+        24,
+        12.5,
+        10.5
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "air",
+      "pos": [
+        33.5,
+        10,
+        24.5
+      ],
+      "zone": "quay"
+    },
+    {
+      "type": "air",
+      "pos": [
+        22,
+        13,
+        -14
+      ],
+      "zone": "quay"
+    }
+  ],
+  "stacks": [
+    {
+      "x": -19.45,
+      "z": -5.12,
+      "type": "20",
+      "color": "green"
+    },
+    {
+      "x": -13.3,
+      "z": -5.12,
+      "type": "20",
+      "color": "white"
+    },
+    {
+      "x": 3.7,
+      "z": -5.12,
+      "type": "20",
+      "color": "blue"
+    },
+    {
+      "x": 13.53,
+      "z": -5.12,
+      "type": "20",
+      "color": "teal"
+    },
+    {
+      "x": -19.45,
+      "z": 2.08,
+      "type": "20",
+      "color": "blue"
+    },
+    {
+      "x": -13.35,
+      "z": 2.08,
+      "type": "20",
+      "color": "red"
+    },
+    {
+      "x": 0.8,
+      "z": 2.08,
+      "type": "40",
+      "color": "orange"
+    },
+    {
+      "x": 12.3,
+      "z": 2.08,
+      "type": "20",
+      "color": "red"
+    },
+    {
+      "x": -21.1,
+      "z": 9.92,
+      "type": "20",
+      "color": "yellow"
+    },
+    {
+      "x": -13.6,
+      "z": 9.92,
+      "type": "20",
+      "color": "green"
+    },
+    {
+      "x": -21.6,
+      "z": 12.42,
+      "type": "20",
+      "color": "red"
+    },
+    {
+      "x": -15.4,
+      "z": 12.42,
+      "type": "20",
+      "color": "grey"
+    },
+    {
+      "x": 4.43,
+      "z": 12.42,
+      "type": "20",
+      "color": "blue"
+    },
+    {
+      "x": 13.53,
+      "z": 12.42,
+      "type": "20",
+      "color": "green"
+    },
+    {
+      "x": -16.4,
+      "z": 20.12,
+      "type": "40",
+      "color": "grey"
+    },
+    {
+      "x": -2.25,
+      "z": 20.12,
+      "type": "20",
+      "color": "red"
+    },
+    {
+      "x": 3.85,
+      "z": 20.12,
+      "type": "20",
+      "color": "white"
+    },
+    {
+      "x": 13.53,
+      "z": 20.12,
+      "type": "20",
+      "color": "orange"
+    },
+    {
+      "x": -16.4,
+      "z": 22.62,
+      "type": "hc",
+      "color": "teal"
+    },
+    {
+      "x": 0.8,
+      "z": 22.62,
+      "type": "40",
+      "color": "green"
+    },
+    {
+      "x": 13.53,
+      "z": 22.62,
+      "type": "20",
+      "color": "grey"
+    },
+    {
+      "x": -22.6,
+      "z": -19.2,
+      "type": "40",
+      "color": "red"
+    },
+    {
+      "x": -30.2,
+      "z": -18.4,
+      "type": "20",
+      "color": "yellow"
+    },
+    {
+      "x": -31.2,
+      "z": 24.7,
+      "type": "40",
+      "color": "teal"
+    }
+  ],
+  "locations": {
+    "player": [
+      -32,
+      0,
+      6
+    ],
+    "relay_a": [
+      1.5,
+      0,
+      7.5
+    ],
+    "relay_b": [
+      -2,
+      0.03,
+      -19.5
+    ],
+    "relay_c": [
+      23,
+      0,
+      0
+    ],
+    "extraction": [
+      29,
+      0,
+      20
+    ]
+  }
+}

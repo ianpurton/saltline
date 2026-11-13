@@ -1,0 +1,2 @@
+// Extracted original builder(s): WA. Shared dependencies are in shared/reference.js.
+function WA(i,e){let t=new Kn(i,"pallet_stack",e.seed||0),n=t.rng,s=zi(e.count|0||8,1,12);for(let o=0;o<s;o++){let r=o===s-1;t.push({p:[o?n.range(-.028,.028):0,o*.144,o?n.range(-.022,.022):0],r:[0,n.range(-.035,.035)+(n()<.3?At:0)+(r?n.range(-.06,.06):0),0]}),S1(t,n,{broken:!r&&n()<.2,stamp:o%3===0,bevel:r}),t.pop()}return t.finish({size:[1.2,s*.144,1]})}

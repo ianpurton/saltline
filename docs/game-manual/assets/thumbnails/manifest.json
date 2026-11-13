@@ -1,0 +1,819 @@
+[
+  {
+    "id": "hound",
+    "label": "Hound / H-03",
+    "source": "assets/hound.js",
+    "size": [
+      0.6446058390273669,
+      1.5520759124113352,
+      1.4080424508765874
+    ],
+    "center": [
+      -5.551115123125783e-17,
+      0.7729620685898646,
+      0.04697876168710302
+    ],
+    "filename": "hound.png",
+    "view": "three-quarter",
+    "coverage": 0.07442474365234375,
+    "sourceSha256": "4f8ff8fda2bda58677e7befd76ac17d7bd34d44fb7fc491dab3964eeb5e473e5"
+  },
+  {
+    "id": "gull",
+    "label": "Gull",
+    "source": "assets/gull.js",
+    "size": [
+      1.1139999628067017,
+      0.6266261637210846,
+      1.0119999647140503
+    ],
+    "center": [
+      0,
+      0.05731306970119476,
+      0
+    ],
+    "filename": "gull.png",
+    "view": "three-quarter",
+    "coverage": 0.06273651123046875,
+    "sourceSha256": "214cc0d2d38439e830874aecff6ee966dca4a4ff3ffe65a47264f9b80358589e"
+  },
+  {
+    "id": "pac9",
+    "label": "PAC-9",
+    "source": "assets/pac9.js",
+    "size": [
+      0.06909999996423721,
+      0.316912516951561,
+      0.8774999976158142
+    ],
+    "center": [
+      -0.0063499994575977325,
+      -0.07285625487565994,
+      -0.09174999594688416
+    ],
+    "filename": "pac9.png",
+    "view": "three-quarter",
+    "coverage": 0.07549667358398438,
+    "sourceSha256": "97c47cf77b8a0ce8f79930c7e93558a3975fd1abe97005a70361a8d1e4eb9863"
+  },
+  {
+    "id": "container20",
+    "label": "container20",
+    "source": "assets/containers.js",
+    "size": [
+      6.068699836730957,
+      2.5912001136541365,
+      2.446000099182129
+    ],
+    "center": [
+      0.0031499862670898438,
+      1.2956000564694405,
+      0
+    ],
+    "filename": "container20.png",
+    "view": "three-quarter",
+    "coverage": 0.2787284851074219,
+    "sourceSha256": "9276d50b9b643bb78f1969ba527d86a8de6af29a27e7cde9494ae11abea9fe03"
+  },
+  {
+    "id": "container40",
+    "label": "container40",
+    "source": "assets/containers.js",
+    "size": [
+      12.198699951171875,
+      2.5912001136541365,
+      2.4403998851776123
+    ],
+    "center": [
+      0.0031499862670898438,
+      1.2956000564694405,
+      0
+    ],
+    "filename": "container40.png",
+    "view": "three-quarter",
+    "coverage": 0.15582656860351562,
+    "sourceSha256": "9276d50b9b643bb78f1969ba527d86a8de6af29a27e7cde9494ae11abea9fe03"
+  },
+  {
+    "id": "container40hc",
+    "label": "container40hc",
+    "source": "assets/containers.js",
+    "size": [
+      12.198699951171875,
+      2.9012000564336775,
+      2.4403998851776123
+    ],
+    "center": [
+      0.0031499862670898438,
+      1.450600027859211,
+      0
+    ],
+    "filename": "container40hc.png",
+    "view": "three-quarter",
+    "coverage": 0.16830062866210938,
+    "sourceSha256": "9276d50b9b643bb78f1969ba527d86a8de6af29a27e7cde9494ae11abea9fe03"
+  },
+  {
+    "id": "jersey_barrier",
+    "label": "jersey barrier",
+    "source": "assets/jersey_barrier.js",
+    "size": [
+      3,
+      0.8605811595916748,
+      0.6119999885559082
+    ],
+    "center": [
+      0,
+      0.4302905797958374,
+      0
+    ],
+    "filename": "jersey_barrier.png",
+    "view": "three-quarter",
+    "coverage": 0.15996551513671875,
+    "sourceSha256": "ae03954575fd5d8a342d981e4b40b032b214dce468a8f7e169e5a18c9f718ec4"
+  },
+  {
+    "id": "light_mast",
+    "label": "light mast",
+    "source": "assets/light_mast.js",
+    "size": [
+      0.9919374585151672,
+      13.999999996423721,
+      1.899999976158142
+    ],
+    "center": [
+      0,
+      7.000000001788139,
+      0
+    ],
+    "filename": "light_mast.png",
+    "view": "three-quarter",
+    "coverage": 0.01548004150390625,
+    "sourceSha256": "d879a83caac79ecbf785a5fcee1260c013eae44c0a841388d3a1755855c919b6"
+  },
+  {
+    "id": "fence_panel",
+    "label": "fence panel",
+    "source": "assets/fence_panel.js",
+    "size": [
+      3.319999933242798,
+      2.4034350030124187,
+      0.5334350168704987
+    ],
+    "center": [
+      0,
+      1.1917174998670816,
+      -0.10671751201152802
+    ],
+    "filename": "fence_panel.png",
+    "view": "three-quarter",
+    "coverage": 0.1091461181640625,
+    "sourceSha256": "9c825cabab240185e1201925157ded930633896cc0e8e123673e4a12a11a7cf7"
+  },
+  {
+    "id": "guard_booth",
+    "label": "guard booth",
+    "source": "assets/guard_booth.js",
+    "size": [
+      3.111999988555908,
+      2.5469999306648967,
+      2.7699999809265137
+    ],
+    "center": [
+      -0.07599997520446777,
+      1.2734999660030009,
+      0.014999985694885254
+    ],
+    "filename": "guard_booth.png",
+    "view": "three-quarter",
+    "coverage": 0.3040885925292969,
+    "sourceSha256": "f469061f55f35bb71d45cd4c9d282ae94bc70ec776b51a1fc3e88c199942480e"
+  },
+  {
+    "id": "gate_arm",
+    "label": "gate arm",
+    "source": "assets/gate_arm.js",
+    "size": [
+      5.3399999141693115,
+      1.1875000003725291,
+      0.46000000834465027
+    ],
+    "center": [
+      -0.12000000476837158,
+      0.5937499998137354,
+      0
+    ],
+    "filename": "gate_arm.png",
+    "view": "three-quarter",
+    "coverage": 0.02184295654296875,
+    "sourceSha256": "16dff141fda3604f85b119cb7cd71b17a069ea1508b59c0ad88e44131d4b8620"
+  },
+  {
+    "id": "bollard_mooring",
+    "label": "bollard mooring",
+    "source": "assets/bollard_mooring.js",
+    "size": [
+      0.7400000095367432,
+      0.6068660029768944,
+      0.7400000095367432
+    ],
+    "center": [
+      0,
+      0.3034330005943775,
+      0
+    ],
+    "filename": "bollard_mooring.png",
+    "view": "three-quarter",
+    "coverage": 0.17840194702148438,
+    "sourceSha256": "6e790c8a4408023207553f5b92518fe83580cff5fcdc354c07807b360a4c44e4"
+  },
+  {
+    "id": "bollard_post",
+    "label": "bollard post",
+    "source": "assets/bollard_post.js",
+    "size": [
+      0.17353716492652893,
+      1.0006500483080745,
+      0.17800000309944153
+    ],
+    "center": [
+      0,
+      0.5003250241018832,
+      0
+    ],
+    "filename": "bollard_post.png",
+    "view": "three-quarter",
+    "coverage": 0.11179733276367188,
+    "sourceSha256": "f5985e84f164a3d8e55a454769a9cbbdb75da1446760b7c3a2fb2a407cdcd83f"
+  },
+  {
+    "id": "relay_node",
+    "label": "relay node",
+    "source": "assets/relay_node.js",
+    "size": [
+      2.571412444114685,
+      3.184210941195488,
+      1.1655117571353912
+    ],
+    "center": [
+      -0.2197062373161316,
+      1.55792585760355,
+      -0.1012558788061142
+    ],
+    "filename": "relay_node.png",
+    "view": "three-quarter",
+    "coverage": 0.10018157958984375,
+    "sourceSha256": "7ba4e0c88530c7a72587b48475d9eb94fa2e23c3ebf7a95b2104d7e8c7b3b836"
+  },
+  {
+    "id": "shelf_rack",
+    "label": "shelf rack",
+    "source": "assets/shelf_rack.js",
+    "size": [
+      2.75,
+      4.199999812245369,
+      1.1299999952316284
+    ],
+    "center": [
+      0,
+      2.0999999031424523,
+      0.004999995231628418
+    ],
+    "filename": "shelf_rack.png",
+    "view": "three-quarter",
+    "coverage": 0.2759590148925781,
+    "sourceSha256": "06ad5ad183c3e12b452ef412a0504634ae507fbf81ea04579f287acd9a21fe75"
+  },
+  {
+    "id": "stairs_metal",
+    "label": "stairs metal",
+    "source": "assets/stairs_metal.js",
+    "size": [
+      3.1200000047683716,
+      3.6220500898361223,
+      1.0800000429153442
+    ],
+    "center": [
+      -0.030000030994415283,
+      1.8110250020027152,
+      0
+    ],
+    "filename": "stairs_metal.png",
+    "view": "three-quarter",
+    "coverage": 0.09738922119140625,
+    "sourceSha256": "f96fcec705917be3d99108c9802233d7fe4d8b55ff97f55db29848058d36a056"
+  },
+  {
+    "id": "catwalk",
+    "label": "catwalk",
+    "source": "assets/catwalk.js",
+    "size": [
+      3,
+      1.250473514199257,
+      1.2200000286102295
+    ],
+    "center": [
+      0,
+      0.49523674696683884,
+      0
+    ],
+    "filename": "catwalk.png",
+    "view": "three-quarter",
+    "coverage": 0.14502716064453125,
+    "sourceSha256": "d9e54c6ea87c367741eb110da1897aa10f3c29de3380fe2270ed1a08959b2818"
+  },
+  {
+    "id": "reefer_unit",
+    "label": "reefer unit",
+    "source": "assets/reefer_unit.js",
+    "size": [
+      0.6299999952316284,
+      2.2999999530613424,
+      2.299999952316284
+    ],
+    "center": [
+      -0.06499999761581421,
+      1.149999975785613,
+      0
+    ],
+    "filename": "reefer_unit.png",
+    "view": "three-quarter",
+    "coverage": 0.3053474426269531,
+    "sourceSha256": "e58e157bd5099585ea333f1c5acea02802eeba7cc38ac92864327610aef8deca"
+  },
+  {
+    "id": "barrel",
+    "label": "barrel",
+    "source": "assets/barrel.js",
+    "size": [
+      0.593999981880188,
+      0.8999999761581421,
+      0.5879539251327515
+    ],
+    "center": [
+      0,
+      0.44999998807907104,
+      0
+    ],
+    "filename": "barrel.png",
+    "view": "three-quarter",
+    "coverage": 0.27231597900390625,
+    "sourceSha256": "a035ede35ccd9a5b5d38cfef58819c9fdef446ed45e418a29ac9c4a602db8800"
+  },
+  {
+    "id": "pallet",
+    "label": "pallet",
+    "source": "assets/pallet.js",
+    "size": [
+      1.2072072625160217,
+      0.1442397385239601,
+      1.0111082792282104
+    ],
+    "center": [
+      -0.0003686249256134033,
+      0.0721198693215847,
+      -0.0014991164207458496
+    ],
+    "filename": "pallet.png",
+    "view": "three-quarter",
+    "coverage": 0.15015029907226562,
+    "sourceSha256": "276c42e607bb8dad225f2d8a1c75add7a82d0b10170afecef4cc8f427fb31ad6"
+  },
+  {
+    "id": "pallet_stack",
+    "label": "pallet stack",
+    "source": "assets/pallet_stack.js",
+    "size": [
+      1.259827733039856,
+      1.1522420644164086,
+      1.051928162574768
+    ],
+    "center": [
+      0.0010033845901489258,
+      0.5761210322678089,
+      -0.00620502233505249
+    ],
+    "filename": "pallet_stack.png",
+    "view": "three-quarter",
+    "coverage": 0.36261749267578125,
+    "sourceSha256": "93608077d64a95fcd3ec89481245aa1861b5df6ad5ba731c5230fa455bf16ddb"
+  },
+  {
+    "id": "crate_wood",
+    "label": "crate wood",
+    "source": "assets/crate_wood.js",
+    "size": [
+      1.1059999465942383,
+      1.0030000211298467,
+      0.906000018119812
+    ],
+    "center": [
+      0,
+      0.5015000104159116,
+      0
+    ],
+    "filename": "crate_wood.png",
+    "view": "three-quarter",
+    "coverage": 0.3753929138183594,
+    "sourceSha256": "f380fe163cfcc4be2e205180fc547c42b54f41f37292b3a0255bcc538c6aa1a7"
+  },
+  {
+    "id": "crate_stack",
+    "label": "crate stack",
+    "source": "assets/crate_stack.js",
+    "size": [
+      1.2059999704360962,
+      1.9060000182688237,
+      1.043999969959259
+    ],
+    "center": [
+      0,
+      0.9530000089854002,
+      0.01600000262260437
+    ],
+    "filename": "crate_stack.png",
+    "view": "three-quarter",
+    "coverage": 0.291046142578125,
+    "sourceSha256": "19003fe0fe6e30a3ce558b4d2312764342afb2f2f5d164ee054b23569eac8941"
+  },
+  {
+    "id": "ibc_tote",
+    "label": "ibc tote",
+    "source": "assets/ibc_tote.js",
+    "size": [
+      1.2000000476837158,
+      1.1449999813586473,
+      1
+    ],
+    "center": [
+      0,
+      0.57249999024719,
+      0
+    ],
+    "filename": "ibc_tote.png",
+    "view": "three-quarter",
+    "coverage": 0.2733917236328125,
+    "sourceSha256": "de0ced40d8b2dbb4aa169b7a9dfc4608bc9a6f846d15c4347d25d7626b623c79"
+  },
+  {
+    "id": "forklift",
+    "label": "forklift",
+    "source": "assets/forklift.js",
+    "size": [
+      3.409000039100647,
+      2.1947413847374264,
+      1.2453652620315552
+    ],
+    "center": [
+      -0.004499971866607666,
+      1.0976292408740846,
+      0
+    ],
+    "filename": "forklift.png",
+    "view": "three-quarter",
+    "coverage": 0.1579437255859375,
+    "sourceSha256": "9760cb39b8d0fa543aeb0bb55b672c415c11ee8a9c98e79c3d187f30a264d241"
+  },
+  {
+    "id": "cable_reel",
+    "label": "cable reel",
+    "source": "assets/cable_reel.js",
+    "size": [
+      1.2997862100601196,
+      1.3001922888215631,
+      0.8550000190734863
+    ],
+    "center": [
+      0,
+      0.6497969963820651,
+      0
+    ],
+    "filename": "cable_reel.png",
+    "view": "three-quarter",
+    "coverage": 0.2966575622558594,
+    "sourceSha256": "d5e2d967bfcdefdc0fde4e84fdc533cac503b0613cef12320fbb7f165eec571f"
+  },
+  {
+    "id": "tire_stack",
+    "label": "tire stack",
+    "source": "assets/tire_stack.js",
+    "size": [
+      0.8073926866054535,
+      0.9859999967738986,
+      0.806682288646698
+    ],
+    "center": [
+      0.006451889872550964,
+      0.4979999982751906,
+      0.002155989408493042
+    ],
+    "filename": "tire_stack.png",
+    "view": "three-quarter",
+    "coverage": 0.27384185791015625,
+    "sourceSha256": "a67e1f25e32d7bb498094768e1414094f556026a29a3dc2b49f921168a1074fb"
+  },
+  {
+    "id": "dumpster",
+    "label": "dumpster",
+    "source": "assets/dumpster.js",
+    "size": [
+      1.9160000085830688,
+      1.2089999896287917,
+      1.2210636734962463
+    ],
+    "center": [
+      0,
+      0.6044999966025353,
+      -0.025531798601150513
+    ],
+    "filename": "dumpster.png",
+    "view": "three-quarter",
+    "coverage": 0.24224090576171875,
+    "sourceSha256": "3736d8fbb9858927d1780fc06bf76f1f24eb29c8143179009373eb3ba4c61f60"
+  },
+  {
+    "id": "generator",
+    "label": "generator",
+    "source": "assets/generator.js",
+    "size": [
+      2.2198511362075806,
+      1.4127475026249885,
+      1.0373438000679016
+    ],
+    "center": [
+      -0.009925544261932373,
+      0.7063737510144711,
+      0.023671895265579224
+    ],
+    "filename": "generator.png",
+    "view": "three-quarter",
+    "coverage": 0.24936294555664062,
+    "sourceSha256": "6b2e92de551d7da025dd5f87cdd89d197e893d80044b3a045592bc667be5b842"
+  },
+  {
+    "id": "jerry_can",
+    "label": "jerry can",
+    "source": "assets/jerry_can.js",
+    "size": [
+      0.349878191947937,
+      0.4524766576290129,
+      0.16599999368190765
+    ],
+    "center": [
+      0.002939090132713318,
+      0.22623832166194924,
+      0
+    ],
+    "filename": "jerry_can.png",
+    "view": "three-quarter",
+    "coverage": 0.273193359375,
+    "sourceSha256": "91780629f6a05f792b692d155bdc70dc306ada8d00441c05fb7dc2dfda8b6c6e"
+  },
+  {
+    "id": "traffic_cone",
+    "label": "traffic cone",
+    "source": "assets/traffic_cone.js",
+    "size": [
+      0.36000001430511475,
+      0.6999999877437949,
+      0.36000001430511475
+    ],
+    "center": [
+      0,
+      0.3499999942071736,
+      0
+    ],
+    "filename": "traffic_cone.png",
+    "view": "three-quarter",
+    "coverage": 0.14046096801757812,
+    "sourceSha256": "680d66c8ed05087e064450191c56125319c250d4af4e59c88d95a623023d991e"
+  },
+  {
+    "id": "gas_cylinders",
+    "label": "gas cylinders",
+    "source": "assets/gas_cylinders.js",
+    "size": [
+      0.908050000667572,
+      1.603158593557775,
+      0.5
+    ],
+    "center": [
+      0,
+      0.8015792963989079,
+      0
+    ],
+    "filename": "gas_cylinders.png",
+    "view": "three-quarter",
+    "coverage": 0.21062850952148438,
+    "sourceSha256": "46096b3d86fb6af4bec76ac53752e9c88dd4521bb0b35e054b950bad7f2936fd"
+  },
+  {
+    "id": "tarp_cargo",
+    "label": "tarp cargo",
+    "source": "assets/tarp_cargo.js",
+    "size": [
+      2.40959095954895,
+      1.4585083722472192,
+      1.4789177775382996
+    ],
+    "center": [
+      -0.0016434192657470703,
+      0.7292541861832141,
+      0.032458871603012085
+    ],
+    "filename": "tarp_cargo.png",
+    "view": "three-quarter",
+    "coverage": 0.26860809326171875,
+    "sourceSha256": "dadc448d873ad33b7b5ab1b520d1c09a9e1bc4996443ec02a8972664d42cf5a5"
+  },
+  {
+    "id": "sandbags",
+    "label": "sandbags",
+    "source": "assets/sandbags.js",
+    "size": [
+      1.9888197779655457,
+      0.8987107751891017,
+      0.6209820806980133
+    ],
+    "center": [
+      0.0033015310764312744,
+      0.43928674468770623,
+      -0.002155676484107971
+    ],
+    "filename": "sandbags.png",
+    "view": "three-quarter",
+    "coverage": 0.24020767211914062,
+    "sourceSha256": "be9d3ebf85523060d11aa7cd6fe739b6548656d4ae2e22c66adec13b8294bd88"
+  },
+  {
+    "id": "toolbox_cart",
+    "label": "toolbox cart",
+    "source": "assets/toolbox_cart.js",
+    "size": [
+      0.862340897321701,
+      0.9630000002682209,
+      0.5420000106096268
+    ],
+    "center": [
+      -0.016170457005500793,
+      0.4814999993890524,
+      0.03600000590085983
+    ],
+    "filename": "toolbox_cart.png",
+    "view": "three-quarter",
+    "coverage": 0.25453948974609375,
+    "sourceSha256": "54d6fb42c59c35a298f0fe613d9e171c33b04119178f6b9a08122b0baa5a4114"
+  },
+  {
+    "id": "floodlight_stand",
+    "label": "floodlight stand",
+    "source": "assets/floodlight_stand.js",
+    "size": [
+      0.9764317274093628,
+      2.236472710967064,
+      1.6538930237293243
+    ],
+    "center": [
+      0.034593284130096436,
+      1.1102363541722298,
+      -0.4468568414449692
+    ],
+    "filename": "floodlight_stand.png",
+    "view": "three-quarter",
+    "coverage": 0.034244537353515625,
+    "sourceSha256": "1aa1edd82896437b6bfc74eb0e2b7f0051f51a4b44d84e5f072a7b515ec42672"
+  },
+  {
+    "id": "cardboard_boxes",
+    "label": "cardboard boxes",
+    "source": "assets/cardboard_boxes.js",
+    "size": [
+      0.9837245643138885,
+      0.7404779261350631,
+      0.9246133863925934
+    ],
+    "center": [
+      -0.0013940483331680298,
+      0.3702389565110207,
+      0.00706695020198822
+    ],
+    "filename": "cardboard_boxes.png",
+    "view": "three-quarter",
+    "coverage": 0.230865478515625,
+    "sourceSha256": "091d855bc34b99cb1f526b3f4fef8a6a008a00637672bf2a3e59a6fb341e278a"
+  },
+  {
+    "id": "pipe_stack",
+    "label": "pipe stack",
+    "source": "assets/pipe_stack.js",
+    "size": [
+      5.964889049530029,
+      0.8408498755097389,
+      1.2014275789260864
+    ],
+    "center": [
+      -0.0005698204040527344,
+      0.42042493864893915,
+      0
+    ],
+    "filename": "pipe_stack.png",
+    "view": "three-quarter",
+    "coverage": 0.09053421020507812,
+    "sourceSha256": "26fcd568a0bb2ffba6722dcb77d72ee926cbfe3f51f8fee473df80e995476499"
+  },
+  {
+    "id": "sign_post",
+    "label": "sign post",
+    "source": "assets/sign_post.js",
+    "size": [
+      0.6000000238418579,
+      2.406000023242086,
+      0.30000001192092896
+    ],
+    "center": [
+      0,
+      1.1980000112671405,
+      0
+    ],
+    "filename": "sign_post.png",
+    "view": "three-quarter",
+    "coverage": 0.0497589111328125,
+    "sourceSha256": "7d63e7d24a01242a96928a248c37ea3ffbf5d6c30886a7eecd83900496b1b58e"
+  },
+  {
+    "id": "hound",
+    "label": "Hound / H-03",
+    "source": "assets/hound.js",
+    "size": [
+      0.6446058390273669,
+      1.5520759124113352,
+      1.4080424508765874
+    ],
+    "view": "side",
+    "center": [
+      -5.551115123125783e-17,
+      0.7729620685898646,
+      0.04697876168710302
+    ],
+    "filename": "hound-side.png",
+    "coverage": 0.09395599365234375,
+    "sourceSha256": "4f8ff8fda2bda58677e7befd76ac17d7bd34d44fb7fc491dab3964eeb5e473e5"
+  },
+  {
+    "id": "hound",
+    "label": "Hound / H-03",
+    "source": "assets/hound.js",
+    "size": [
+      0.6446058390273669,
+      1.5520759124113352,
+      1.4080424508765874
+    ],
+    "view": "front",
+    "center": [
+      -5.551115123125783e-17,
+      0.7729620685898646,
+      0.04697876168710302
+    ],
+    "filename": "hound-front.png",
+    "coverage": 0.0452117919921875,
+    "sourceSha256": "4f8ff8fda2bda58677e7befd76ac17d7bd34d44fb7fc491dab3964eeb5e473e5"
+  },
+  {
+    "id": "hound",
+    "label": "Hound / H-03",
+    "source": "assets/hound.js",
+    "size": [
+      0.6446058390273669,
+      1.5520759124113352,
+      1.4080424508765874
+    ],
+    "view": "top",
+    "center": [
+      -5.551115123125783e-17,
+      0.7729620685898646,
+      0.04697876168710302
+    ],
+    "filename": "hound-top.png",
+    "coverage": 0.044391632080078125,
+    "sourceSha256": "4f8ff8fda2bda58677e7befd76ac17d7bd34d44fb7fc491dab3964eeb5e473e5"
+  },
+  {
+    "id": "pac9",
+    "label": "PAC-9",
+    "source": "assets/pac9.js",
+    "size": [
+      0.06909999996423721,
+      0.316912516951561,
+      0.8774999976158142
+    ],
+    "view": "side",
+    "center": [
+      -0.0063499994575977325,
+      -0.07285625487565994,
+      -0.09174999594688416
+    ],
+    "filename": "pac9-side.png",
+    "coverage": 0.07464981079101562,
+    "sourceSha256": "97c47cf77b8a0ce8f79930c7e93558a3975fd1abe97005a70361a8d1e4eb9863"
+  }
+]
