@@ -22,7 +22,10 @@ pub struct HardSurface {
 impl HardSurface {
     pub fn new(m: &mut Assets<Mesh>) -> Self {
         Self {
-            gable: m.add(extrusion::extrude(&[Vec2::new(-0.5,0.),Vec2::new(0.5,0.),Vec2::new(0.,1.)],1.)),
+            gable: m.add(extrusion::extrude(
+                &[Vec2::new(-0.5, 0.), Vec2::new(0.5, 0.), Vec2::new(0., 1.)],
+                1.,
+            )),
             hull: m.add(extrusion::extrude(
                 &[
                     Vec2::new(-0.5, -0.5),

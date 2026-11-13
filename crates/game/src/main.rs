@@ -513,18 +513,29 @@ fn surface_ripples(
 fn weather(
     clock: Res<presentation::PresentationClock>,
     cameras: Query<(&Camera, &GlobalTransform)>,
-    mut rain: Query<(&mut Transform,&mut Visibility), With<Rain>>,
+    mut rain: Query<(&mut Transform, &mut Visibility), With<Rain>>,
 ) {
     let Some((_, camera)) = cameras.iter().find(|(c, _)| c.is_active) else {
         return;
     };
     let origin = camera.translation();
-    for (mut t,mut visibility) in &mut rain {
+    for (mut t, mut visibility) in &mut rain {
         t.translation += Vec3::new(-1.8, -16., 0.6) * clock.dt;
         t.translation.x = origin.x + (t.translation.x - origin.x + 22.).rem_euclid(44.) - 22.;
         t.translation.z = origin.z + (t.translation.z - origin.z + 22.).rem_euclid(44.) - 22.;
-        if t.translation.y < 0. { t.translation.y = 18.; }
-        let roofed=t.translation.x > -35. && t.translation.x < -25. && t.translation.y<6.4 && [-25.0f32,-55.0].iter().any(|z|(t.translation.z-z).abs()<10.);
-        *visibility=if roofed {Visibility::Hidden}else{Visibility::Visible};
+        if t.translation.y < 0. {
+            t.translation.y = 18.;
+        }
+        let roofed = t.translation.x > -35.
+            && t.translation.x < -25.
+            && t.translation.y < 6.4
+            && [-25.0f32, -55.0]
+                .iter()
+                .any(|z| (t.translation.z - z).abs() < 10.);
+        *visibility = if roofed {
+            Visibility::Hidden
+        } else {
+            Visibility::Visible
+        };
     }
 }

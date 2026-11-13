@@ -110,8 +110,15 @@ pub fn build(c: &mut Commands, k: &Kit, root: Entity) {
     }
     // Warehouse, structural columns, corrugated facade and exposed roof trusses.
     for z in [-25., -55.] {
-        for dz in [-10.,10.] {
-            geometry::assembly::component(c,root,"roof gable",k.hard.gable.clone(),k.mats[4].clone(),Transform::from_xyz(-30.,5.,z+dz).with_scale(Vec3::new(10.,1.35,0.15)));
+        for dz in [-10., 10.] {
+            geometry::assembly::component(
+                c,
+                root,
+                "roof gable",
+                k.hard.gable.clone(),
+                k.mats[4].clone(),
+                Transform::from_xyz(-30., 5., z + dz).with_scale(Vec3::new(10., 1.35, 0.15)),
+            );
         }
         // Pitched roof with actual skylight openings between panel segments.
         for sign in [-1., 1.] {
@@ -286,7 +293,7 @@ pub fn build(c: &mut Commands, k: &Kit, root: Entity) {
                     color: Color::srgb(1., 0.78, 0.52),
                     ..default()
                 },
-                Transform::from_xyz(-29., 4.3, z + dz).looking_to(Vec3::NEG_Y,Vec3::Z),
+                Transform::from_xyz(-29., 4.3, z + dz).looking_to(Vec3::NEG_Y, Vec3::Z),
             ));
         }
     }
