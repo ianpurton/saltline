@@ -83,6 +83,24 @@ fn main() {
         enabled: saltline_game::launch_args().any(|a| a == "--benchmark" || a == "--profile")
             && !saltline_game::launch_args().any(|a| a == "--no-instrumentation"),
     });
+    if !capture::headless()
+        && !saltline_game::launch_args()
+            .any(|a| matches!(a.as_str(), "--benchmark" | "--inspect" | "--title-capture"))
+    {
+        use bevy::dev_tools::fps_overlay::{
+            FpsOverlayConfig, FpsOverlayPlugin, FrameTimeGraphConfig,
+        };
+        app.add_plugins(FpsOverlayPlugin {
+            config: FpsOverlayConfig {
+                frame_time_graph_config: FrameTimeGraphConfig {
+                    enabled: false,
+                    ..default()
+                },
+                ..default()
+            },
+        })
+        .add_systems(PostStartup, position_fps_overlay.after(capture::attach));
+    }
     #[cfg(not(target_arch = "wasm32"))]
     app.add_plugins(finish::FinishPlugin);
     #[cfg(not(target_arch = "wasm32"))]
@@ -169,6 +187,21 @@ fn main() {
         )
         .run();
 }
+fn position_fps_overlay(
+    mut commands: Commands,
+    output: Res<capture::OutputCamera>,
+    mut nodes: Query<(Entity, &GlobalZIndex, &mut Node)>,
+) {
+    for (entity, z_index, mut node) in &mut nodes {
+        if z_index.0 == bevy::dev_tools::fps_overlay::FPS_OVERLAY_ZINDEX {
+            node.top = px(12);
+            node.right = px(12);
+            node.left = Val::Auto;
+            commands.entity(entity).insert(UiTargetCamera(output.0));
+        }
+    }
+}
+
 fn setup(
     mut c: Commands,
     mut meshes: ResMut<Assets<Mesh>>,
