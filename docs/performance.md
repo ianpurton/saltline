@@ -78,10 +78,35 @@ path; native-only screen-space effects and finishing are excluded.
 
 ## Diagnostics and tracing
 
+Native Linux play includes Bevy 0.20's built-in render debug overlay in both
+development and release builds. Run `cargo run --release -p saltline-game`; no
+extra Cargo features or debug build are required. The existing `render_dev_tools`
+Bevy feature includes `RenderDebugOverlayPlugin` through `DefaultPlugins`.
+
+Press **F1** to show the overlay and cycle supported render-buffer modes (depth,
+normals, motion vectors and deferred material buffers); cycling past the last
+supported mode hides it. Press **F2** to cycle opacity. Available modes depend on
+the camera's existing passes; the overlay does not enable additional passes.
+FPS is included in the timing panel described below. The buffer overlay starts hidden
+and its plugin is disabled for WebAssembly, non-Linux targets, `--headless-render`,
+`--benchmark`, `--inspect`, and `--title-capture` runs.
+
+Native Linux play also shows Bevy's built-in `DiagnosticsOverlay` below the mission
+HUD automatically, including in release builds. It displays FPS, frame time and CPU/GPU
+timings in milliseconds for the deferred prepass, shadows, deferred lighting,
+opaque geometry, TAA, and Saltline finishing pass. No `--profile` flag is needed.
+The panel refreshes once per second. Other platforms retain the separate FPS counter.
+`Missing` or `No sample` means the pass/query is unavailable or has not produced a
+sample yet, rather than zero cost. GPU query support depends on the adapter/backend.
+CPU timings measure render command preparation, not GPU execution; these selected
+passes are not a total frame-time breakdown. The timing panel and its automatic
+render diagnostics use the same platform, benchmark, and capture exclusions above.
+
 `PerformancePlugin` in `saltline_game::performance` owns registration. `--profile`
 and `--benchmark` enable the seven existing system measurements, built-in frame-time
 and entity-count metrics, render diagnostics, and submission counting. Ordinary play
-keeps detailed instrumentation disabled; adaptive resolution retains its original input.
+keeps custom system instrumentation disabled; native Linux play enables Bevy render
+diagnostics for the timing panel. Adaptive resolution retains its original input.
 
 | Path | Type, unit, and sampling |
 | --- | --- |

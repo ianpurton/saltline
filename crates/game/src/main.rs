@@ -65,6 +65,22 @@ fn main() {
     } else {
         plugins
     };
+    // render_dev_tools already includes this plugin in DefaultPlugins.
+    let render_debug = cfg!(target_os = "linux")
+        && !capture::headless()
+        && !saltline_game::launch_args()
+            .any(|a| matches!(a.as_str(), "--benchmark" | "--inspect" | "--title-capture"));
+    let plugins = if render_debug {
+        app.insert_resource(
+            bevy::dev_tools::render_debug::RenderDebugOverlayKeybindings {
+                enable_keybindings: true,
+                ..default()
+            },
+        );
+        plugins
+    } else {
+        plugins.disable::<bevy::dev_tools::render_debug::RenderDebugOverlayPlugin>()
+    };
     if capture::headless() {
         app.add_plugins(plugins.disable::<bevy::winit::WinitPlugin>())
             .add_plugins(bevy::app::ScheduleRunnerPlugin::run_loop(
@@ -83,7 +99,20 @@ fn main() {
         enabled: saltline_game::launch_args().any(|a| a == "--benchmark" || a == "--profile")
             && !saltline_game::launch_args().any(|a| a == "--no-instrumentation"),
     });
-    if !capture::headless()
+    if render_debug {
+        use bevy::dev_tools::diagnostics_overlay::DiagnosticsOverlayPlugin;
+        use bevy::render::diagnostic::RenderDiagnosticsPlugin;
+        if !app.is_plugin_added::<RenderDiagnosticsPlugin>() {
+            app.add_plugins(RenderDiagnosticsPlugin);
+        }
+        if !app.is_plugin_added::<bevy::diagnostic::FrameTimeDiagnosticsPlugin>() {
+            app.add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default());
+        }
+        app.add_plugins(DiagnosticsOverlayPlugin)
+            .add_systems(PostStartup, setup_timing_overlay.after(capture::attach));
+    }
+    if !render_debug
+        && !capture::headless()
         && !saltline_game::launch_args()
             .any(|a| matches!(a.as_str(), "--benchmark" | "--inspect" | "--title-capture"))
     {
@@ -186,6 +215,43 @@ fn main() {
                 .after(visuals),
         )
         .run();
+}
+fn setup_timing_overlay(
+    mut commands: Commands,
+    output: Res<capture::OutputCamera>,
+    plane: Single<Entity, With<bevy::dev_tools::diagnostics_overlay::DiagnosticsOverlayPlane>>,
+) {
+    use bevy::dev_tools::diagnostics_overlay::DiagnosticsOverlay;
+    use bevy::diagnostic::{DiagnosticPath, FrameTimeDiagnosticsPlugin};
+
+    commands.entity(*plane).insert(UiTargetCamera(output.0));
+    let mut items = vec![
+        FrameTimeDiagnosticsPlugin::FPS.into(),
+        FrameTimeDiagnosticsPlugin::FRAME_TIME.into(),
+    ];
+    for pass in [
+        "early deferred prepass",
+        "per_view_shadow_pass",
+        "deferred_lighting",
+        "main_opaque_pass_3d",
+        "taa",
+        "saltline_finish",
+    ] {
+        for field in ["elapsed_cpu", "elapsed_gpu"] {
+            items.push(DiagnosticPath::new(format!("render/{pass}/{field}")).into());
+        }
+    }
+    let overlay = commands
+        .spawn(DiagnosticsOverlay::new("FPS and render timings", items))
+        .id();
+    // The built-in observer supplies the panel Node on spawn.
+    commands
+        .entity(overlay)
+        .entry::<Node>()
+        .and_modify(|mut node| {
+            node.top = px(110);
+            node.left = px(24);
+        });
 }
 fn position_fps_overlay(
     mut commands: Commands,
