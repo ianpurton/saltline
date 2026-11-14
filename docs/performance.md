@@ -235,3 +235,14 @@ Browser WebGL rendering negotiates the adapter's actual limits rather than the
 portable 2048-pixel texture default, which is too small for a 1920×1080 canvas at
 2× device pixel ratio. Window surfaces and scene targets are bounded to the
 negotiated maximum texture dimension, preserving aspect ratio on larger displays.
+
+Resolution changes allocate a fresh scene image and rebind both 3D cameras and
+the compositor. Resizing the existing image in place left the WebGL compositor
+showing a stale frame after adaptive scaling. Browser smoke checks now compare
+two opening-tour frames and verify gameplay movement with adaptive scaling enabled.
+
+Pointer lock is requested on gameplay transitions or a fresh click, with browser
+requests coalesced and throttled. Lock denial displays a click-to-retry hint;
+other runtime failures still use the fatal overlay. The WebGL lighting profile
+uses stronger ambient fill and forward shader tone mapping for readable shadows
+without clipping sunlit containers.

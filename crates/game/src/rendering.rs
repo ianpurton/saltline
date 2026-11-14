@@ -118,7 +118,9 @@ pub fn configure(
 #[cfg(target_arch = "wasm32")]
 pub fn camera_effects(_sky: Handle<Image>, _intensity: f32) -> impl Bundle {
     (
-        Tonemapping::None,
+        // Forward LDR supports tone mapping inside the material shader. Keep
+        // sunlit containers from clipping while retaining readable sky fill.
+        Tonemapping::AcesFitted,
         bevy::core_pipeline::tonemapping::DebandDither::Disabled,
         Msaa::Off,
     )

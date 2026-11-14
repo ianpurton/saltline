@@ -168,7 +168,13 @@ fn main() {
     app.insert_resource(ClearColor(Color::srgb(0.16, 0.22, 0.28)))
         .insert_resource(bevy::light::GlobalAmbientLight {
             color: Color::srgb(0.68, 0.73, 0.78),
-            brightness: 160.,
+            // WebGL has no generated sky irradiance; supply diffuse fill so
+            // shaded lanes remain readable alongside the low evening sun.
+            brightness: if cfg!(target_arch = "wasm32") {
+                1200.
+            } else {
+                160.
+            },
             ..default()
         })
         .insert_resource(if cfg!(target_arch = "wasm32") {
@@ -201,6 +207,7 @@ fn main() {
         .add_systems(PostStartup, hud::setup.after(capture::attach))
         .add_systems(PostStartup, saltline_models::geometry::batch::assemble)
         .add_systems(Update, capture::resize)
+        .add_systems(Update, sync_cursor.after(controls))
         .add_systems(Update, (hud::update, hud::feedback).chain().after(visuals))
         .add_systems(
             PostStartup,
@@ -476,7 +483,6 @@ fn controls(
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
     motion: Res<AccumulatedMouseMotion>,
-    mut cursor: Query<&mut CursorOptions>,
     mut m: ResMut<Mission>,
     mut a: ResMut<Actions>,
     mut enemies: Query<(&mut Enemy, &mut Transform)>,
@@ -520,14 +526,6 @@ fn controls(
         *a = Actions::default();
         return;
     }
-    for mut c in &mut cursor {
-        c.visible = m.mode != Mode::Playing;
-        c.grab_mode = if m.mode == Mode::Playing {
-            CursorGrabMode::Locked
-        } else {
-            CursorGrabMode::None
-        };
-    }
     if m.mode != Mode::Playing {
         return;
     }
@@ -544,6 +542,87 @@ fn controls(
     a.jump |= keys.just_pressed(KeyCode::Space);
     a.reload |= keys.just_pressed(KeyCode::KeyR);
     a.interact |= keys.just_pressed(KeyCode::KeyE);
+}
+/// Winit forwards every Changed<CursorOptions> to requestPointerLock on web.
+/// Request once on mode transitions, or explicitly retry on a fresh click;
+/// neither a rejected request nor an external unlock should trigger a loop.
+fn sync_cursor(
+    m: Res<Mission>,
+    mouse: Res<ButtonInput<MouseButton>>,
+    mut cursor: Query<&mut CursorOptions>,
+    mut previous: Local<Option<bool>>,
+) {
+    let playing = m.mode == Mode::Playing;
+    let transition = *previous != Some(playing);
+    *previous = Some(playing);
+    if !transition && !(playing && mouse.just_pressed(MouseButton::Left)) {
+        return;
+    }
+    for mut c in &mut cursor {
+        c.visible = !playing;
+        c.grab_mode = if playing {
+            CursorGrabMode::Locked
+        } else {
+            CursorGrabMode::None
+        };
+    }
+}
+
+#[cfg(test)]
+mod cursor_tests {
+    use super::*;
+
+    #[derive(Resource, Default)]
+    struct Requests(u32);
+
+    #[test]
+    fn cursor_requests_are_transitions_or_explicit_retries() {
+        let mut app = App::new();
+        app.init_resource::<Mission>()
+            .init_resource::<ButtonInput<MouseButton>>()
+            .init_resource::<Requests>()
+            .add_systems(Update, (sync_cursor, count_requests).chain());
+        let cursor = app.world_mut().spawn(CursorOptions::default()).id();
+        app.update();
+        assert_eq!(app.world().resource::<Requests>().0, 1);
+        app.world_mut().resource_mut::<Mission>().mode = Mode::Playing;
+        app.update();
+        assert_eq!(app.world().resource::<Requests>().0, 2);
+        for _ in 0..120 {
+            app.update();
+        }
+        assert_eq!(app.world().resource::<Requests>().0, 2);
+
+        // An unsuccessful platform grab must not create an automatic retry loop.
+        app.world_mut()
+            .get_mut::<CursorOptions>(cursor)
+            .unwrap()
+            .grab_mode = CursorGrabMode::None;
+        app.update();
+        for _ in 0..120 {
+            app.update();
+        }
+        assert_eq!(app.world().resource::<Requests>().0, 3);
+        app.world_mut()
+            .resource_mut::<ButtonInput<MouseButton>>()
+            .press(MouseButton::Left);
+        app.update();
+        assert_eq!(app.world().resource::<Requests>().0, 4);
+        app.world_mut()
+            .resource_mut::<ButtonInput<MouseButton>>()
+            .clear();
+        app.world_mut().resource_mut::<Mission>().mode = Mode::Paused;
+        app.update();
+        assert_eq!(app.world().resource::<Requests>().0, 5);
+        assert_eq!(
+            app.world().get::<CursorOptions>(cursor).unwrap().grab_mode,
+            CursorGrabMode::None
+        );
+    }
+
+    fn count_requests(cursor: Query<(), Changed<CursorOptions>>, mut requests: ResMut<Requests>) {
+        requests.0 += cursor.iter().count() as u32;
+    }
 }
 fn visuals(
     mut c: Commands,

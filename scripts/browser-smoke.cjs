@@ -31,6 +31,14 @@ async function changedPixels(page, before, after, region) {
   try {
     const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
     page.setDefaultTimeout(180000);
+    await page.addInitScript(() => {
+      window.pointerLockRequests = 0;
+      const request = HTMLCanvasElement.prototype.requestPointerLock;
+      HTMLCanvasElement.prototype.requestPointerLock = function (...args) {
+        window.pointerLockRequests++;
+        return request.apply(this, args);
+      };
+    });
     page.on('console', m => {
       const text = m.text(); messages.push(`${m.type()} ${text}`);
       if (m.type() === 'error' || /ERROR |panicked at|Validation Error|context lost/i.test(text)) errors.push(text);
@@ -48,13 +56,21 @@ async function changedPixels(page, before, after, region) {
     assert(await page.locator('#status').isHidden(), await page.locator('#status').innerText());
     await page.waitForTimeout(15000);
     const shot = name => page.screenshot({ path: `${output}/${name}.png`, timeout: 60000 });
-    await shot('title');
+    const title = await shot('title');
+    await page.waitForTimeout(10000);
+    const titleLater = await shot('title-later');
+    const tour = await changedPixels(page, title, titleLater, [0.15, 0.08, 0.70, 0.30]);
+    assert(tour > 0.12, `Opening tour stopped (${(tour * 100).toFixed(1)}% changed pixels)`);
+    assert.equal(await page.evaluate(() => window.pointerLockRequests), 0, 'Title requested pointer lock');
     await page.mouse.click(130, 615);
     await page.waitForTimeout(4000);
     const deployed = await shot('deployed');
     await page.mouse.click(640, 360);
     await page.waitForTimeout(500);
     assert(await page.evaluate(() => !!document.pointerLockElement), 'Deploy did not enable pointer lock');
+    const locks = await page.evaluate(() => window.pointerLockRequests);
+    await page.waitForTimeout(3000);
+    assert.equal(await page.evaluate(() => window.pointerLockRequests), locks, 'Idle gameplay repeated pointer-lock requests');
     await page.mouse.move(900, 380);
     await page.keyboard.down('w');
     await page.waitForTimeout(1800);

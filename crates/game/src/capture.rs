@@ -127,9 +127,10 @@ pub fn resize(
     ready: Res<RenderReady>,
     mut quality: ResMut<crate::quality::RenderQuality>,
     windows: Query<&Window>,
-    scene: Res<SceneTarget>,
+    mut scene: ResMut<SceneTarget>,
     mut images: ResMut<Assets<Image>>,
     mut sprites: Query<&mut Sprite, With<Composite>>,
+    mut cameras: Query<&mut RenderTarget, With<Camera3d>>,
     #[cfg(target_arch = "wasm32")] device: Res<bevy::render::renderer::RenderDevice>,
 ) {
     if ready.ready() {
@@ -147,10 +148,26 @@ pub fn resize(
         height: ((h as f32 * quality.scale) as u32).max(1),
         depth_or_array_layers: 1,
     };
-    if let Some(mut image) = images.get_mut(&scene.0) {
-        if image.texture_descriptor.size != size {
-            image.resize(size);
+    if images
+        .get(&scene.0)
+        .is_some_and(|image| image.texture_descriptor.size != size)
+    {
+        // Give a resized attachment a new identity. Reusing an image ID leaves
+        // WebGL's camera/compositor bindings referring to the previous texture,
+        // displaying its last frame after the first adaptive scale change.
+        let image = images.add(Image::new_target_texture(
+            size.width,
+            size.height,
+            bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb,
+            None,
+        ));
+        for mut target in &mut cameras {
+            *target = RenderTarget::Image(image.clone().into());
         }
+        for mut sprite in &mut sprites {
+            sprite.image = image.clone();
+        }
+        scene.0 = image;
     }
     let display_size = windows
         .iter()
@@ -207,5 +224,84 @@ mod resolution_tests {
         assert_eq!(bounded_resolution(3840, 2160, 8192), (3840, 2160));
         assert_eq!(bounded_resolution(7680, 4320, 4096), (4096, 2304));
         assert_eq!(bounded_resolution(0, 0, 2048), (1, 1));
+    }
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod target_tests {
+    use super::*;
+
+    #[test]
+    fn resizing_rebinds_both_views_and_compositor_once() {
+        let mut app = App::new();
+        app.init_resource::<Time<Real>>()
+            .init_resource::<RenderReady>()
+            .init_resource::<Assets<Image>>()
+            .insert_resource(crate::quality::RenderQuality::preset("medium"))
+            .add_systems(Update, resize);
+        let image = app
+            .world_mut()
+            .resource_mut::<Assets<Image>>()
+            .add(Image::new_target_texture(
+                1280,
+                720,
+                bevy::render::render_resource::TextureFormat::Rgba8UnormSrgb,
+                None,
+            ));
+        app.insert_resource(SceneTarget(image.clone()));
+        app.world_mut().spawn(Window {
+            resolution: (1280, 720).into(),
+            ..default()
+        });
+        let cameras = [
+            app.world_mut()
+                .spawn((
+                    Camera3d::default(),
+                    RenderTarget::Image(image.clone().into()),
+                ))
+                .id(),
+            app.world_mut()
+                .spawn((
+                    Camera3d::default(),
+                    RenderTarget::Image(image.clone().into()),
+                ))
+                .id(),
+        ];
+        let composite = app
+            .world_mut()
+            .spawn((Composite, Sprite::from_image(image.clone())))
+            .id();
+        app.update();
+        assert_eq!(app.world().resource::<SceneTarget>().0.id(), image.id());
+        app.world_mut()
+            .resource_mut::<crate::quality::RenderQuality>()
+            .scale = 0.75;
+        app.update();
+        let replacement = app.world().resource::<SceneTarget>().0.clone();
+        assert_ne!(replacement.id(), image.id());
+        for camera in cameras {
+            let RenderTarget::Image(target) = app.world().get::<RenderTarget>(camera).unwrap()
+            else {
+                panic!("image target")
+            };
+            assert_eq!(target.handle.id(), replacement.id());
+        }
+        assert_eq!(
+            app.world().get::<Sprite>(composite).unwrap().image.id(),
+            replacement.id()
+        );
+        assert_eq!(
+            app.world()
+                .resource::<Assets<Image>>()
+                .get(&replacement)
+                .unwrap()
+                .size(),
+            UVec2::new(960, 540)
+        );
+        app.update();
+        assert_eq!(
+            app.world().resource::<SceneTarget>().0.id(),
+            replacement.id()
+        );
     }
 }

@@ -18,9 +18,32 @@
     import init from './saltline.js';
     const status = document.querySelector('#status');
     const canvas = document.querySelector('#game');
+    let started = false, failed = false, lockPending = false, lastLockRequest = -Infinity;
+    const lockHint = () => {
+      if (!started || failed) return;
+      status.hidden = false;
+      status.textContent = 'Click the game to capture the mouse. Press Esc to release it.';
+    };
+    // Winit's WebGL window API does not consume the promise returned by modern
+    // browsers. Handle only pointer-lock failures here; rendering failures still
+    // reach the fatal error handler below. Never retry without a new game input.
+    const requestLock = canvas.requestPointerLock;
+    canvas.requestPointerLock = async function (...args) {
+      if (document.pointerLockElement === canvas || lockPending || performance.now() - lastLockRequest < 1000) return;
+      lockPending = true;
+      lastLockRequest = performance.now();
+      try { await requestLock.apply(this, args); }
+      catch { lockHint(); }
+      finally { lockPending = false; }
+    };
+    document.addEventListener('pointerlockerror', lockHint);
+    document.addEventListener('pointerlockchange', () => {
+      if (document.pointerLockElement === canvas && !failed) status.hidden = true;
+    });
     canvas.addEventListener('contextmenu', event => event.preventDefault());
     canvas.addEventListener('pointerdown', () => canvas.focus());
     const fail = error => {
+      failed = true;
       console.error('Saltline:', error);
       status.hidden = false;
       status.textContent = 'Unable to start SALTLINE.\n' + (error.message || String(error));
@@ -36,6 +59,7 @@
       // The Wavedash host provides its SDK; local hosting also works without it.
       if (window.Wavedash) window.Wavedash.init({debug: false});
       await init();
+      started = true;
       status.hidden = true;
       canvas.focus();
     } catch (error) { fail(error); }
