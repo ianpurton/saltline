@@ -67,7 +67,9 @@ fn main() {
     #[cfg(target_arch = "wasm32")]
     let plugins = plugins.set(bevy::render::RenderPlugin {
         render_creation: bevy::render::settings::WgpuSettings {
-            priority: bevy::render::settings::WgpuSettingsPriority::WebGL2,
+            // Use the adapter's actual limits. WebGL2's portable defaults cap
+            // textures at 2048, which cannot hold a high-DPI browser surface.
+            priority: bevy::render::settings::WgpuSettingsPriority::Functionality,
             ..default()
         }
         .into(),
@@ -108,6 +110,9 @@ fn main() {
         app.add_plugins(graphics::GraphicsPlugin);
     }
     capture::readiness(&mut app);
+    #[cfg(target_arch = "wasm32")]
+    app.add_systems(PreStartup, capture::limit_browser_surface)
+        .add_systems(PreUpdate, capture::limit_browser_surface);
     benchmark::install_counters(&mut app);
     app.add_plugins(rain::RainPlugin);
     if !capture::headless() && !saltline_game::launch_args().any(|a| a == "--no-audio") {

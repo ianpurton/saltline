@@ -230,3 +230,8 @@ identifiers are retained, but their viewpoints and world geometry have changed;
 compare timings only against builds of the same map. The `corridor` stage now
 samples the authored container yard. The renderer and 16.7 ms acceptance threshold
 are unchanged.
+
+Browser WebGL rendering negotiates the adapter's actual limits rather than the
+portable 2048-pixel texture default, which is too small for a 1920×1080 canvas at
+2× device pixel ratio. Window surfaces and scene targets are bounded to the
+negotiated maximum texture dimension, preserving aspect ratio on larger displays.

@@ -40,14 +40,44 @@ pub struct OutputCamera(pub Entity);
 pub struct Composite;
 #[derive(Resource)]
 pub struct SceneTarget(Handle<Image>);
+
+/// Preserve aspect ratio when a browser window exceeds the negotiated GPU limit.
+#[cfg(any(target_arch = "wasm32", test))]
+fn bounded_resolution(width: u32, height: u32, limit: u32) -> (u32, u32) {
+    let limit = limit.max(1);
+    let largest = width.max(height).max(1);
+    let scale = (limit as f64 / largest as f64).min(1.);
+    (
+        ((width as f64 * scale).floor() as u32).max(1),
+        ((height as f64 * scale).floor() as u32).max(1),
+    )
+}
+
+#[cfg(target_arch = "wasm32")]
+pub fn limit_browser_surface(
+    device: Res<bevy::render::renderer::RenderDevice>,
+    mut windows: Query<&mut Window>,
+) {
+    for mut window in &mut windows {
+        let size = window.resolution.physical_size();
+        let (w, h) = bounded_resolution(size.x, size.y, device.limits().max_texture_dimension_2d);
+        if (w, h) != (size.x, size.y) {
+            window.resolution.set_physical_resolution(w, h);
+        }
+    }
+}
+
 pub fn attach(
     mut c: Commands,
     mut images: ResMut<Assets<Image>>,
     cameras: Query<Entity, With<Camera3d>>,
     quality: Res<crate::quality::RenderQuality>,
+    #[cfg(target_arch = "wasm32")] device: Res<bevy::render::renderer::RenderDevice>,
 ) {
     use bevy::camera::visibility::RenderLayers;
     let (w, h) = resolution();
+    #[cfg(target_arch = "wasm32")]
+    let (w, h) = bounded_resolution(w, h, device.limits().max_texture_dimension_2d);
     let scene = images.add(Image::new_target_texture(
         (w as f32 * quality.scale) as u32,
         (h as f32 * quality.scale) as u32,
@@ -100,6 +130,7 @@ pub fn resize(
     scene: Res<SceneTarget>,
     mut images: ResMut<Assets<Image>>,
     mut sprites: Query<&mut Sprite, With<Composite>>,
+    #[cfg(target_arch = "wasm32")] device: Res<bevy::render::renderer::RenderDevice>,
 ) {
     if ready.ready() {
         quality.adapt(time.delta_secs());
@@ -109,6 +140,8 @@ pub fn resize(
         .next()
         .map(|w| (w.physical_width(), w.physical_height()))
         .unwrap_or_else(resolution);
+    #[cfg(target_arch = "wasm32")]
+    let (w, h) = bounded_resolution(w, h, device.limits().max_texture_dimension_2d);
     let size = bevy::render::render_resource::Extent3d {
         width: ((w as f32 * quality.scale) as u32).max(1),
         height: ((h as f32 * quality.scale) as u32).max(1),
@@ -161,5 +194,18 @@ fn settled(
     }
     if *quiet >= 60 {
         ready.0.store(true, std::sync::atomic::Ordering::Relaxed);
+    }
+}
+
+#[cfg(test)]
+mod resolution_tests {
+    use super::bounded_resolution;
+    #[test]
+    fn high_dpi_and_portrait_surfaces_fit_device_limits() {
+        assert_eq!(bounded_resolution(3840, 2160, 2048), (2048, 1152));
+        assert_eq!(bounded_resolution(2160, 3840, 2048), (1152, 2048));
+        assert_eq!(bounded_resolution(3840, 2160, 8192), (3840, 2160));
+        assert_eq!(bounded_resolution(7680, 4320, 4096), (4096, 2304));
+        assert_eq!(bounded_resolution(0, 0, 2048), (1, 1));
     }
 }
