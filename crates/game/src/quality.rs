@@ -1,8 +1,11 @@
 //! Shared, explicit quality policy. UI is composited at the output resolution.
 use bevy::prelude::*;
-#[derive(Resource, Clone, Debug)]
+const MIN_SCALE: f32 = if cfg!(target_os = "linux") { 0.5 } else { 0.7 };
+#[derive(Resource, Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct RenderQuality {
     pub high: bool,
+    pub preset: String,
     #[cfg(not(target_arch = "wasm32"))]
     pub ssr: bool,
     #[cfg(not(target_arch = "wasm32"))]
@@ -17,55 +20,143 @@ pub struct RenderQuality {
     pub shadows: u32,
     pub scale: f32,
     pub adaptive: bool,
+    pub rain: bool,
+    pub detailed_wet: bool,
+    pub detailed_containers: bool,
+    #[serde(skip)]
     over: f32,
+    #[serde(skip)]
     under: f32,
+    #[serde(skip)]
     recent: std::collections::VecDeque<f32>,
 }
 impl RenderQuality {
     pub fn from_args() -> Self {
-        Self::parse(&saltline_game::launch_args().collect::<Vec<_>>())
+        let args = saltline_game::launch_args().collect::<Vec<_>>();
+        #[cfg(target_os = "linux")]
+        if !crate::graphics::isolated(&args) {
+            return Self::with_saved(&args, crate::graphics::load());
+        }
+        Self::parse(&args)
     }
-    fn parse(args: &[String]) -> Self {
-        let option = |key: &str| args.windows(2).find(|w| w[0] == key).map(|w| w[1].as_str());
-        let high = option("--quality") == Some("high");
-        let flag = |key: &str, default: bool| match option(key) {
-            Some("on") => true,
-            Some("off") => false,
-            _ => default,
-        };
+    pub(crate) fn preset(name: &str) -> Self {
+        let high = name == "high";
+        let low = name == "low";
         Self {
             high,
+            preset: if high {
+                "high"
+            } else if low {
+                "low"
+            } else {
+                "medium"
+            }
+            .into(),
             #[cfg(not(target_arch = "wasm32"))]
-            ssr: flag("--ssr", high),
+            ssr: high,
             #[cfg(not(target_arch = "wasm32"))]
-            ao: flag("--ao", high),
-            contact: flag("--contact-shadows", high),
+            ao: high,
+            contact: high,
             #[cfg(not(target_arch = "wasm32"))]
-            volumetric: flag("--volumetric", high),
+            volumetric: high,
             #[cfg(not(target_arch = "wasm32"))]
-            bloom: flag("--bloom", true),
+            bloom: true,
             #[cfg(not(target_arch = "wasm32"))]
-            taa: flag("--taa", true),
-            shadows: option("--shadow-size")
-                .and_then(|s| s.parse::<u32>().ok())
-                .filter(|n| [512, 1024, 2048, 4096].contains(n))
-                .unwrap_or(if high { 4096 } else { 2048 }),
-            scale: option("--render-scale")
-                .and_then(|s| s.parse::<f32>().ok())
-                .filter(|v| v.is_finite())
-                .unwrap_or(1.)
-                .clamp(0.7, 1.),
-            adaptive: option("--render-scale").is_none()
-                && (!args.iter().any(|s| {
-                    s == "--benchmark"
-                        || s == "--inspect"
-                        || s == "--title-capture"
-                        || s == "--mission-test"
-                }) || args.iter().any(|s| s == "--adaptive")),
+            taa: true,
+            shadows: if high {
+                4096
+            } else if low {
+                512
+            } else {
+                2048
+            },
+            scale: if low { 0.7 } else { 1. },
+            adaptive: true,
+            rain: true,
+            detailed_wet: !low,
+            detailed_containers: !low,
             over: 0.,
             under: 0.,
-            recent: std::collections::VecDeque::with_capacity(60),
+            recent: Default::default(),
         }
+    }
+    fn parse(args: &[String]) -> Self {
+        Self::with_saved(args, None)
+    }
+    pub(crate) fn with_saved(args: &[String], saved: Option<Self>) -> Self {
+        let option = |key: &str| args.windows(2).find(|w| w[0] == key).map(|w| w[1].as_str());
+        let saved = if crate::graphics_isolated(args) {
+            None
+        } else {
+            saved
+        };
+        let mut q = if let Some(name) = option("--quality") {
+            Self::preset(name)
+        } else {
+            saved.unwrap_or_else(|| Self::preset("medium"))
+        };
+        let flag = |key, old| match option(key) {
+            Some("on") => true,
+            Some("off") => false,
+            _ => old,
+        };
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            q.ssr = flag("--ssr", q.ssr);
+            q.ao = flag("--ao", q.ao);
+            q.volumetric = flag("--volumetric", q.volumetric);
+            q.bloom = flag("--bloom", q.bloom);
+            q.taa = flag("--taa", q.taa);
+        }
+        q.contact = flag("--contact-shadows", q.contact);
+        if let Some(size) = option("--shadow-size")
+            .and_then(|v| v.parse().ok())
+            .filter(|v| [0, 512, 1024, 2048, 4096].contains(v))
+        {
+            q.shadows = size;
+        }
+        if let Some(scale) = option("--render-scale") {
+            q.scale = scale
+                .parse::<f32>()
+                .ok()
+                .filter(|v| v.is_finite())
+                .unwrap_or(1.)
+                .clamp(MIN_SCALE, 1.);
+            q.adaptive = false;
+        }
+        if crate::graphics_isolated(args) {
+            q.adaptive =
+                args.iter().any(|a| a == "--adaptive") && option("--render-scale").is_none();
+        }
+        if args.iter().any(|a| {
+            matches!(
+                a.as_str(),
+                "--ssr"
+                    | "--ao"
+                    | "--contact-shadows"
+                    | "--volumetric"
+                    | "--bloom"
+                    | "--taa"
+                    | "--shadow-size"
+                    | "--render-scale"
+                    | "--adaptive"
+            )
+        }) {
+            q.preset = "custom".into();
+        }
+        q.reset_history();
+        q
+    }
+    pub fn reset_history(&mut self) {
+        self.over = 0.;
+        self.under = 0.;
+        self.recent.clear();
+    }
+    pub fn valid(&self) -> bool {
+        self.scale.is_finite()
+            && (0.5..=1.).contains(&self.scale)
+            && [0, 512, 1024, 2048, 4096].contains(&self.shadows)
+            && ["low", "medium", "high", "custom"].contains(&self.preset.as_str())
     }
     pub fn adapt(&mut self, dt: f32) {
         if !self.adaptive || !(0.001..0.1).contains(&dt) {
@@ -96,7 +187,7 @@ impl RenderQuality {
         }
         let old = self.scale;
         if self.over > 2. {
-            self.scale = (self.scale - 0.05).max(0.7);
+            self.scale = (self.scale - 0.05).max(MIN_SCALE);
             self.over = 0.;
         }
         if self.under > 5. {
@@ -125,6 +216,30 @@ mod tests {
         assert!(!q.adaptive);
     }
     #[test]
+    fn saved_settings_cli_precedence_and_isolation() {
+        let mut saved = RenderQuality::preset("low");
+        saved.bloom = false;
+        let q = RenderQuality::with_saved(&[], Some(saved.clone()));
+        assert!(!q.bloom);
+        assert_eq!(q.shadows, 512);
+        let args = ["--quality", "high", "--ssr", "off"].map(String::from);
+        let q = RenderQuality::with_saved(&args, Some(saved.clone()));
+        assert!(q.high && !q.ssr && q.bloom);
+        assert_eq!(q.shadows, 4096);
+        for mode in [
+            "--benchmark",
+            "--inspect",
+            "--title-capture",
+            "--headless-render",
+            "--mission-test",
+        ] {
+            let q = RenderQuality::with_saved(&[mode.into()], Some(saved.clone()));
+            assert!(q.bloom);
+            assert_eq!(q.shadows, 2048);
+            assert!(!q.adaptive);
+        }
+    }
+    #[test]
     fn scaling_has_hysteresis_and_bounds() {
         let mut q = RenderQuality::parse(&[]);
         for _ in 0..100 {
@@ -134,8 +249,8 @@ mod tests {
         for _ in 0..2000 {
             q.adapt(0.02);
         }
-        assert_eq!(q.scale, 0.7);
-        for _ in 0..5000 {
+        assert_eq!(q.scale, MIN_SCALE);
+        for _ in 0..6000 {
             q.adapt(0.01);
         }
         assert_eq!(q.scale, 1.);

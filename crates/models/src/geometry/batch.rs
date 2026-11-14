@@ -1,6 +1,8 @@
 //! Merge only stationary container children. Repeated variants share assembled meshes.
 use bevy::prelude::*;
 use std::collections::HashMap;
+#[derive(Resource, Default)]
+pub struct CoarseContainers(pub bool);
 #[derive(Component)]
 pub struct StaticContainer(pub usize);
 #[derive(Component)]
@@ -10,6 +12,7 @@ pub struct ContainerLod {
     detailed: bool,
 }
 pub fn update_lod(
+    coarse: Option<Res<CoarseContainers>>,
     cameras: Query<(&Camera, &GlobalTransform), With<Camera3d>>,
     mut roots: Query<(&GlobalTransform, &mut ContainerLod)>,
     mut visibility: Query<&mut Visibility>,
@@ -19,7 +22,9 @@ pub fn update_lod(
     };
     for (transform, mut lod) in &mut roots {
         let distance = transform.translation().distance(camera.translation());
-        let detailed = if lod.detailed {
+        let detailed = if coarse.as_ref().is_some_and(|c| c.0) {
+            false
+        } else if lod.detailed {
             distance < 65.
         } else {
             distance < 55.
@@ -219,6 +224,48 @@ mod tests {
                 .translation
                 .x,
             10.
+        );
+    }
+}
+
+#[cfg(test)]
+mod quality_tests {
+    use super::*;
+    #[test]
+    fn forcing_coarse_and_restoring_distance_lod_is_reversible() {
+        let mut app = App::new();
+        app.world_mut()
+            .spawn((Camera3d::default(), GlobalTransform::default()));
+        let near = app.world_mut().spawn(Visibility::Inherited).id();
+        let far = app.world_mut().spawn(Visibility::Hidden).id();
+        app.world_mut().spawn((
+            GlobalTransform::default(),
+            ContainerLod {
+                near: vec![near],
+                far,
+                detailed: true,
+            },
+        ));
+        app.insert_resource(CoarseContainers(true))
+            .add_systems(Update, update_lod);
+        app.update();
+        assert_eq!(
+            *app.world().get::<Visibility>(near).unwrap(),
+            Visibility::Hidden
+        );
+        assert_eq!(
+            *app.world().get::<Visibility>(far).unwrap(),
+            Visibility::Inherited
+        );
+        app.world_mut().resource_mut::<CoarseContainers>().0 = false;
+        app.update();
+        assert_eq!(
+            *app.world().get::<Visibility>(near).unwrap(),
+            Visibility::Inherited
+        );
+        assert_eq!(
+            *app.world().get::<Visibility>(far).unwrap(),
+            Visibility::Hidden
         );
     }
 }

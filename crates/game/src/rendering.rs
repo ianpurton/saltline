@@ -21,31 +21,97 @@ pub fn configure(
     mut c: Commands,
     quality: Res<crate::quality::RenderQuality>,
     cameras: Query<Entity, With<Camera3d>>,
+    mut lights: Query<(&mut DirectionalLight, &mut bevy::light::CascadeShadowConfig)>,
+    mut shadow_map: ResMut<bevy::light::DirectionalLightShadowMap>,
+    mut rain: Query<&mut Visibility, With<crate::rain::Rain>>,
+    mut previous: Local<Option<Vec<u32>>>,
 ) {
+    let key = vec![
+        quality.ssr as u32,
+        quality.ao as u32,
+        quality.contact as u32,
+        quality.volumetric as u32,
+        quality.taa as u32,
+        quality.bloom as u32,
+        quality.shadows,
+        quality.rain as u32,
+        quality.detailed_wet as u32,
+        quality.detailed_containers as u32,
+        quality.high as u32,
+    ];
+    if previous.as_ref() == Some(&key) {
+        return;
+    }
+    *previous = Some(key);
     for e in &cameras {
         let mut camera = c.entity(e);
-        if quality.ssr {
-            camera.insert(bevy::pbr::ScreenSpaceReflections::default());
+        macro_rules! effect {
+            ($enabled:expr, $ty:ty, $value:expr) => {
+                if $enabled {
+                    camera.insert($value);
+                } else {
+                    camera.remove::<$ty>();
+                }
+            };
         }
-        if quality.ao {
-            camera.insert(bevy::pbr::ScreenSpaceAmbientOcclusion::default());
-        }
-        if quality.contact {
-            camera.insert(bevy::pbr::ContactShadows::default());
-        }
-        if quality.volumetric {
-            camera.insert(bevy::light::VolumetricFog::default());
-        }
-        if quality.taa {
-            camera.insert(bevy::anti_alias::taa::TemporalAntiAliasing::default());
-        }
-        if quality.bloom {
-            camera.insert(bevy::post_process::bloom::Bloom {
+        effect!(
+            quality.ssr,
+            bevy::pbr::ScreenSpaceReflections,
+            bevy::pbr::ScreenSpaceReflections::default()
+        );
+        effect!(
+            quality.ao,
+            bevy::pbr::ScreenSpaceAmbientOcclusion,
+            bevy::pbr::ScreenSpaceAmbientOcclusion::default()
+        );
+        effect!(
+            quality.contact,
+            bevy::pbr::ContactShadows,
+            bevy::pbr::ContactShadows::default()
+        );
+        effect!(
+            quality.volumetric,
+            bevy::light::VolumetricFog,
+            bevy::light::VolumetricFog::default()
+        );
+        effect!(
+            quality.taa,
+            bevy::anti_alias::taa::TemporalAntiAliasing,
+            bevy::anti_alias::taa::TemporalAntiAliasing::default()
+        );
+        effect!(
+            quality.bloom,
+            bevy::post_process::bloom::Bloom,
+            bevy::post_process::bloom::Bloom {
                 intensity: 0.045,
                 ..default()
-            });
-        }
+            }
+        );
     }
+    for (mut light, mut cascades) in &mut lights {
+        light.shadow_maps_enabled = quality.shadows != 0;
+        *cascades = bevy::light::CascadeShadowConfigBuilder {
+            maximum_distance: if quality.high { 170. } else { 100. },
+            num_cascades: if quality.high { 4 } else { 2 },
+            first_cascade_far_bound: 16.,
+            ..default()
+        }
+        .build();
+    }
+    shadow_map.size = quality.shadows.max(512) as usize;
+    for mut visibility in &mut rain {
+        *visibility = if quality.rain {
+            Visibility::Inherited
+        } else {
+            Visibility::Hidden
+        };
+    }
+    c.insert_resource(saltline_models::materials::wet::SimpleWetSurfaces(
+        !quality.detailed_wet,
+    ));
+    c.insert_resource(saltline_models::geometry::batch::CoarseContainers(
+        !quality.detailed_containers,
+    ));
 }
 
 // WebGL 2 uses forward LDR rendering without compute or extra screen-space passes.
@@ -138,4 +204,100 @@ pub fn freeze_environment_maps(
             .insert(shared.clone());
     }
     info!("ENVIRONMENT cached static sky; disabled per-frame diffuse/specular convolution");
+}
+
+#[cfg(all(test, not(target_arch = "wasm32")))]
+mod tests {
+    use super::*;
+    #[test]
+    fn live_quality_updates_both_cameras_and_restores_effects() {
+        let mut app = App::new();
+        let cameras = [
+            app.world_mut().spawn(Camera3d::default()).id(),
+            app.world_mut().spawn(Camera3d::default()).id(),
+        ];
+        let light = app
+            .world_mut()
+            .spawn((
+                DirectionalLight::default(),
+                bevy::light::CascadeShadowConfig::default(),
+            ))
+            .id();
+        let rain = app
+            .world_mut()
+            .spawn((crate::rain::Rain, Visibility::Inherited))
+            .id();
+        app.insert_resource(crate::quality::RenderQuality::preset("high"))
+            .insert_resource(bevy::light::DirectionalLightShadowMap::default())
+            .add_systems(Update, configure);
+        app.update();
+        for camera in cameras {
+            assert!(
+                app.world()
+                    .get::<bevy::pbr::ScreenSpaceReflections>(camera)
+                    .is_some()
+            );
+        }
+        {
+            let mut q = app
+                .world_mut()
+                .resource_mut::<crate::quality::RenderQuality>();
+            q.ssr = false;
+            q.ao = false;
+            q.volumetric = false;
+            q.bloom = false;
+            q.taa = false;
+            q.shadows = 0;
+            q.rain = false;
+        }
+        app.update();
+        for camera in cameras {
+            assert!(
+                app.world()
+                    .get::<bevy::pbr::ScreenSpaceReflections>(camera)
+                    .is_none()
+            );
+            assert!(
+                app.world()
+                    .get::<bevy::post_process::bloom::Bloom>(camera)
+                    .is_none()
+            );
+            assert!(
+                app.world()
+                    .get::<bevy::anti_alias::taa::TemporalAntiAliasing>(camera)
+                    .is_none()
+            );
+        }
+        assert!(
+            !app.world()
+                .get::<DirectionalLight>(light)
+                .unwrap()
+                .shadow_maps_enabled
+        );
+        assert_eq!(
+            *app.world().get::<Visibility>(rain).unwrap(),
+            Visibility::Hidden
+        );
+        *app.world_mut()
+            .resource_mut::<crate::quality::RenderQuality>() =
+            crate::quality::RenderQuality::preset("high");
+        app.update();
+        for camera in cameras {
+            assert!(
+                app.world()
+                    .get::<bevy::pbr::ScreenSpaceReflections>(camera)
+                    .is_some()
+            );
+        }
+        assert!(
+            app.world()
+                .get::<DirectionalLight>(light)
+                .unwrap()
+                .shadow_maps_enabled
+        );
+        assert_eq!(
+            *app.world().get::<Visibility>(rain).unwrap(),
+            Visibility::Inherited
+        );
+    }
 }

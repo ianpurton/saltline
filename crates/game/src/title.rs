@@ -60,6 +60,7 @@ pub(crate) fn setup(
     mut fonts: ResMut<Assets<Font>>,
     visuals: Res<Visuals>,
     shared_sky: Res<crate::rendering::SharedSky>,
+    #[cfg(target_os = "linux")] graphics: Option<Res<crate::graphics::GraphicsState>>,
 ) {
     let sky = shared_sky.0.clone();
     // Keep menu text available in copied builds and from any working directory.
@@ -101,9 +102,17 @@ pub(crate) fn setup(
             left.spawn((Node { width: px(56.), height: px(3.), margin: UiRect::vertical(px(10.)), ..default() }, BackgroundColor(AMBER)));
             left.spawn(label("The port’s security net has gone feral. Cut its three uplinks. Reach the boat.", 18., &font, INK));
             left.spawn(Node { flex_direction: FlexDirection::Row, column_gap: px(8.), margin: UiRect::top(px(22.)), ..default() }).with_children(|row| {
-                for (index, name) in ["D E P L O Y", "S E T T I N G S", "C O N T R O L S"].iter().enumerate() {
+                let names = ["D E P L O Y", "S E T T I N G S", "C O N T R O L S"];
+                #[cfg(target_os = "linux")]
+                let names: Vec<_> = names.into_iter().chain(graphics.is_some().then_some("G R A P H I C S")).collect();
+                for (index, name) in names.iter().enumerate() {
                     row.spawn((Button, ActivateOnPress, Hovered::default(), MenuButton(index==0), Node { width: px(if index==0 {132.} else {104.}), height: px(43.), border: UiRect::all(px(1.)), align_items: AlignItems::Center, justify_content: JustifyContent::Center, ..default() }, BorderColor::all(INK.with_alpha(0.5)), BackgroundColor(if index==0 {AMBER} else {Color::srgba(0.03,0.04,0.04,0.7)})))
-                    .observe(move |_: On<Activate>, mut state: ResMut<TitleState>, mut m: ResMut<Mission>, mut enemies: Query<(&mut Enemy, &mut Transform)>| {
+                    .observe(move |_: On<Activate>, mut state: ResMut<TitleState>, mut m: ResMut<Mission>, mut enemies: Query<(&mut Enemy, &mut Transform)>, #[cfg(target_os = "linux")] mut graphics: Option<ResMut<crate::graphics::GraphicsState>>| {
+                        #[cfg(target_os = "linux")]
+                        if let Some(graphics) = graphics.as_mut() {
+                            if index == 3 { graphics.open_from_home(); state.panel=0; return; }
+                            if graphics.open { return; }
+                        }
                         if index==0 {
                             *m=Mission::default(); m.mode=Mode::Playing; state.panel=0;
                             for (mut enemy, mut transform) in &mut enemies {
@@ -124,6 +133,7 @@ pub(crate) fn setup(
 }
 fn update(
     clock: Res<crate::presentation::PresentationClock>,
+    #[cfg(target_os = "linux")] graphics: Option<Res<crate::graphics::GraphicsState>>,
     keys: Res<ButtonInput<KeyCode>>,
     m: Res<Mission>,
     v: Res<Visuals>,
@@ -145,13 +155,17 @@ fn update(
     mut buttons: Query<(&Hovered, &MenuButton, &mut BackgroundColor)>,
 ) {
     let menu = m.mode == Mode::Menu && v.view.is_empty();
-    if keys.just_pressed(KeyCode::Escape) || !menu {
+    #[cfg(target_os = "linux")]
+    let graphics_open = graphics.as_ref().is_some_and(|s| s.open);
+    #[cfg(not(target_os = "linux"))]
+    let graphics_open = false;
+    if keys.just_pressed(KeyCode::Escape) || !menu || graphics_open {
         state.panel = 0;
     }
     if menu && state.panel == 1 && keys.just_pressed(KeyCode::KeyM) {
         state.reduced_motion = !state.reduced_motion;
     }
-    if menu && !state.reduced_motion {
+    if menu && !state.reduced_motion && !graphics_open {
         state.clock += clock.dt;
     }
     for (mut camera, mut transform, title) in &mut cameras {

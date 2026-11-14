@@ -1,7 +1,7 @@
 # Rendering and performance
 
 SALTLINE targets a 1920×1080 native Linux output at 60 FPS. The 3D view can scale
-between 70% and 100%; menus and HUD stay at output resolution. This target is a
+between 50% and 100%; menus and HUD stay at output resolution. This target is a
 measurement requirement, not a claim about every GPU.
 
 ## Run and compare
@@ -39,14 +39,14 @@ of headroom. `--render-scale` disables that adaptation.
 
 | Option | Default | Purpose |
 | --- | --- | --- |
-| `--quality medium\|high` | medium | Shared title and gameplay profile |
+| `--quality low\|medium\|high` | medium | Shared title and gameplay profile |
 | `--resolution WIDTHxHEIGHT` | 1920x1080 | Output resolution |
-| `--render-scale 0.7…1.0` | adaptive in play | Fixed 3D resolution multiplier |
+| `--render-scale 0.5…1.0` | adaptive in play | Fixed 3D resolution multiplier |
 | `--ssr on\|off` | high only | Screen-space reflections |
 | `--ao on\|off` | high only | Screen-space ambient occlusion |
 | `--contact-shadows on\|off` | high only | Contact shadow pass |
 | `--volumetric on\|off` | high only | Volumetric fog |
-| `--shadow-size 512\|1024\|2048\|4096` | 2048 medium, 4096 high | Shadow map resolution |
+| `--shadow-size 0\|512\|1024\|2048\|4096` | 2048 medium, 4096 high | Shadow map resolution |
 | `--taa on\|off` | on | Temporal antialiasing |
 | `--bloom on\|off` | on | Restrained highlight bloom |
 | `--profile` | off | CPU/GPU render-pass diagnostics |
@@ -182,3 +182,45 @@ software captures, set `SALTLINE_SOFTWARE=1`.
 Procedural sound playback requires an audio device. Headless runs disable audio;
 waveform generation and state handling can be checked without one, but listening
 still needs a device.
+
+## Graphics menu (native Linux)
+
+Select **Graphics** on the home screen (or press **G**). During play, press
+**Esc**, select **Graphics** (or press **G**), and adjust settings while the
+scene continues rendering behind the paused game. Use the mouse arrows or
+**Up/Down** to select and **Left/Right** to change a value. **Enter/Space** activates
+the selected control; **Esc/Back** returns to the home screen or pause page. Choose Resume or
+press Esc again to return to play. The timing panel stays visible to the left.
+
+Changes apply immediately and save automatically. Low, Medium, and High presets
+provide starting points; individual adjustments select Custom. Reset Defaults
+restores Medium. Settings include render scale (50–100%), adaptive resolution,
+shadows (Off, 512, 1024, 2048, 4096), reflections, ambient occlusion, contact shadows,
+volumetric fog, bloom, TAA, rain, wet-surface shading and container detail.
+Manual scale adjustment is inactive while adaptation is enabled; its row shows the
+current scale. Adaptation can now reduce native Linux rendering to 50%.
+
+| Setting | Low | Medium / default | High |
+| --- | --- | --- | --- |
+| Initial scale | 70% | 100% | 100% |
+| Adaptive resolution | On | On | On |
+| Shadow size | 512 | 2048 | 4096 |
+| Reflections, AO, contact shadows, volumetric fog | Off | Off | On |
+| Bloom, TAA, rain | On | On | On |
+| Wet surfaces | Simple | Detailed | Detailed |
+| Container detail | Low | Standard | Standard |
+
+Simple wet surfaces retain basic PBR shading without procedural wet noise/waves.
+Low container detail uses existing coarse container meshes at all distances;
+Standard restores distance-based detail. Neither changes collisions or mission
+logic. Changes can briefly compile shaders; compare timings after they settle.
+These options do not guarantee a particular frame rate.
+
+Preferences use versioned JSON at `$XDG_CONFIG_HOME/saltline/graphics.json`, or
+`$HOME/.config/saltline/graphics.json` when XDG_CONFIG_HOME is unset. Invalid or
+unsupported preferences fall back to defaults with a log warning. Save failures
+leave changes active and show a message in the menu. Precedence is defaults,
+saved preferences, then explicit command-line options. `--quality low|medium|high`
+selects a preset before individual overrides. Benchmarks, mission tests, offscreen
+runs and automated captures ignore saved preferences and do not create the menu;
+their defaults and CLI options determine quality. Browser play retains its existing UI.

@@ -211,6 +211,7 @@ pub fn update(
     mut damage: Query<&mut BorderColor, With<Damage>>,
     performance: Option<Res<saltline_game::performance::PerformanceSettings>>,
     diagnostics: Option<bevy::diagnostic::Diagnostics>,
+    #[cfg(target_os = "linux")] graphics: Option<Res<crate::graphics::GraphicsState>>,
 ) {
     let _trace = info_span!("hud::update").entered();
     let _cpu = saltline_game::performance::CpuMeasurement::new(
@@ -275,7 +276,18 @@ pub fn update(
                     }
                 }
                 Value::Overlay => match m.mode {
-                    Mode::Paused => "OPERATION PAUSED\n\nENTER / ESC  —  RESUME".into(),
+                    Mode::Paused => {
+                        #[cfg(target_os = "linux")]
+                        if graphics.is_some() {
+                            String::new()
+                        } else {
+                            "OPERATION PAUSED\n\nENTER / ESC  —  RESUME".into()
+                        }
+                        #[cfg(not(target_os = "linux"))]
+                        {
+                            "OPERATION PAUSED\n\nENTER / ESC  —  RESUME".into()
+                        }
+                    }
                     Mode::Dead => "SIGNAL LOST\n\nENTER  —  REDEPLOY".into(),
                     Mode::Victory => format!(
                         "EXTRACTION CONFIRMED\n\n{} threats neutralized  ·  {:.0} seconds\n\nENTER  —  NEW OPERATION",

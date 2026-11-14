@@ -5,7 +5,21 @@ mod driver;
 mod effects;
 #[cfg(not(target_arch = "wasm32"))]
 mod finish;
+#[cfg(target_os = "linux")]
+mod graphics;
 mod hud;
+fn graphics_isolated(args: &[String]) -> bool {
+    args.iter().any(|a| {
+        matches!(
+            a.as_str(),
+            "--headless-render"
+                | "--benchmark"
+                | "--inspect"
+                | "--title-capture"
+                | "--mission-test"
+        )
+    })
+}
 mod presentation;
 mod quality;
 mod rain;
@@ -89,6 +103,10 @@ fn main() {
     } else {
         app.add_plugins(plugins);
     }
+    #[cfg(target_os = "linux")]
+    if !graphics_isolated(&saltline_game::launch_args().collect::<Vec<_>>()) {
+        app.add_plugins(graphics::GraphicsPlugin);
+    }
     capture::readiness(&mut app);
     benchmark::install_counters(&mut app);
     app.add_plugins(rain::RainPlugin);
@@ -135,7 +153,8 @@ fn main() {
     #[cfg(not(target_arch = "wasm32"))]
     app.add_plugins(saltline_models::materials::wet::WetPlugin)
         .add_systems(Update, presentation::water.after(presentation::clock))
-        .add_systems(Update, rendering::freeze_environment_maps);
+        .add_systems(Update, rendering::freeze_environment_maps)
+        .add_systems(Update, rendering::configure);
     if saltline_game::launch_args().any(|a| a == "--inspect" || a == "--title-capture") {
         app.insert_resource(bevy::time::TimeUpdateStrategy::ManualDuration(
             std::time::Duration::from_secs_f64(1. / 60.),
@@ -153,7 +172,7 @@ fn main() {
             DefaultOpaqueRendererMethod::deferred()
         })
         .insert_resource(bevy::light::DirectionalLightShadowMap {
-            size: quality.shadows as usize,
+            size: quality.shadows.max(512) as usize,
         })
         .add_message::<PresentationEvent>()
         .init_resource::<presentation::PresentationClock>()
@@ -299,9 +318,7 @@ fn setup(
         }),
     });
     #[cfg(not(target_arch = "wasm32"))]
-    if quality.volumetric {
-        rendering::mist(&mut c, &mut images);
-    }
+    rendering::mist(&mut c, &mut images);
     let port = saltline_world::build(&mut c, &k);
     // Foreground stacks frame the title shot; excluded from gameplay collision.
     for z in [-7., -17.] {
@@ -455,6 +472,7 @@ fn setup(
 #[derive(Component)]
 struct Muzzle;
 fn controls(
+    #[cfg(target_os = "linux")] graphics_state: Option<Res<graphics::GraphicsState>>,
     keys: Res<ButtonInput<KeyCode>>,
     mouse: Res<ButtonInput<MouseButton>>,
     motion: Res<AccumulatedMouseMotion>,
@@ -471,7 +489,13 @@ fn controls(
         diagnostics,
         "saltline/system/main/controls_ms",
     );
-    if keys.just_pressed(KeyCode::Enter) && m.mode != Mode::Playing {
+    #[cfg(target_os = "linux")]
+    let graphics_open = graphics_state
+        .as_ref()
+        .is_some_and(|s| s.open || s.consumed);
+    #[cfg(not(target_os = "linux"))]
+    let graphics_open = false;
+    if !graphics_open && keys.just_pressed(KeyCode::Enter) && m.mode != Mode::Playing {
         if m.mode != Mode::Paused {
             *m = Mission::default();
             for (mut e, mut t) in &mut enemies {
@@ -485,7 +509,7 @@ fn controls(
         *a = Actions::default();
         return;
     }
-    if keys.just_pressed(KeyCode::Escape) {
+    if !graphics_open && keys.just_pressed(KeyCode::Escape) {
         m.mode = if m.mode == Mode::Playing {
             Mode::Paused
         } else if m.mode == Mode::Paused {

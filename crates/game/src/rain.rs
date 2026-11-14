@@ -26,6 +26,8 @@ impl Material for RainMaterial {
         AlphaMode::Blend
     }
 }
+#[derive(Component)]
+pub struct Rain;
 pub struct RainPlugin;
 impl Plugin for RainPlugin {
     fn build(&self, app: &mut App) {
@@ -68,6 +70,7 @@ pub fn setup(
     .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
     .with_inserted_indices(Indices::U32(indices));
     c.spawn((
+        Rain,
         Mesh3d(meshes.add(mesh)),
         MeshMaterial3d(materials.add(RainMaterial {
             motion: Vec4::ZERO,
