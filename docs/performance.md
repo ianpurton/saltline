@@ -224,3 +224,9 @@ saved preferences, then explicit command-line options. `--quality low|medium|hig
 selects a preset before individual overrides. Benchmarks, mission tests, offscreen
 runs and automated captures ignore saved preferences and do not create the menu;
 their defaults and CLI options determine quality. Browser play retains its existing UI.
+
+The game now renders the [original berth layout](map.md). Existing benchmark stage
+identifiers are retained, but their viewpoints and world geometry have changed;
+compare timings only against builds of the same map. The `corridor` stage now
+samples the authored container yard. The renderer and 16.7 ms acceptance threshold
+are unchanged.

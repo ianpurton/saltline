@@ -12,6 +12,7 @@ pub struct SurfacePalette {
 }
 pub struct Kit {
     pub surfaces: SurfacePalette,
+    pub ship_hull: [Handle<Mesh>; 2],
     pub hard: geometry::HardSurface,
     pub labels: std::collections::HashMap<&'static str, Handle<Mesh>>,
     pub optic_glass: Handle<StandardMaterial>,
@@ -30,7 +31,15 @@ impl Kit {
         a: &mut Assets<StandardMaterial>,
         images: &mut Assets<Image>,
     ) -> Self {
-        let mats = materials::legacy(a, images);
+        let mut mats = materials::legacy(a, images);
+        for (_, rgb) in library::map_props::PAINTS {
+            let mut paint = a.get(&mats[1]).cloned().unwrap_or_default();
+            // Catalogue paints are solid pigments, not the legacy hazard-stripe texture.
+            paint.base_color_texture = None;
+            paint.base_color = Color::srgb(rgb[0], rgb[1], rgb[2]);
+            paint.perceptual_roughness = 0.52;
+            mats.push(a.add(paint));
+        }
         let mut sea_material = a.get(&mats[8]).cloned().unwrap_or_default();
         // Ocean UVs cover kilometres; puddle UVs cover metres.
         sea_material.uv_transform = bevy::math::Affine2::from_scale(Vec2::splat(480.));
@@ -46,6 +55,10 @@ impl Kit {
             }
         }
         Self {
+            ship_hull: [
+                m.add(library::ship::berth_hull(false)),
+                m.add(library::ship::berth_hull(true)),
+            ],
             surfaces: SurfacePalette {
                 asphalt: mats[0].clone(),
                 concrete: mats[9].clone(),

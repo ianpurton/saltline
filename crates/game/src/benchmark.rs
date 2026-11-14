@@ -125,11 +125,19 @@ pub fn route(
             m.mode = Mode::Playing;
             m.health = 100.;
             m.position = match stage {
-                1 => Vec3::new(0., 1.7, -28.),
-                2 => Vec3::new(21., 1.7, -40.),
+                1 => saltline_world::layout::view("corridor").0,
+                2 => saltline_world::layout::view("waterfront").0,
                 _ => saltline_world::EXIT + Vec3::Y * 1.7,
             };
-            m.yaw = if stage == 2 { -1.3 } else { 0. };
+            let (_, target) = saltline_world::layout::view(if stage == 1 {
+                "corridor"
+            } else if stage == 2 {
+                "waterfront"
+            } else {
+                "extraction"
+            });
+            let direction = target - m.position;
+            m.yaw = (-direction.x).atan2(-direction.z);
             m.pitch = 0.;
         }
         *a = Actions::default();

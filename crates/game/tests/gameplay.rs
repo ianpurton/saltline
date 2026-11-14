@@ -1,6 +1,6 @@
 use bevy::{prelude::*, time::TimeUpdateStrategy};
 use saltline_game::*;
-use saltline_world::{EXIT, Port, RELAYS};
+use saltline_world::{CollisionFlags, EXIT, Port, RELAYS};
 use std::time::Duration;
 fn app() -> App {
     let mut a = App::new();
@@ -13,7 +13,13 @@ fn app() -> App {
         .init_resource::<Actions>()
         .init_resource::<Port>()
         .add_systems(Update, simulate);
-    a.world_mut().resource_mut::<Mission>().mode = Mode::Playing;
+    {
+        let mut m = a.world_mut().resource_mut::<Mission>();
+        m.mode = Mode::Playing;
+        m.position = Vec3::new(0., 1.68, 8.);
+        m.last_safe_ground = Vec3::new(0., 0., 8.);
+        m.yaw = 0.;
+    }
     a.update();
     a
 }
@@ -31,7 +37,7 @@ fn movement_collision_and_pause() {
         a.update();
     }
     assert_eq!(p, a.world().resource::<Mission>().position);
-    assert!(blocked(Vec3::new(25., 0., 0.), &Port::default()));
+    assert!(blocked(Vec3::new(41., 0., 0.), &Port::default()));
 }
 #[test]
 fn firing_damage_reload() {
@@ -98,11 +104,47 @@ fn detection_attack_and_death() {
 fn obstructed_relay() {
     let mut a = app();
     a.world_mut().resource_mut::<Mission>().position = RELAYS[0] + Vec3::new(0., 1.7, 2.);
-    a.world_mut()
-        .resource_mut::<Port>()
-        .walls
-        .push((RELAYS[0] + Vec3::Z, Vec3::new(1., 2., 0.2)));
+    a.world_mut().resource_mut::<Port>().add_box(
+        RELAYS[0] + Vec3::new(0., 1., 1.),
+        Vec3::new(2., 2., 0.4),
+        0.,
+        CollisionFlags::SOLID,
+        "wall",
+    );
     a.world_mut().resource_mut::<Actions>().interact = true;
     a.update();
     assert!(!a.world().resource::<Mission>().relays[0]);
+}
+
+#[test]
+fn map_traversal_water_rescue_and_crouch_clearance() {
+    let mut a = app();
+    {
+        let mut m = a.world_mut().resource_mut::<Mission>();
+        m.position = Vec3::new(32., -4., 20.);
+        m.last_safe_ground = Vec3::new(27., 0., 20.);
+        m.yaw = 0.;
+    }
+    a.update();
+    let m = a.world().resource::<Mission>();
+    assert_eq!(m.feet(), Vec3::new(27., 0., 20.));
+    assert_eq!(m.health, 88.);
+    assert_eq!(m.vertical, 0.);
+    assert!((m.yaw - std::f32::consts::PI).abs() < 0.001);
+    a.world_mut().resource_mut::<Port>().add_box(
+        Vec3::new(27., 1.5, 20.),
+        Vec3::new(2., 0.3, 2.),
+        0.,
+        CollisionFlags::SOLID,
+        "ceiling",
+    );
+    {
+        let mut m = a.world_mut().resource_mut::<Mission>();
+        m.crouched = true;
+        m.position.y = 1.05;
+    }
+    a.world_mut().resource_mut::<Actions>().crouch = false;
+    a.update();
+    assert!(a.world().resource::<Mission>().crouched);
+    assert!((a.world().resource::<Mission>().feet().y).abs() < 0.001);
 }

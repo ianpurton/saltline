@@ -82,11 +82,11 @@ fn update(
     enemies: Query<(&Enemy, &Transform)>,
 ) {
     let paused = matches!(m.mode, Mode::Paused | Mode::Dead | Mode::Victory);
-    let interior = m.position.x > -35.
-        && m.position.x < -25.
-        && [-25_f32, -55.]
-            .iter()
-            .any(|z| (m.position.z - z).abs() < 10.);
+    let interior = m.position.x > -16.
+        && m.position.x < 12.
+        && m.position.z > -28.
+        && m.position.z < -11.
+        && m.position.y < 9.5;
     let alert = enemies
         .iter()
         .any(|(e, t)| e.health > 0. && t.translation.distance(m.position) < 18.);

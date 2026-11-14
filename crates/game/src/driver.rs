@@ -12,6 +12,9 @@ pub fn drive(
     mut benchmark: ResMut<crate::benchmark::Benchmark>,
     batches: Res<crate::benchmark::BatchCounters>,
     ready: Res<crate::capture::RenderReady>,
+    port: Res<saltline_world::Port>,
+    mut route: Local<Vec<Vec3>>,
+    mut route_target: Local<Option<Vec3>>,
 ) {
     if !saltline_game::launch_args().any(|x| x == "--mission-test" || x == "--benchmark") {
         return;
@@ -63,6 +66,7 @@ pub fn drive(
     let enemy = enemies
         .iter()
         .filter(|(e, _)| e.health > 0.)
+        .filter(|(_, t)| visible(m.position, t.translation + Vec3::Y * 0.65, &port))
         .filter(|(_, t)| t.translation.distance(m.position) < 20.)
         .min_by(|a, b| {
             a.1.translation
@@ -73,17 +77,30 @@ pub fn drive(
     a.reload = m.ammo < 5;
     a.interact = true;
     a.movement = Vec2::ZERO;
-    if let Some((_, t)) = enemy {
+    if *route_target != Some(target) {
+        *route = port.route(m.feet(), target);
+        *route_target = Some(target);
+    }
+    while route
+        .first()
+        .is_some_and(|p| p.xz().distance(m.position.xz()) < 0.25)
+    {
+        route.remove(0);
+    }
+    if let Some((_, t)) =
+        enemy.filter(|(_, t)| visible(m.position, t.translation + Vec3::Y * 0.65, &port))
+    {
         let d = t.translation + Vec3::Y * 0.65 - m.position;
         m.yaw = (-d.x).atan2(-d.z);
         m.pitch = d.y.atan2(d.xz().length());
         a.fire = true;
     } else {
-        let d = target - m.position;
+        let waypoint = route.first().copied().unwrap_or(target);
+        let d = waypoint - m.position;
         m.yaw = (-d.x).atan2(-d.z);
         m.pitch = 0.;
-        if d.xz().length() > 1.5 {
-            a.movement = Vec2::Y;
+        if !route.is_empty() || (target - m.position).xz().length() > 1.5 {
+            a.movement = Vec2::Y * (d.xz().length() / (3.8 * time.delta_secs().max(0.001))).min(1.);
         }
     }
 }

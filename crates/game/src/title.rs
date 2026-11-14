@@ -171,14 +171,16 @@ fn update(
     for (mut camera, mut transform, title) in &mut cameras {
         camera.is_active = if title { menu } else { !menu };
         if title {
-            // Closed periodic dolly: continuous position and velocity at the seam.
-            let phase = state.clock * std::f32::consts::TAU / 100.;
-            *transform = Transform::from_xyz(
-                1.5 + phase.sin() * 1.8,
-                2.6 + phase.cos() * 0.18,
-                -3. + phase.cos() * 3.,
-            )
-            .looking_at(Vec3::new(10., 7., -65.), Vec3::Y);
+            // Smoothly follow the original authored berth tour, including warehouse access.
+            let tour = saltline_world::layout::CINEMATIC;
+            let phase = (state.clock / 8.).rem_euclid(tour.len() as f32);
+            let index = phase.floor() as usize;
+            let t = phase.fract();
+            let t = t * t * (3. - 2. * t);
+            let (a, look_a) = tour[index];
+            let (b, look_b) = tour[(index + 1) % tour.len()];
+            *transform = Transform::from_translation(a.lerp(b, t))
+                .looking_at(look_a.lerp(look_b, t), Vec3::Y);
         }
     }
     for (mut visible, root, panel, enemy, crosshair, hud, dressing) in &mut visibility {

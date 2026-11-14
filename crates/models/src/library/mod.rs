@@ -10,3 +10,5 @@ pub mod relay;
 pub mod rifle;
 pub mod ship;
 pub mod warehouse;
+
+pub mod map_props;

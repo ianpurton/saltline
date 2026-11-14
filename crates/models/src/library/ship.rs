@@ -91,3 +91,56 @@ pub fn build(c: &mut Commands, k: &Kit, root: Entity) {
         );
     }
 }
+
+/// Native translation of the reference hull's longitudinal flare and bow profile.
+/// Root is (41, 0, -9); dimensions are metres, not a scaled box silhouette.
+pub fn berth_hull(upper: bool) -> Mesh {
+    let deck = |d: f32| {
+        13. + 1.7 * (1. - d / 20.).max(0.).powi(2) + 0.5 * ((d - 51.) / 12.).max(0.).powi(2)
+    };
+    let point = |d: f32, y: f32, side: f32| {
+        let r = ((y + 1.6) / (13. + 1.6)).clamp(0., 1.);
+        let bow = 17. - 8.5 * r.powf(1.3);
+        let l = d / bow;
+        let mut w = 0.2
+            + 7.8
+                * if l >= 1. {
+                    1.
+                } else {
+                    (l * std::f32::consts::FRAC_PI_2).sin().max(0.).powf(0.72)
+                };
+        let stern = (d - 53.) / 10.;
+        if stern > 0. {
+            w *= 1. - 0.24 * stern * stern * (1. - 0.6 * r);
+        }
+        Vec3::new(
+            side * w,
+            y,
+            -d - (deck(0.) - y) * 0.22 * (1. - d / 22.).max(0.),
+        )
+    };
+    let mut mesh = geometry::mesh::Builder::default();
+    for side in [-1., 1.] {
+        for i in 0..63 {
+            for j in 0..8 {
+                let a = i as f32;
+                let b = a + 1.;
+                let lower = if upper { 1. } else { -4.4 };
+                let y = |d: f32, t: f32| lower + (if upper { deck(d) } else { 1. } - lower) * t;
+                let t = j as f32 / 8.;
+                let u = (j + 1) as f32 / 8.;
+                let mut q = [
+                    point(a, y(a, t), side),
+                    point(b, y(b, t), side),
+                    point(b, y(b, u), side),
+                    point(a, y(a, u), side),
+                ];
+                if side < 0. {
+                    q.reverse();
+                }
+                mesh.quad(q);
+            }
+        }
+    }
+    mesh.finish()
+}

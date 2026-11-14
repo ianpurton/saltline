@@ -1,167 +1,237 @@
+pub mod collision;
 mod dressing;
+pub mod layout;
+mod structures;
 use bevy::prelude::*;
-use saltline_models::Kit;
-#[derive(Resource, Default)]
-pub struct Port {
-    pub walls: Vec<(Vec3, Vec3)>,
+pub use collision::{Collider, CollisionFlags, Port};
+pub use layout::{EXIT, RELAYS};
+use saltline_models::{
+    Kit,
+    library::{
+        container::ContainerSpec,
+        map_props::{self, PropKind},
+    },
+};
+#[derive(Component)]
+pub struct AuthoredProp(pub usize);
+#[derive(Component)]
+pub struct AuthoredTier {
+    pub stack: usize,
+    pub tier: usize,
 }
-pub const RELAYS: [Vec3; 3] = [
-    Vec3::new(-5., 0., -13.),
-    Vec3::new(8., 0., -38.),
-    Vec3::new(-6., 0., -61.),
-];
-pub const EXIT: Vec3 = Vec3::new(18., 0., -75.);
+/// Reproducible Mulberry32 stream; cosmetic RNG never changes collision topology.
+struct Rng(u32);
+impl Rng {
+    fn next(&mut self) -> f32 {
+        self.0 = self.0.wrapping_add(0x6d2b79f5);
+        let mut t = self.0;
+        t = (t ^ (t >> 15)).wrapping_mul(t | 1);
+        t ^= t.wrapping_add((t ^ (t >> 7)).wrapping_mul(t | 61));
+        ((t ^ (t >> 14)) as f64 / 4294967296.) as f32
+    }
+}
 pub fn build(c: &mut Commands, k: &Kit) -> Port {
     let mut port = Port::default();
     let root = k.root(c, Vec3::ZERO);
-    let ground = k.part(
-        c,
-        root,
-        Vec3::new(-12., -0.25, -35.),
-        Vec3::new(81., 0.5, 105.),
-        0,
-    );
-    c.entity(ground)
-        .insert(MeshMaterial3d(k.surfaces.asphalt.clone()));
-    #[cfg(not(target_arch = "wasm32"))]
-    c.entity(ground)
-        .insert(saltline_models::materials::wet::WetSurface(false));
-    let _ = ground;
-    let ocean = k.part(
-        c,
-        root,
-        Vec3::new(65., -0.55, -40.),
-        Vec3::new(2400., 0.1, 2400.),
-        8,
-    );
-    c.entity(ocean)
-        .insert(MeshMaterial3d(k.surfaces.water.clone()));
-    #[cfg(not(target_arch = "wasm32"))]
-    c.entity(ocean)
-        .insert(saltline_models::materials::wet::WetSurface(true));
-    for row in 0..8 {
-        for side in [-1., 1.] {
-            let x = side * (12. + (row % 2) as f32 * 3.);
-            let z = -row as f32 * 11. - 9.;
-            for stack in 0..if row % 3 == 0 { 3 } else { 2 } {
-                k.container(
-                    c,
-                    Vec3::new(x, stack as f32 * 2.85, z),
-                    1 + (row % 3) as usize,
+    c.entity(root)
+        .insert(Name::new("SALTLINE / original berth"));
+    structures::shell(c, k, root, &mut port);
+    let mut rng = Rng(1337);
+    for (stack_index, stack) in layout::STACKS.iter().enumerate() {
+        let mut y = 0.;
+        for (tier_index, tier) in stack.tiers.iter().enumerate() {
+            let x = stack.center.x
+                + tier.offset.x
+                + if tier_index > 0 {
+                    (rng.next() * 2. - 1.) * 0.05 * stack.jitter
+                } else {
+                    0.
+                };
+            let z = stack.center.y
+                + tier.offset.y
+                + if tier_index > 0 {
+                    (rng.next() * 2. - 1.) * 0.04 * stack.jitter
+                } else {
+                    0.
+                };
+            let yaw = stack.yaw
+                + (rng.next() * 2. - 1.)
+                    * 0.022
+                    * stack.jitter
+                    * if tier_index > 0 { 0.6 } else { 1. }
+                + if tier.flip { std::f32::consts::PI } else { 0. };
+            let entity = k.container_spec(
+                c,
+                Vec3::new(x, y, z),
+                ContainerSpec {
+                    length: tier.length,
+                    height: tier.height,
+                    paint: tier.paint,
+                    reefer: tier.reefer,
+                    doors: tier.doors,
+                },
+            );
+            c.entity(entity).insert((
+                Transform::from_xyz(x, y, z).with_rotation(Quat::from_rotation_y(yaw)),
+                AuthoredTier {
+                    stack: stack_index,
+                    tier: tier_index,
+                },
+                ChildOf(root),
+            ));
+            port.add_box(
+                Vec3::new(x, y + tier.height * 0.5, z),
+                Vec3::new(tier.length, tier.height, 2.438),
+                yaw,
+                CollisionFlags::SOLID,
+                "metal",
+            );
+            y += tier.height;
+        }
+    }
+    for (index, p) in layout::PLACEMENTS.iter().enumerate() {
+        let entity = map_props::build(c, k, root, p.kind, p.options);
+        c.entity(entity).insert((
+            Transform::from_translation(p.position).with_rotation(Quat::from_rotation_y(p.yaw)),
+            AuthoredProp(index),
+        ));
+        if p.no_collision {
+            continue;
+        }
+        let size = p.kind.size();
+        let transform = |offset: Vec3| p.position + Quat::from_rotation_y(p.yaw) * offset;
+        match p.kind {
+            PropKind::Stairs => {
+                for i in 0..12 {
+                    let h = (i + 1) as f32 * 0.2;
+                    port.add_box(
+                        transform(Vec3::new(-1.5 + i as f32 * 0.2 + 0.1, h * 0.5, 0.)),
+                        Vec3::new(0.2, h, 1.),
+                        p.yaw,
+                        CollisionFlags::SOLID,
+                        "metal",
+                    );
+                }
+                port.add_box(
+                    transform(Vec3::new(1.2, 1.3, 0.)),
+                    Vec3::new(0.64, 2.6, 0.96),
+                    p.yaw,
+                    CollisionFlags::SOLID,
+                    "metal",
                 );
             }
-            port.walls
-                .push((Vec3::new(x, 2., z), Vec3::new(1.8, 4., 4.8)));
+            PropKind::Catwalk => {
+                port.add_box(
+                    transform(Vec3::new(0., 0.025, 0.)),
+                    Vec3::new(3., 0.05, 1.05),
+                    p.yaw,
+                    CollisionFlags::SOLID,
+                    "metal",
+                );
+                for z in [-0.565, 0.565] {
+                    port.add_box(
+                        transform(Vec3::new(0., 0.55, z)),
+                        Vec3::new(3., 1., 0.04),
+                        p.yaw,
+                        CollisionFlags::SOLID,
+                        "metal",
+                    );
+                }
+            }
+            PropKind::TrafficCone | PropKind::SignPost | PropKind::GateArm => {
+                let stem = if p.kind == PropKind::SignPost {
+                    Vec3::new(0.06, 2.4, 0.06)
+                } else if p.kind == PropKind::GateArm {
+                    Vec3::new(0.3, 1.1, 0.3)
+                } else {
+                    size
+                };
+                let offset = if p.kind == PropKind::GateArm {
+                    Vec3::new(-2., 0.55, 0.)
+                } else {
+                    Vec3::Y * stem.y * 0.5
+                };
+                port.add_box(
+                    transform(offset),
+                    stem,
+                    p.yaw,
+                    CollisionFlags::SOLID,
+                    "metal",
+                );
+            }
+            _ => port.add_box(
+                p.position + Vec3::Y * size.y * 0.5,
+                size,
+                p.yaw,
+                CollisionFlags::SOLID,
+                "prop",
+            ),
         }
     }
-
-    // Worn loading-bay paint and crossing stripes sit flush on the quay.
-    for z in [-3., -31., -64.] {
-        for i in 0..9 {
-            k.part(
-                c,
-                root,
-                Vec3::new(-4. + i as f32, 0.012, z),
-                Vec3::new(0.5, 0.015, 2.),
-                4,
-            );
-        }
-        for x in [-20., 20.] {
-            k.part(
-                c,
-                root,
-                Vec3::new(x, 0.012, z),
-                Vec3::new(3., 0.015, 0.12),
-                3,
-            );
+    for x in [7.6, 10.36] {
+        for z in [11.86, 12.98] {
+            k.rod(c, root, Vec3::new(x, 0., z), Vec3::new(x, 2.5, z), 0.035, 4);
         }
     }
-    for i in 0..10 {
-        for layer in 0..2 {
-            k.container(
-                c,
-                Vec3::new(
-                    -41. - (i % 2) as f32 * 3.3,
-                    layer as f32 * 2.85,
-                    -4. - i as f32 * 9.5,
-                ),
-                1 + (i + layer) % 3,
-            );
-        }
-    }
-    for x in [-26., 26.] {
-        k.part(
-            c,
-            root,
-            Vec3::new(x, 0.12, -35.),
-            Vec3::new(0.6, 0.24, 104.),
-            9,
+    for position in RELAYS {
+        port.add_box(
+            position + Vec3::Y * 1.2,
+            Vec3::new(1.2, 2.4, 0.8),
+            0.,
+            CollisionFlags::SOLID,
+            "metal",
         );
     }
-    // Road lane markings, drainage grates, puddles and bollards.
-    for i in 0..36 {
-        let z = 8. - i as f32 * 2.5;
-        k.part(
-            c,
-            root,
-            Vec3::new(0., 0.009, z),
-            Vec3::new(0.11, 0.012, 1.1),
-            3,
-        );
-        for x in [-23., 23.] {
-            k.part(c, root, Vec3::new(x, 0.3, z), Vec3::new(0.18, 0.6, 0.18), 3);
-        }
-    }
-    #[cfg(target_arch = "wasm32")]
-    for i in 0..70 {
-        let x = ((i * 37) % 47) as f32 - 23.;
-        let z = 8. - ((i * 19) % 94) as f32;
-        let puddle = c
-            .spawn((
-                Mesh3d(k.puddle.clone()),
-                MeshMaterial3d(k.mats[8].clone()),
-                Transform::from_xyz(x, 0.023, z)
-                    .with_rotation(Quat::from_rotation_x(-std::f32::consts::FRAC_PI_2))
-                    .with_scale(Vec3::new(1. + (i % 5) as f32, 0.7 + (i % 3) as f32, 1.)),
-            ))
-            .id();
-        c.entity(root).add_child(puddle);
-    }
-    for z in [-15., -45., -75.] {
-        for x in [-22., 22.] {
-            k.part(c, root, Vec3::new(x, 6., z), Vec3::new(0.18, 12., 0.18), 4);
-            k.part(c, root, Vec3::new(x, 12., z), Vec3::new(2., 0.3, 0.5), 7);
-            c.spawn((
-                PointLight {
-                    color: Color::srgb(1., 0.63, 0.29),
-                    intensity: 160000.,
-                    range: 26.,
-                    ..default()
-                },
-                Transform::from_xyz(x, 11.5, z),
-            ));
-        }
-    }
-
-    // Match the new enclosing walls while leaving the loading bays open.
-    for z in [-25., -55.] {
-        port.walls
-            .push((Vec3::new(-35., 2.5, z), Vec3::new(0.15, 2.5, 10.)));
-        for dz in [-10., 10.] {
-            port.walls
-                .push((Vec3::new(-30., 2.5, z + dz), Vec3::new(5., 2.5, 0.15)));
-        }
-        for dz in [-7.5, 7.5] {
-            port.walls
-                .push((Vec3::new(-25., 2.5, z + dz), Vec3::new(0.15, 2.5, 2.5)));
-        }
-    }
-    saltline_models::library::warehouse::build(c, k, root);
-    saltline_models::library::crane::build(c, k, root);
-    saltline_models::library::props::build(c, k, root);
-    saltline_models::library::crane::details(c, k, root);
-    saltline_models::library::ship::build(c, k, root);
-    saltline_models::library::boat::build(c, k, root, EXIT);
-    dressing::build(c, k, root);
+    dressing::build(c, k, root, &mut port);
     port
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    fn fixture() -> (World, Port) {
+        let mut meshes = Assets::<Mesh>::default();
+        let mut materials = Assets::<StandardMaterial>::default();
+        let mut images = Assets::<Image>::default();
+        let kit = Kit::new(&mut meshes, &mut materials, &mut images);
+        let mut world = World::new();
+        let mut queue = bevy::ecs::world::CommandQueue::default();
+        let port = build(&mut Commands::new(&mut queue, &world), &kit);
+        queue.apply(&mut world);
+        (world, port)
+    }
+    #[test]
+    fn authored_schedule_and_routes_match_manual() {
+        assert_eq!(layout::STACKS.len(), 26);
+        assert_eq!(
+            layout::STACKS.iter().map(|s| s.tiers.len()).sum::<usize>(),
+            47
+        );
+        assert_eq!(layout::PLACEMENTS.len(), 232);
+        assert_eq!(layout::SPAWNS.len(), 42);
+        assert_eq!(layout::COVER.len(), 55);
+        let (mut world, port) = fixture();
+        assert_eq!(world.query::<&AuthoredTier>().iter(&world).count(), 47);
+        assert_eq!(world.query::<&AuthoredProp>().iter(&world).count(), 232);
+        assert!(
+            port.clear(layout::PLAYER, 1.8, 0.32, true),
+            "deployment blocked"
+        );
+        let mut previous = layout::PLAYER;
+        for target in RELAYS.into_iter().chain([EXIT]) {
+            let route = port.route(previous, target);
+            assert!(!route.is_empty(), "unreachable {target:?}");
+            previous = *route.last().unwrap();
+        }
+        assert!(port.clear(Vec3::new(-3.5, 0.03, -11.), 1.8, 0.32, true));
+        assert!(port.clear(Vec3::new(12., 0.03, -19.5), 1.8, 0.32, true));
+        let mut feet = Vec3::new(-2.2, 0., 12.42);
+        for _ in 0..190 {
+            feet = port.move_player(feet, Vec3::new(0.09, 0., 0.), 1.8, true);
+        }
+        assert!(
+            feet.x > 13. && feet.y > 2.5,
+            "elevated route failed: {feet:?}"
+        );
+    }
 }

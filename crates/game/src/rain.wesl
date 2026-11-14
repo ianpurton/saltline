@@ -22,7 +22,7 @@ fn wrap(v:f32,n:f32)->f32 {return v-floor(v/n)*n;}
 @fragment fn fragment(input:RainOut)->@location(0) vec4<f32> {
     let motion=settings.motion;
     let p=input.world;
-    let roof=p.x > -35. && p.x < -25. && p.y<6.4 && (abs(p.z+25.)<10. || abs(p.z+55.)<10.);
+    let roof=p.x > -16. && p.x < 12. && p.z > -28. && p.z < -11. && p.y < 7.;
     if roof || p.y<0.05 {discard;}
     let fade=1.-smoothstep(14.,22.,length(p.xz-motion.yz));
     let tip=sin(input.uv.y*3.14159);

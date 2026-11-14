@@ -320,18 +320,7 @@ fn setup(
     #[cfg(not(target_arch = "wasm32"))]
     rendering::mist(&mut c, &mut images);
     let port = saltline_world::build(&mut c, &k);
-    // Foreground stacks frame the title shot; excluded from gameplay collision.
-    for z in [-7., -17.] {
-        for layer in 0..4 {
-            let e = k.container(
-                &mut c,
-                Vec3::new(-7., layer as f32 * 2.85, z),
-                1 + layer % 3,
-            );
-            c.entity(e).insert(title::TitleDressing);
-        }
-    }
-    c.insert_resource(port);
+
     c.spawn((
         #[cfg(not(target_arch = "wasm32"))]
         bevy::light::VolumetricLight,
@@ -374,7 +363,7 @@ fn setup(
             rendering::camera_effects(sky, rendering::ENVIRONMENT_BRIGHTNESS),
             rendering::fog(),
             bevy::camera::ShadowLodOrigin,
-            Transform::from_xyz(0., 1.7, 8.),
+            Transform::from_translation(saltline_world::layout::PLAYER + Vec3::Y * 1.68),
         ))
         .id();
     let fill = c
@@ -412,11 +401,16 @@ fn setup(
     }
     for i in 0..10 {
         let drone = i % 3 == 0;
-        let p = Vec3::new(
-            if i % 2 == 0 { -4. } else { 5. },
-            if drone { 4. } else { 0. },
-            -16. - i as f32 * 6.,
-        );
+        let spawn = saltline_world::layout::SPAWNS
+            .iter()
+            .filter(|s| s.air == drone)
+            .nth(if drone { i / 3 } else { i - i / 3 - 1 })
+            .unwrap_or(&saltline_world::layout::SPAWNS[0]);
+        let p = if drone {
+            spawn.position
+        } else {
+            port.repair_spawn(spawn.position)
+        };
         let e = k.root(&mut c, p);
         if drone {
             k.drone(&mut c, e)
@@ -433,6 +427,7 @@ fn setup(
             });
     }
 
+    c.insert_resource(port);
     let splash_material = mats.add(StandardMaterial {
         base_color: Color::srgba(0.52, 0.62, 0.65, 0.13),
         alpha_mode: AlphaMode::Blend,
@@ -446,9 +441,9 @@ fn setup(
             MeshMaterial3d(splash_material.clone()),
             bevy::light::NotShadowCaster,
             Transform::from_xyz(
-                ((i * 37) % 45) as f32 - 22.,
+                ((i * 37) % 65) as f32 - 37.,
                 0.035,
-                10. - ((i * 19) % 94) as f32,
+                27. - ((i * 19) % 55) as f32,
             )
             .with_scale(Vec3::new(0.2, 0.015, 0.2)),
         ));
@@ -577,27 +572,8 @@ fn visuals(
         ));
         t.translation.y -= motion.land;
         if !v.view.is_empty() {
-            *t =
-                match v.view.as_str() {
-                    "corridor" => Transform::from_xyz(0., 1.7, -28.)
-                        .looking_at(Vec3::new(0., 1.7, -65.), Vec3::Y),
-                    "waterfront" => Transform::from_xyz(21., 1.7, -40.)
-                        .looking_at(Vec3::new(65., 4., -60.), Vec3::Y),
-                    "extraction" => Transform::from_xyz(0., 1.7, -75.)
-                        .looking_at(saltline_world::EXIT + Vec3::Y, Vec3::Y),
-                    "port" => Transform::from_xyz(-38., 32., 25.)
-                        .looking_at(Vec3::new(8., 2., -40.), Vec3::Y),
-                    "warehouse" => Transform::from_xyz(-26., 1.8, -23.)
-                        .looking_at(Vec3::new(-32., 2., -27.), Vec3::Y),
-                    "hound" => Transform::from_xyz(7., 1.8, -25.)
-                        .looking_at(Vec3::new(5., 0.8, -22.), Vec3::Y),
-                    "drone" => Transform::from_xyz(-1., 5., -19.)
-                        .looking_at(Vec3::new(-4., 4., -16.), Vec3::Y),
-                    "relay" => {
-                        Transform::from_xyz(-2., 2.5, -9.).looking_at(RELAYS[0] + Vec3::Y, Vec3::Y)
-                    }
-                    _ => Transform::from_xyz(0., 1.7, 8.),
-                };
+            let (position, target) = saltline_world::layout::view(&v.view);
+            *t = Transform::from_translation(position).looking_at(target, Vec3::Y);
         }
     }
     if let Ok(mut t) = transforms.get_mut(v.rifle) {
