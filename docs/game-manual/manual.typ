@@ -19,7 +19,7 @@
 #plate("mission.svg", [Mission sequence. Extraction is a condition inside PLAYING, part of the active mission.])
 #cols[
 == Design and asset package
-This document specifies the playable mission in metres and seconds. The accompanying `gallery/assets/*.js` files define executable model construction; retain their proportions, surfaces and articulation when translating them to another engine. The gallery provides orbitable inspection views. The following chapters and detailed rule sheets define movement, combat, enemy behavior and level placement independently of the asset code.
+This document specifies the playable mission in metres and seconds. The original HTML defines executable model construction; retain model proportions, surfaces and articulation when translating them to another engine. The generated gallery provides orbitable inspection views. The following chapters and detailed rule sheets define movement, combat, enemy behavior and level placement independently of the asset code.
 
 == Mission contract
 Deploy at the gate. All three relays begin live and may be cut in any order. Hold interaction while near and facing a live relay. Cutting a relay schedules reinforcements. After the third cut, markers change to extraction and pursuit continues.
@@ -153,7 +153,7 @@ Main shell deck width is 0.35 m; the metal body is 0.27 × 0.20 × 0.98 m. The h
 == Assembly reading
 The extracted JavaScript builds the original skinned geometry and its joint hierarchy. White shell panels sit over dark structural metal, with orange bands and bright optics. Small screws, handles, fins and cables give scale but are secondary to chassis width, leg spacing and head position.
 
-Edit `gallery/assets/hound.js` to change parts and local transforms. The gallery and PNG renderer execute that file directly; no JSON geometry conversion sits between source and image. Shared primitive and skinning helpers remain in `gallery/shared/reference.js`.
+Edit the original HTML to change parts and local transforms. The gallery and PNG renderer execute extracted builders directly; no JSON geometry conversion sits between source and image. Shared primitive and skinning helpers are extracted into the generated gallery.
 ]
 ])
 #sheet("07", "Hound / motion & threat", "Rig relationships / planted feet / attack communication", [
@@ -234,7 +234,7 @@ Build a readable daylight scene first, then add sky/fog and wet surfaces. Valida
   #v(4pt)
   #cols[
    == Source of truth
-   Every tile is a real Three.js render of its named builder. Edit the listed file under `gallery/`, then rebuild to refresh both the gallery and PDF. Nominal dimensions are read from the extracted JavaScript registry.
+   Every tile is a real Three.js render of its named builder. Builders are extracted from the original HTML; rebuild to refresh the generated gallery and PDF. Nominal dimensions are read from the extracted JavaScript registry.
    == Reading the views
    Assets are framed individually, so image sizes are not mutually to scale. Lighting and exposure are standardized; construction geometry and surfaces come from the executable builders. Detailed colliders remain in the builders.
   ]
@@ -261,3 +261,11 @@ Studio thumbnails use dry surfaces and fixed poses to clarify construction. In p
 ])
 
 #include "details.typ"
+
+#pagebreak()
+= Original rendering reproduction
+The original HTML preserves the Three.js visual pipeline and remains the rendering authority. The manual build extracts model builders and procedural materials into an ignored build directory for studio inspection. GLB exports are independent outputs and are not inputs to this manual.
+
+The pipeline draws planar reflections, the HDR world and first-person viewmodel, half-resolution depth, ambient occlusion and volumetric lighting, then composites motion blur, bloom, streaks, exposure adaptation, grading and final anti-aliasing. Procedural material exports retain albedo, tangent-space normals and packed occlusion/roughness/metalness channels.
+
+Run `npm run manual:build` to regenerate the gallery, thumbnails, diagrams and this PDF from the original HTML and authored document sources. Intermediate files live under `target/game-manual/` and are not checked into source control. The studio geometry thumbnails elsewhere in this manual use dry surfaces and fixed inspection lighting; they do not reproduce the full in-game post-processing pipeline.

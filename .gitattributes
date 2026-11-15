@@ -1,0 +1,3 @@
+# Generated binary deliverables must not be treated as text diffs.
+*.pdf binary
+*.glb binary
