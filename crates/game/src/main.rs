@@ -255,7 +255,6 @@ fn main() {
         .add_systems(
             Update,
             (
-                surface_ripples,
                 effects::combat_effects,
                 presentation::rigs,
                 presentation::magazines,
@@ -454,26 +453,6 @@ fn setup(
     }
 
     c.insert_resource(port);
-    let splash_material = mats.add(StandardMaterial {
-        base_color: Color::srgba(0.52, 0.62, 0.65, 0.13),
-        alpha_mode: AlphaMode::Blend,
-        unlit: true,
-        ..default()
-    });
-    for i in 0..96 {
-        c.spawn((
-            SurfaceRipple(i as f32 * 0.618),
-            Mesh3d(k.ring.clone()),
-            MeshMaterial3d(splash_material.clone()),
-            bevy::light::NotShadowCaster,
-            Transform::from_xyz(
-                ((i * 37) % 65) as f32 - 37.,
-                0.035,
-                27. - ((i * 19) % 55) as f32,
-            )
-            .with_scale(Vec3::new(0.2, 0.015, 0.2)),
-        ));
-    }
     #[cfg(not(target_arch = "wasm32"))]
     std::fs::create_dir_all(
         capture::option("--output-dir").unwrap_or_else(|| "tmp/screenshots".into()),
@@ -778,21 +757,5 @@ fn visuals(
         if v.capture > 3000 {
             panic!("inspection capture timed out");
         }
-    }
-}
-
-#[derive(Component)]
-struct SurfaceRipple(f32);
-fn surface_ripples(
-    clock: Res<presentation::PresentationClock>,
-    mut ripples: Query<(&SurfaceRipple, &mut Transform)>,
-) {
-    for (r, mut t) in &mut ripples {
-        let phase = (clock.elapsed * 1.7 + r.0).fract();
-        t.scale = Vec3::new(
-            0.03 + phase * 0.45,
-            0.004 * (1. - phase),
-            0.03 + phase * 0.45,
-        );
     }
 }

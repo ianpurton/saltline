@@ -3946,6 +3946,7 @@ pub fn view(name: &str) -> (Vec3, Vec3) {
     match name {
         "port" | "map" => (Vec3::new(0., 44., 0.), Vec3::new(0., 0., -0.01)),
         "corridor" | "yard" => (Vec3::new(-24., 1.68, 6.), Vec3::new(3., 1.4, 7.5)),
+        "ground" => (Vec3::new(-29., 5., 12.), Vec3::new(-29., 0., 6.)),
         "warehouse" => (Vec3::new(-4., 1.71, -13.), Vec3::new(-2., 1.4, -23.)),
         "elevated" => (Vec3::new(-3., 5., 16.), Vec3::new(9., 2.6, 12.42)),
         "ship" => (Vec3::new(66., 28., -5.), Vec3::new(41., 14., -44.)),
