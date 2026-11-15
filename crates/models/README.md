@@ -3,7 +3,7 @@
 `Kit::new` allocates the shared mesh and material palettes once. Procedural model
 instances clone handles. Static catalogue props and backdrop models use cached
 GLB scenes (see below). Active procedural model builders live under `library`;
-world placement, the warehouse shell and collision data stay in `saltline-world`.
+world placement, warehouse collision and other world data stay in `saltline-world`.
 
 `geometry` provides face-local indexed mesh construction, rounded boxes (flat or
 smooth shading), ear-clipped polygon extrusion, Y-axis lathe profiles, tapered
@@ -58,8 +58,8 @@ All 33 `PropKind` models use `assets/models/*.glb` with embedded PBR materials.
 `PropOptions` remains source-compatible, but color, seed, forks, fence posts and
 sign choices no longer affect the fixed exported visuals. `PropKind::size` still
 defines world collision; GLB bounds do not replace colliders. Containers, enemy
-rigs, weapons, warehouses, relay indicators and shared utilities retain their
-existing builders. Ship, boat and quay crane visuals use backdrop GLBs. Exported materials do not reproduce custom wetness.
+rigs, weapons, relay indicators and shared utilities retain their
+existing builders. Ship, boat, quay crane and warehouse visuals use scenery GLBs. Exported materials do not reproduce custom wetness.
 
 Render a headless overview of every static prop with:
 
@@ -82,13 +82,13 @@ Native debug and release builds use the same asset discovery: an explicit
 directory `assets`, then the build-time workspace `assets`. An explicit override
 is respected even if missing. Local release runs from the repository need no
 environment override. Release distributions include `assets/models` next to the
-executable; Linux CI and web packaging copy the 36 runtime models with
+executable; Linux CI and web packaging copy the 37 runtime models with
 `scripts/package-static-props.py`. Web hosting serves `assets/models` alongside
 `index.html` and does not use native discovery.
 
 
-Backdrop roots use `StaticModelPath(SceneryKind::Ship.asset_path())` (also `Boat`
-and `Crane`). They share the scene cache, loading failure handling and
+Backdrop roots use `StaticModelPath(SceneryKind::Ship.asset_path())` (also `Boat`,
+`Crane` and `Warehouse`). They share the scene cache, loading failure handling and
 `StaticPropsReady` gate with catalogue props. Original placement and collision
 remain in `saltline-world`. The imported `ship-radar`, `boat-hull` and
 `crane-spreader` nodes retain their pivots for later animation; no new procedural

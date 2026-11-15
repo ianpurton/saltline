@@ -3,6 +3,7 @@ use bevy::prelude::*;
 use saltline_models::{
     Kit,
     library::map_props::{self, PropKind, PropOptions},
+    static_props::{SceneryKind, StaticModelPath},
 };
 fn block(
     c: &mut Commands,
@@ -47,15 +48,20 @@ pub fn shell(c: &mut Commands, k: &Kit, root: Entity, port: &mut Port) {
     #[cfg(not(target_arch = "wasm32"))]
     c.entity(sea)
         .insert(saltline_models::materials::wet::WetSurface(true));
-    // Warehouse shell; dimensions and openings follow sheets 02 and 21.
-    block(
-        c,
-        k,
-        root,
-        port,
+    // The reference GLB retains world coordinates, so its local root is identity.
+    let warehouse = k.root(c, Vec3::ZERO);
+    c.entity(warehouse).insert((
+        Name::new("warehouse"),
+        ChildOf(root),
+        StaticModelPath(SceneryKind::Warehouse.asset_path()),
+    ));
+    // Collision stays authored independently of the imported geometry.
+    port.add_box(
         Vec3::new(-2., 0.005, -19.5),
         Vec3::new(28., 0.05, 17.),
-        9,
+        0.,
+        Flags::SOLID,
+        "concrete",
     );
     // West / north walls, split south and east openings, and lintels.
     let walls = [
@@ -69,72 +75,7 @@ pub fn shell(c: &mut Commands, k: &Kit, root: Entity, port: &mut Port) {
         (Vec3::new(12., 5.75, -19.5), Vec3::new(0.25, 2.5, 5.)),
     ];
     for (p, size) in walls {
-        block(c, k, root, port, p, size, 4);
-        if size.y == 7. {
-            let base = Vec3::new(p.x, 0.6, p.z);
-            k.part(c, root, base, Vec3::new(size.x, 1.2, size.z), 9);
-        }
-        let along_x = size.x > size.z;
-        let length = if along_x { size.x } else { size.z };
-        for i in 0..(length / 0.24) as usize {
-            let offset = -length * 0.5 + 0.12 + i as f32 * 0.24;
-            let rib = p + if along_x {
-                Vec3::new(offset, 0., 0.)
-            } else {
-                Vec3::new(0., 0., offset)
-            };
-            k.part(
-                c,
-                root,
-                rib,
-                if along_x {
-                    Vec3::new(0.045, size.y, 0.28)
-                } else {
-                    Vec3::new(0.28, size.y, 0.045)
-                },
-                4,
-            );
-        }
-    }
-    for z in [-23.75, -15.25] {
-        let roof = k.part(
-            c,
-            root,
-            Vec3::new(-2., 8.25, z),
-            Vec3::new(28.5, 0.12, 8.86),
-            4,
-        );
-        c.entity(roof).insert(
-            Transform::from_xyz(-2., 8.25, z)
-                .with_rotation(Quat::from_rotation_x(if z < -19.5 {
-                    -0.2861
-                } else {
-                    0.2861
-                }))
-                .with_scale(Vec3::new(28.5, 0.12, 8.86)),
-        );
-        for x in [-14., -7., 0., 7., 11.] {
-            k.rod(
-                c,
-                root,
-                Vec3::new(x, 7., if z < -19.5 { -28. } else { -11. }),
-                Vec3::new(x, 9.5, -19.5),
-                0.08,
-                4,
-            );
-        }
-    }
-    for x in [-16., 12.] {
-        saltline_models::geometry::assembly::component(
-            c,
-            root,
-            "warehouse gable",
-            k.hard.gable.clone(),
-            k.mats[4].clone(),
-            Transform::from_xyz(x, 7., -19.5)
-                .with_rotation(Quat::from_rotation_y(std::f32::consts::FRAC_PI_2))
-                .with_scale(Vec3::new(17., 2.5, 0.25)),
-        );
+        port.add_box(p, size, 0., Flags::SOLID, "metal");
     }
     port.add_box(
         Vec3::new(-2., 8.25, -19.5),

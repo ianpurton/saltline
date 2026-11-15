@@ -52,7 +52,7 @@ VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json \
 ```
 
 The viewer exits after loading and saving `target/asset-export/bevy.png`.
-The game uses 33 static catalogue props plus the ship, boat and crane GLBs through
+The game uses 33 static catalogue props plus the ship, boat, crane and warehouse GLBs through
 `StaticPropsPlugin`; containers, enemies and the weapon keep their procedural models.
 
 The backdrop adapters export the original `vb` (ship), `xb` (boat) and `z1`
@@ -79,5 +79,6 @@ npm run assets:export -- warehouse
 cargo run -p saltline-models --example glb_inspect -- warehouse
 ```
 
-This asset is available for integration; the game still uses its procedural
-warehouse shell and existing collision/prop placements.
+The game loads this asset instead of the procedural warehouse shell. Existing
+collision and loose-prop placements remain world-owned; fixed interior fixtures
+are visual geometry and do not create new collision automatically.

@@ -17,14 +17,16 @@ pub enum SceneryKind {
     Ship,
     Boat,
     Crane,
+    Warehouse,
 }
 impl SceneryKind {
-    pub const ALL: [Self; 3] = [Self::Ship, Self::Boat, Self::Crane];
+    pub const ALL: [Self; 4] = [Self::Ship, Self::Boat, Self::Crane, Self::Warehouse];
     pub fn asset_path(self) -> &'static str {
         match self {
             Self::Ship => "models/ship.glb#Scene0",
             Self::Boat => "models/boat.glb#Scene0",
             Self::Crane => "models/crane.glb#Scene0",
+            Self::Warehouse => "models/warehouse.glb#Scene0",
         }
     }
 }
@@ -201,6 +203,7 @@ mod tests {
                 SceneryKind::Ship => "ship-radar",
                 SceneryKind::Boat => "boat-hull",
                 SceneryKind::Crane => "crane-spreader",
+                SceneryKind::Warehouse => "warehouse-fan",
             };
             let mut stack = vec![root];
             let mut found = false;
