@@ -72,12 +72,28 @@ pub fn overcast(images: &mut Assets<Image>) -> Handle<Image> {
 /// Convert the bundled linear HDR panorama to a filtered-light-compatible cubemap.
 #[cfg(not(target_arch = "wasm32"))]
 pub fn photographic(images: &mut Assets<Image>) -> Handle<Image> {
-    let pano = image::load_from_memory_with_format(
+    panorama(
+        images,
         include_bytes!("../../../../assets/sky/industrial_sunset_02_puresky_2k.hdr"),
-        image::ImageFormat::Hdr,
+        true,
     )
-    .expect("bundled HDR panorama must decode")
-    .to_rgb32f();
+}
+
+/// Static reference cloud lighting capture: no sun disk and no lightning.
+#[cfg(not(target_arch = "wasm32"))]
+pub fn reference_environment(images: &mut Assets<Image>) -> Handle<Image> {
+    panorama(
+        images,
+        include_bytes!("../../../../assets/sky/reference-clouds.hdr"),
+        false,
+    )
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+fn panorama(images: &mut Assets<Image>, bytes: &[u8], align_peak: bool) -> Handle<Image> {
+    let pano = image::load_from_memory_with_format(bytes, image::ImageFormat::Hdr)
+        .expect("bundled HDR panorama must decode")
+        .to_rgb32f();
     let (w, h) = pano.dimensions();
     let peak = pano
         .enumerate_pixels()
@@ -95,7 +111,11 @@ pub fn photographic(images: &mut Assets<Image>) -> Handle<Image> {
     let source_direction = Vec3::new(phi.sin() * theta.cos(), phi.cos(), phi.sin() * theta.sin());
     // Sampling maps world directions INTO the panorama, so this rotation maps
     // the desired sun direction to its source direction (not the reverse).
-    let rotation = Quat::from_rotation_arc(SUN_DIRECTION.normalize(), source_direction);
+    let rotation = if align_peak {
+        Quat::from_rotation_arc(SUN_DIRECTION.normalize(), source_direction)
+    } else {
+        Quat::IDENTITY
+    };
     let n = 512u32;
     let mut bytes = Vec::with_capacity((n * n * 6 * 8) as usize);
     for face in 0..6 {
@@ -154,10 +174,9 @@ pub fn photographic(images: &mut Assets<Image>) -> Handle<Image> {
 #[cfg(all(test, not(target_arch = "wasm32")))]
 mod tests {
     use super::*;
-    #[test]
-    fn photographic_sun_matches_the_directional_light() {
+    fn brightest_direction(load: fn(&mut Assets<Image>) -> Handle<Image>) -> Vec3 {
         let mut images = Assets::<Image>::default();
-        let handle = photographic(&mut images);
+        let handle = load(&mut images);
         let image = images.get(&handle).unwrap();
         let n = image.width() as usize;
         let data = image.data.as_ref().unwrap();
@@ -188,9 +207,31 @@ mod tests {
             _ => Vec3::new(-u, -v, -1.),
         };
         let world = (cube * Vec3::new(1., 1., -1.)).normalize();
+        world
+    }
+    #[test]
+    fn photographic_sun_matches_the_directional_light() {
+        assert!(brightest_direction(photographic).dot(SUN_DIRECTION.normalize()) > 0.99);
+    }
+    #[test]
+    fn reference_environment_is_hdr_without_a_sun_disk_and_faces_the_light() {
+        let direction = brightest_direction(reference_environment);
         assert!(
-            world.dot(SUN_DIRECTION.normalize()) > 0.99,
-            "sun direction {world:?}"
+            direction.dot(SUN_DIRECTION.normalize()) > 0.95,
+            "environment glow direction {direction:?}"
+        );
+        let image = image::load_from_memory_with_format(
+            include_bytes!("../../../../assets/sky/reference-clouds.hdr"),
+            image::ImageFormat::Hdr,
+        )
+        .unwrap()
+        .to_rgb32f();
+        assert_eq!(image.dimensions(), (1024, 512));
+        assert!(
+            image
+                .pixels()
+                .flat_map(|p| p.0)
+                .all(|v| v.is_finite() && (0. ..=6.).contains(&v))
         );
     }
 }

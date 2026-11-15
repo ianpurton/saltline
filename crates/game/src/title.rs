@@ -71,11 +71,6 @@ pub(crate) fn setup(
         .spawn((
             TitleCamera,
             Camera3d::default(),
-            bevy::light::Skybox {
-                image: Some(sky.clone()),
-                brightness: crate::rendering::SKY_BRIGHTNESS,
-                ..default()
-            },
             Camera {
                 is_active: false,
                 ..default()

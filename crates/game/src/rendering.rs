@@ -128,7 +128,6 @@ pub fn camera_effects(_sky: Handle<Image>, _intensity: f32) -> impl Bundle {
 
 #[derive(Resource, Clone)]
 pub struct SharedSky(pub Handle<Image>);
-pub const SKY_BRIGHTNESS: f32 = 350.;
 pub const ENVIRONMENT_BRIGHTNESS: f32 = 450.;
 pub fn fog() -> DistanceFog {
     DistanceFog {
@@ -183,7 +182,7 @@ pub fn mist(c: &mut Commands, images: &mut Assets<Image>) {
 #[cfg(target_arch = "wasm32")]
 pub fn configure() {}
 
-/// The sky is static. Retain the filtered textures and retire the realtime GPU
+/// The lighting capture is static even while visible clouds drift. Retain the filtered textures and retire the realtime GPU
 /// convolution once startup pipelines have settled (for BOTH camera views).
 #[cfg(not(target_arch = "wasm32"))]
 pub fn freeze_environment_maps(

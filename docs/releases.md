@@ -7,7 +7,7 @@ HTTPS (or localhost for local testing).
 
 Browser cameras use forward LDR rendering without HDR, bloom, screen-space
 reflections, contact shadows, volumetric fog, temporal anti-aliasing, or generated
-environment lighting. Skyboxes, distance fog, ambient/direct lighting and ordinary
+environment lighting. Procedural moving clouds, distance fog, ambient/direct lighting and ordinary
 shadows remain enabled. Native builds retain their existing rendering effects.
 There are no fixture downloads or external game-data folders.
 

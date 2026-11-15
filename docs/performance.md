@@ -64,9 +64,13 @@ path; native-only screen-space effects and finishing are excluded.
   coarse mesh with hysteresis; shared paint maps retain corrugation and rust.
 - Small fittings use simpler bevels. Large foreground rifle and Hound armor
   retain the detailed mesh. Articulated joints remain independent.
-- The static sky is filtered during warmup. Both cameras then share the cached
-  diffuse/specular textures; realtime filtering is removed. The panorama sun and
-  directional light use the same direction.
+- The procedural cloud sky runs in one forward background draw, with a shared
+  seeded noise texture and presentation-time uniform. Rotation-only projection
+  prevents camera parallax; depth writes, shadows and fog are disabled.
+- A static reference-shader HDR capture is filtered during warmup. Both cameras
+  then share the cached diffuse/specular textures; realtime filtering is removed.
+  The lighting capture excludes the sun disk, and its glow aligns with the
+  directional light. Cloud drift never regenerates the environment map.
 - Rain uses one shader-driven mesh. Its clock freezes during pause; roof masking
   and camera-facing streaks run on the GPU.
 - Combat cosmetics reuse 256 particles. Audio has a 24-voice transient cap and
@@ -246,3 +250,15 @@ requests coalesced and throttled. Lock denial displays a click-to-retry hint;
 other runtime failures still use the fatal overlay. The WebGL lighting profile
 uses stronger ambient fill and forward shader tone mapping for readable shadows
 without clipping sunlit containers.
+
+## Reference sky
+
+`npm run sky:export` renders `references/src/render/sky.js` at time zero with
+`uEnv=1`, writing `assets/sky/reference-clouds.hdr` and its provenance/sample
+report. The tooling also compares the WESL cloud math against 12 float GLSL
+samples at 0, 1 and 30 seconds using a software WebGPU adapter. WebGPU is used
+only for this authoring check; the browser game continues to use WebGL 2.
+The visible sky uses `PresentationClock`, including pause, restart and fixed-time
+inspection. Lightning is disabled. The reference colors and wind are retained,
+with the sun aligned to the existing game light. Native tone mapping and bloom
+remain enabled; browser rendering retains its LDR path.

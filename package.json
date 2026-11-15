@@ -6,7 +6,8 @@
     "manual:build": "python3 tools/game-manual/build.py",
     "manual:thumbnails": "node tools/game-manual/render-thumbnails.cjs",
     "manual:rip-assets": "node tools/game-manual/prepare-gallery.cjs",
-    "assets:export": "node scripts/export-assets.cjs"
+    "assets:export": "node scripts/export-assets.cjs",
+    "sky:export": "node scripts/export-sky.cjs"
   },
   "devDependencies": {
     "acorn": "8.15.0",

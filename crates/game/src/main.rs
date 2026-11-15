@@ -27,6 +27,7 @@ mod presentation;
 mod quality;
 mod rain;
 mod rendering;
+mod sky;
 mod title;
 use bevy::pbr::DefaultOpaqueRendererMethod;
 use bevy::{
@@ -121,7 +122,7 @@ fn main() {
     app.add_systems(PreStartup, capture::limit_browser_surface)
         .add_systems(PreUpdate, capture::limit_browser_surface);
     benchmark::install_counters(&mut app);
-    app.add_plugins(rain::RainPlugin);
+    app.add_plugins((rain::RainPlugin, sky::SkyPlugin));
     if !capture::headless() && !saltline_game::launch_args().any(|a| a == "--no-audio") {
         app.add_plugins(audio::SoundPlugin);
     }
@@ -316,7 +317,7 @@ fn setup(
     #[cfg(target_arch = "wasm32")]
     let sky = saltline_models::materials::sky::overcast(&mut images);
     #[cfg(not(target_arch = "wasm32"))]
-    let sky = saltline_models::materials::sky::photographic(&mut images);
+    let sky = saltline_models::materials::sky::reference_environment(&mut images);
     c.insert_resource(rendering::SharedSky(sky.clone()));
     info!("RENDER QUALITY {quality:?}");
     let k = Kit::new(&mut meshes, &mut mats, &mut images);
@@ -374,11 +375,6 @@ fn setup(
                 ..default()
             }),
             title::GameplayCamera,
-            bevy::light::Skybox {
-                image: Some(sky.clone()),
-                brightness: rendering::SKY_BRIGHTNESS,
-                ..default()
-            },
             rendering::camera_effects(sky, rendering::ENVIRONMENT_BRIGHTNESS),
             rendering::fog(),
             bevy::camera::ShadowLodOrigin,
