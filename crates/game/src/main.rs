@@ -71,6 +71,13 @@ fn main() {
     });
     #[cfg(not(target_arch = "wasm32"))]
     let plugins = plugins.set(native_assets::plugin());
+    // Web packages contain embedded GLB materials and use default loader settings.
+    // Avoid requesting optional .meta sidecars that are absent from the package.
+    #[cfg(target_arch = "wasm32")]
+    let plugins = plugins.set(AssetPlugin {
+        meta_check: bevy::asset::AssetMetaCheck::Never,
+        ..default()
+    });
     #[cfg(target_arch = "wasm32")]
     let plugins = plugins.set(bevy::render::RenderPlugin {
         render_creation: bevy::render::settings::WgpuSettings {
