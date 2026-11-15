@@ -11,7 +11,7 @@ const code = html.slice(html.indexOf('<script>') + 8, html.lastIndexOf('</script
 const statements = acorn.parse(code, {ecmaVersion: 'latest'}).body[0].expression.callee.body.body;
 const functions = new Map(statements.filter(n => n.type === 'FunctionDeclaration').map(n => [n.id.name, n]));
 const groups = {
-  ship: ['vb'], boat: ['xb'], crane: ['z1'],
+  ship: ['vb'], boat: ['xb'], crane: ['z1'], warehouse: ['ab'],
   hound: ['Z_'], gull: ['j_'], pac9: ['w_'], containers: ['M3'],
   jersey_barrier: ['S3'], light_mast: ['T3'], fence_panel: ['A3'], guard_booth: ['R3'], gate_arm: ['C3'],
   bollard_mooring: ['P3'], bollard_post: ['I3'], sign_post: ['z3'], floodlight_stand: ['D3'],

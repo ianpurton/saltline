@@ -13,7 +13,6 @@ pub struct SurfacePalette {
 }
 pub struct Kit {
     pub surfaces: SurfacePalette,
-    pub ship_hull: [Handle<Mesh>; 2],
     pub hard: geometry::HardSurface,
     pub labels: std::collections::HashMap<&'static str, Handle<Mesh>>,
     pub optic_glass: Handle<StandardMaterial>,
@@ -56,10 +55,6 @@ impl Kit {
             }
         }
         Self {
-            ship_hull: [
-                m.add(library::ship::berth_hull(false)),
-                m.add(library::ship::berth_hull(true)),
-            ],
             surfaces: SurfacePalette {
                 asphalt: mats[0].clone(),
                 concrete: mats[9].clone(),

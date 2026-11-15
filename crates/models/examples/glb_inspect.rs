@@ -46,6 +46,7 @@ fn setup(mut commands: Commands, server: Res<AssetServer>) {
     ));
     let (eye, target) = match id.as_str() {
         "container20" => (Vec3::new(9., 6., 10.), Vec3::new(0., 1.3, 0.)),
+        "warehouse" => (Vec3::new(35., 24., 20.), Vec3::new(-2., 3.5, -19.5)),
         "ship" => (Vec3::new(65., 48., 50.), Vec3::new(-2., 15., -33.)),
         "crane" => (Vec3::new(90., 60., 65.), Vec3::new(37., 16., 0.)),
         "boat" => (Vec3::new(8., 6., 8.), Vec3::new(-0.2, 1.5, 0.)),

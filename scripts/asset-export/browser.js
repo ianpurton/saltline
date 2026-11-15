@@ -79,7 +79,7 @@ try {
     const entry = entries.find(e => e.id === id);
     randomState = 7; usedTextures = new Set();
     const object = await entry.build(context); object.name = id; object.updateMatrixWorld(true);
-    const original = stats(object), limitations = new Set();
+    const original = stats(object), limitations = new Set(entry.limitations || []);
     const articulationNodes = entry.articulationNodes || [];
     if (articulationNodes.length) limitations.add('Articulation nodes preserved; procedural motion and blinking lamps are not animation clips.');
     for (const name of articulationNodes) if (!object.getObjectByName(name)) throw Error(id + ': missing articulation node ' + name);

@@ -10257,6 +10257,633 @@
         ],
         "truncated": false
       }
+    },
+    "warehouse": {
+      "coverage": 0.21463394165039062,
+      "articulationNodes": [
+        "warehouse-fan"
+      ],
+      "source": "assets/warehouse.js",
+      "original": {
+        "meshes": 42,
+        "primitives": 42,
+        "vertices": 30195,
+        "triangles": 21356,
+        "joints": 0,
+        "min": [
+          -16.350000381469727,
+          -0.25,
+          -28.59000015258789
+        ],
+        "max": [
+          14.218414306640625,
+          9.611963272094727,
+          -9.600000381469727
+        ]
+      },
+      "roundtrip": {
+        "meshes": 42,
+        "primitives": 42,
+        "vertices": 30195,
+        "triangles": 21356,
+        "joints": 0,
+        "min": [
+          -16.350000381469727,
+          -0.25,
+          -28.59000015258789
+        ],
+        "max": [
+          14.218414306640625,
+          9.611963272094727,
+          -9.600000381469727
+        ]
+      },
+      "rigChecks": 0,
+      "materials": 33,
+      "limitations": [
+        "Loose catalogue prop placements and point lights omitted; fixed stairs, catwalks and interior fixtures retained.",
+        "Articulation nodes preserved; procedural motion and blinking lamps are not animation clips.",
+        "Macro variation, wetness and shader normal adjustments use standard PBR approximations.",
+        "Source tint modes 1/2 baked into base color; vertex colors retained as glTF multipliers.",
+        "roughness clamped to glTF 0..1 range.",
+        "HDR unlit color normalized to glTF base-color range."
+      ],
+      "textures": [
+        {
+          "name": "sl_epoxy",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16294
+        },
+        {
+          "name": "sl_epoxy",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 12711
+        },
+        {
+          "name": "sl_epoxy",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16289
+        },
+        {
+          "name": "sl_concrete",
+          "width": 256,
+          "height": 256,
+          "nonzero": 65536,
+          "varied": 65535
+        },
+        {
+          "name": "sl_concrete",
+          "width": 256,
+          "height": 256,
+          "nonzero": 65536,
+          "varied": 64950
+        },
+        {
+          "name": "sl_concrete",
+          "width": 256,
+          "height": 256,
+          "nonzero": 65536,
+          "varied": 65506
+        },
+        {
+          "name": "sl_corrugated",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16036
+        },
+        {
+          "name": "sl_corrugated",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16382
+        },
+        {
+          "name": "sl_corrugated",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16362
+        },
+        {
+          "name": "sl_galv",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16296
+        },
+        {
+          "name": "sl_galv",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 12234
+        },
+        {
+          "name": "sl_galv",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16295
+        },
+        {
+          "name": "sl_paint",
+          "width": 256,
+          "height": 256,
+          "nonzero": 64345,
+          "varied": 65530
+        },
+        {
+          "name": "sl_paint",
+          "width": 256,
+          "height": 256,
+          "nonzero": 65536,
+          "varied": 50011
+        },
+        {
+          "name": "sl_paint",
+          "width": 256,
+          "height": 256,
+          "nonzero": 65536,
+          "varied": 64878
+        },
+        {
+          "name": "",
+          "width": 192,
+          "height": 256,
+          "nonzero": 49152,
+          "varied": 25321
+        },
+        {
+          "name": "sl_metal",
+          "width": 128,
+          "height": 128,
+          "nonzero": 2613,
+          "varied": 16196
+        },
+        {
+          "name": "sl_metal",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 12281
+        },
+        {
+          "name": "sl_metal",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16106
+        },
+        {
+          "name": "sl_hazard",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16381
+        },
+        {
+          "name": "sl_hazard",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 13133
+        },
+        {
+          "name": "sl_hazard",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16204
+        },
+        {
+          "name": "sl_brushed",
+          "width": 128,
+          "height": 128,
+          "nonzero": 94,
+          "varied": 15925
+        },
+        {
+          "name": "sl_brushed",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 13891
+        },
+        {
+          "name": "sl_brushed",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16048
+        },
+        {
+          "name": "sl_diamond",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16301
+        },
+        {
+          "name": "sl_diamond",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16357
+        },
+        {
+          "name": "sl_diamond",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16383
+        },
+        {
+          "name": "sl_glass_dirty",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16378
+        },
+        {
+          "name": "sl_glass_dirty",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 13800
+        },
+        {
+          "name": "sl_glass_dirty",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16300
+        },
+        {
+          "name": "sl_wood",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16382
+        },
+        {
+          "name": "sl_wood",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 16043
+        },
+        {
+          "name": "sl_wood",
+          "width": 128,
+          "height": 128,
+          "nonzero": 16384,
+          "varied": 15811
+        },
+        {
+          "name": "sl_polymer",
+          "width": 64,
+          "height": 64,
+          "nonzero": 1125,
+          "varied": 3949
+        },
+        {
+          "name": "sl_polymer",
+          "width": 64,
+          "height": 64,
+          "nonzero": 4096,
+          "varied": 4090
+        },
+        {
+          "name": "sl_polymer",
+          "width": 64,
+          "height": 64,
+          "nonzero": 4096,
+          "varied": 4091
+        },
+        {
+          "name": "",
+          "width": 256,
+          "height": 256,
+          "nonzero": 16234,
+          "varied": 16999
+        },
+        {
+          "name": "",
+          "width": 256,
+          "height": 256,
+          "nonzero": 62582,
+          "varied": 35769
+        },
+        {
+          "name": "",
+          "width": 512,
+          "height": 128,
+          "nonzero": 57137,
+          "varied": 57758
+        }
+      ],
+      "file": "warehouse.glb",
+      "bytes": 2447064,
+      "sha256": "61b5063f05494208db8ae53b62eee2f6e8bb6d72d44c2c77f4fb71114b9a5df7",
+      "inputs": {
+        "target/game-manual/gallery/assets/ship.js": "1bbf270235a40d3e4d722b390cda35934b3d3a1f2e3fed155fe6926760c28f27",
+        "target/game-manual/gallery/assets/boat.js": "665a02180b38c7829314b4c31ded3deec1ebcbb43b0babcc29a66afb945bb97f",
+        "target/game-manual/gallery/assets/crane.js": "07a781430fdecf085fd63445b1300f97337a2ce0c765ab5921d4b8f5d014d264",
+        "target/game-manual/gallery/assets/warehouse.js": "1afb42415ee4243187b69b2847d588ea7c1fa3712cbfb4f3c633bc5a41ba7599",
+        "target/game-manual/gallery/assets/hound.js": "4f8ff8fda2bda58677e7befd76ac17d7bd34d44fb7fc491dab3964eeb5e473e5",
+        "target/game-manual/gallery/assets/gull.js": "214cc0d2d38439e830874aecff6ee966dca4a4ff3ffe65a47264f9b80358589e",
+        "target/game-manual/gallery/assets/pac9.js": "97c47cf77b8a0ce8f79930c7e93558a3975fd1abe97005a70361a8d1e4eb9863",
+        "target/game-manual/gallery/assets/containers.js": "9276d50b9b643bb78f1969ba527d86a8de6af29a27e7cde9494ae11abea9fe03",
+        "target/game-manual/gallery/assets/jersey_barrier.js": "ae03954575fd5d8a342d981e4b40b032b214dce468a8f7e169e5a18c9f718ec4",
+        "target/game-manual/gallery/assets/light_mast.js": "d879a83caac79ecbf785a5fcee1260c013eae44c0a841388d3a1755855c919b6",
+        "target/game-manual/gallery/assets/fence_panel.js": "9c825cabab240185e1201925157ded930633896cc0e8e123673e4a12a11a7cf7",
+        "target/game-manual/gallery/assets/guard_booth.js": "f469061f55f35bb71d45cd4c9d282ae94bc70ec776b51a1fc3e88c199942480e",
+        "target/game-manual/gallery/assets/gate_arm.js": "16dff141fda3604f85b119cb7cd71b17a069ea1508b59c0ad88e44131d4b8620",
+        "target/game-manual/gallery/assets/bollard_mooring.js": "6e790c8a4408023207553f5b92518fe83580cff5fcdc354c07807b360a4c44e4",
+        "target/game-manual/gallery/assets/bollard_post.js": "f5985e84f164a3d8e55a454769a9cbbdb75da1446760b7c3a2fb2a407cdcd83f",
+        "target/game-manual/gallery/assets/sign_post.js": "7d63e7d24a01242a96928a248c37ea3ffbf5d6c30886a7eecd83900496b1b58e",
+        "target/game-manual/gallery/assets/floodlight_stand.js": "1aa1edd82896437b6bfc74eb0e2b7f0051f51a4b44d84e5f072a7b515ec42672",
+        "target/game-manual/gallery/assets/stairs_metal.js": "f96fcec705917be3d99108c9802233d7fe4d8b55ff97f55db29848058d36a056",
+        "target/game-manual/gallery/assets/catwalk.js": "d9e54c6ea87c367741eb110da1897aa10f3c29de3380fe2270ed1a08959b2818",
+        "target/game-manual/gallery/assets/shelf_rack.js": "06ad5ad183c3e12b452ef412a0504634ae507fbf81ea04579f287acd9a21fe75",
+        "target/game-manual/gallery/assets/reefer_unit.js": "e58e157bd5099585ea333f1c5acea02802eeba7cc38ac92864327610aef8deca",
+        "target/game-manual/gallery/assets/relay_node.js": "7ba4e0c88530c7a72587b48475d9eb94fa2e23c3ebf7a95b2104d7e8c7b3b836",
+        "target/game-manual/gallery/assets/barrel.js": "a035ede35ccd9a5b5d38cfef58819c9fdef446ed45e418a29ac9c4a602db8800",
+        "target/game-manual/gallery/assets/pallet.js": "276c42e607bb8dad225f2d8a1c75add7a82d0b10170afecef4cc8f427fb31ad6",
+        "target/game-manual/gallery/assets/pallet_stack.js": "93608077d64a95fcd3ec89481245aa1861b5df6ad5ba731c5230fa455bf16ddb",
+        "target/game-manual/gallery/assets/crate_wood.js": "f380fe163cfcc4be2e205180fc547c42b54f41f37292b3a0255bcc538c6aa1a7",
+        "target/game-manual/gallery/assets/crate_stack.js": "19003fe0fe6e30a3ce558b4d2312764342afb2f2f5d164ee054b23569eac8941",
+        "target/game-manual/gallery/assets/ibc_tote.js": "de0ced40d8b2dbb4aa169b7a9dfc4608bc9a6f846d15c4347d25d7626b623c79",
+        "target/game-manual/gallery/assets/cable_reel.js": "d5e2d967bfcdefdc0fde4e84fdc533cac503b0613cef12320fbb7f165eec571f",
+        "target/game-manual/gallery/assets/tire_stack.js": "a67e1f25e32d7bb498094768e1414094f556026a29a3dc2b49f921168a1074fb",
+        "target/game-manual/gallery/assets/jerry_can.js": "91780629f6a05f792b692d155bdc70dc306ada8d00441c05fb7dc2dfda8b6c6e",
+        "target/game-manual/gallery/assets/traffic_cone.js": "680d66c8ed05087e064450191c56125319c250d4af4e59c88d95a623023d991e",
+        "target/game-manual/gallery/assets/gas_cylinders.js": "46096b3d86fb6af4bec76ac53752e9c88dd4521bb0b35e054b950bad7f2936fd",
+        "target/game-manual/gallery/assets/pipe_stack.js": "26fcd568a0bb2ffba6722dcb77d72ee926cbfe3f51f8fee473df80e995476499",
+        "target/game-manual/gallery/assets/tarp_cargo.js": "dadc448d873ad33b7b5ab1b520d1c09a9e1bc4996443ec02a8972664d42cf5a5",
+        "target/game-manual/gallery/assets/sandbags.js": "be9d3ebf85523060d11aa7cd6fe739b6548656d4ae2e22c66adec13b8294bd88",
+        "target/game-manual/gallery/assets/cardboard_boxes.js": "091d855bc34b99cb1f526b3f4fef8a6a008a00637672bf2a3e59a6fb341e278a",
+        "target/game-manual/gallery/assets/forklift.js": "9760cb39b8d0fa543aeb0bb55b672c415c11ee8a9c98e79c3d187f30a264d241",
+        "target/game-manual/gallery/assets/generator.js": "6b2e92de551d7da025dd5f87cdd89d197e893d80044b3a045592bc667be5b842",
+        "target/game-manual/gallery/assets/dumpster.js": "3736d8fbb9858927d1780fc06bf76f1f24eb29c8143179009373eb3ba4c61f60",
+        "target/game-manual/gallery/assets/toolbox_cart.js": "54d6fb42c59c35a298f0fe613d9e171c33b04119178f6b9a08122b0baa5a4114",
+        "target/game-manual/gallery/shared/reference.js": "f69ee5dfba31f93b8e3787cd65878a4eb239553488a0f4477c21adcfa443bec4",
+        "target/game-manual/gallery/registry.js": "cf2ba1a2ab2314f59db44e5f1ea9fc84e61df6029318de4a068462d3744462e3",
+        "scripts/asset-export/browser.js": "5ab43b667d0a793f0d36fdd68471081e4016e867d417e5670f26b0813782a3ee",
+        "scripts/export-assets.cjs": "76ee4ae2b660198eea403c8ecd27684517da1dc1d7382fb6a89e1b5bcf9a4d4f",
+        "package-lock.json": "f389101548bc6f585806e8af31655816f37eb4a6ce7839843868bea832d357b3"
+      },
+      "validation": {
+        "numErrors": 0,
+        "numWarnings": 34,
+        "numInfos": 5,
+        "numHints": 0,
+        "messages": [
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/0/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/1/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/2/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/3/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/4/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/5/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/6/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/7/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/8/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/9/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/11/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/12/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/13/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/14/primitives/0/material"
+          },
+          {
+            "code": "UNUSED_OBJECT",
+            "message": "This object may be unused.",
+            "severity": 2,
+            "pointer": "/meshes/15/primitives/0/attributes/TEXCOORD_0"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/16/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/17/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/18/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/19/primitives/0/material"
+          },
+          {
+            "code": "UNUSED_OBJECT",
+            "message": "This object may be unused.",
+            "severity": 2,
+            "pointer": "/meshes/20/primitives/0/attributes/TEXCOORD_0"
+          },
+          {
+            "code": "UNUSED_OBJECT",
+            "message": "This object may be unused.",
+            "severity": 2,
+            "pointer": "/meshes/21/primitives/0/attributes/TEXCOORD_0"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/22/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/23/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/24/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/25/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/26/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/27/primitives/0/material"
+          },
+          {
+            "code": "UNUSED_OBJECT",
+            "message": "This object may be unused.",
+            "severity": 2,
+            "pointer": "/meshes/28/primitives/0/attributes/TEXCOORD_0"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/29/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/30/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/31/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/32/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/36/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/37/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/38/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/39/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/40/primitives/0/material"
+          },
+          {
+            "code": "MESH_PRIMITIVE_GENERATED_TANGENT_SPACE",
+            "message": "Material requires a tangent space but the mesh primitive does not provide it. Runtime-generated tangent space may be non-portable across implementations.",
+            "severity": 1,
+            "pointer": "/meshes/41/primitives/0/material"
+          },
+          {
+            "code": "IMAGE_NPOT_DIMENSIONS",
+            "message": "Image has non-power-of-two dimensions: 192x256.",
+            "severity": 2,
+            "pointer": "/images/15"
+          }
+        ],
+        "truncated": false
+      }
     }
   }
 }

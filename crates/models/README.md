@@ -1,9 +1,9 @@
 # Models
 
 `Kit::new` allocates the shared mesh and material palettes once. Procedural model
-instances clone handles. Static catalogue props use cached GLB scenes (see below). Existing `Kit` entry points and material indices remain
-available; environmental assemblies live under `library` and world placement and
-collision data stay in `saltline-world`.
+instances clone handles. Static catalogue props and backdrop models use cached
+GLB scenes (see below). Active procedural model builders live under `library`;
+world placement, the warehouse shell and collision data stay in `saltline-world`.
 
 `geometry` provides face-local indexed mesh construction, rounded boxes (flat or
 smooth shading), ear-clipped polygon extrusion, Y-axis lathe profiles, tapered
@@ -24,8 +24,9 @@ script uses the same screenshot observer and software Vulkan/Xvfb approach as
 `scripts/screenshot.sh`. Run `cargo test --workspace` for gameplay, mesh attribute,
 triangle degeneracy, hierarchy and handle reuse checks.
 
-Legacy barrel and fence assemblies remain available; active catalogue placements
-use the GLB scenes described below.
+Native builders cover containers, drones, the Hound, relay indicators and the
+rifle. Static catalogue placements and backdrop models use the GLB scenes
+described below.
 
 ## Reference comparison
 

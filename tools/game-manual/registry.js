@@ -9,6 +9,23 @@ window.SaltlineAssets = {
   },
   entries() {
     return [
+      {id:'warehouse',label:'Warehouse / shell and fixed fixtures',source:'assets/warehouse.js',articulationNodes:['warehouse-fan'],limitations:['Loose catalogue prop placements and point lights omitted; fixed stairs, catwalks and interior fixtures retained.'],build:context=>{
+        const assembly=ob({...context,physics:{addBox:()=>null}});
+        // Loose catalogue placements already belong to the world. The original
+        // stairs/catwalk helpers retain their own architectural assemblies.
+        assembly.place=()=>new lt.Group();
+        const fixtures=ab(assembly);
+        fixtures.fan.name='warehouse-fan';
+        // Apply the same static material batching used by the original level.
+        assembly.staticRoot=By(assembly.staticRoot);
+        assembly.staticRoot.name='warehouse-structure';
+        assembly.dynRoot.name='warehouse-fixtures';
+        const root=new lt.Group();root.name='warehouse';
+        root.add(assembly.staticRoot,assembly.dynRoot);
+        const lights=[];root.traverse(node=>{if(node.isLight)lights.push(node);});
+        for(const light of lights)light.removeFromParent();
+        return root;
+      }},
       ...[
         {id:'ship', label:'Freighter / KITTIWAKE', builder:vb, anchor:[41,0,-9], nodes:['ship-radar']},
         {id:'boat', label:'Rescue boat', builder:xb, anchor:[0,0,0], nodes:['boat-hull']},

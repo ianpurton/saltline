@@ -1,6 +1,6 @@
 # Exported SALTLINE catalogue
 
-These 42 self-contained GLBs are generated from the original procedural model
+These 43 self-contained GLBs are generated from the original procedural model
 builders extracted into ignored `target/game-manual/gallery`. The exporter
 automatically prepares these inputs from `references/index.html` when needed;
 it does not rebuild the manual or overwrite authored sources.
@@ -10,7 +10,7 @@ From the repository root:
 ```sh
 npm ci
 npx playwright install chromium # once, if needed
-npm run assets:export            # all 42
+npm run assets:export            # all 43
 npm run assets:export -- hound container20 pac9
 ```
 
@@ -63,4 +63,21 @@ the boat keeps local +X forward and is turned -90 degrees around Y in the world.
 Their procedural motion and blinking lamp shaders are not animation clips;
 these exports are static at their authored rest transforms. Existing world
 collision remains independent, including decorative gangways, ropes and fittings
-that can extend beyond collision envelopes. Warehouse sections are not included.
+that can extend beyond collision envelopes.
+
+
+`warehouse.glb` exports the original `ab` warehouse builder with its shell, roof,
+openings, fixed stairs/catwalks, office, workbench, hoist and lamps. Loose
+catalogue prop placements (shelves, barrels, crates, forklift, etc.) and point
+lights are excluded. Static geometry uses the original level's material batching;
+the `warehouse-fan` pivot remains separate. Geometry keeps its reference world
+coordinates, approximately X=-16..14 and Z=-29..-10, for an identity world root.
+No collision, navigation, runtime fan animation or gameplay is encoded.
+
+```sh
+npm run assets:export -- warehouse
+cargo run -p saltline-models --example glb_inspect -- warehouse
+```
+
+This asset is available for integration; the game still uses its procedural
+warehouse shell and existing collision/prop placements.
