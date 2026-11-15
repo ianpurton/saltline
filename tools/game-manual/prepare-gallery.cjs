@@ -9,7 +9,7 @@ function fingerprint(files) {
   for (const file of files) hash.update(file).update(fs.readFileSync(path.join(repo, file)));
   return hash.digest('hex');
 }
-const inputs = ['references/index.html', 'tools/game-manual/rip-assets.cjs', 'tools/game-manual/registry.js', 'tools/game-manual/gallery.js', 'tools/game-manual/paths.cjs', 'tools/game-manual/prepare-gallery.cjs'];
+const inputs = ['references/archive/original.html', 'tools/game-manual/rip-assets.cjs', 'tools/game-manual/registry.js', 'tools/game-manual/gallery.js', 'tools/game-manual/paths.cjs', 'tools/game-manual/prepare-gallery.cjs'];
 function prepare() {
   const key = fingerprint(inputs), gallery = path.join(output, 'gallery'), stamp = path.join(gallery, 'cache-key');
   const provenance = path.join(gallery, 'provenance.json');

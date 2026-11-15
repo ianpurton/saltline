@@ -44,6 +44,7 @@ const hash = data => crypto.createHash('sha256').update(data).digest('hex');
     const assets = selected.length ? previous.assets : {};
     for (const id of selected.length ? selected : ids) {
       const result = await page.evaluate(id => window.exportAsset(id), id);
+      if (result.backdrop) {fs.writeFileSync(path.join(out, `${id}.json`), JSON.stringify(result.backdrop, null, 2) + '\n'); delete result.backdrop;}
       const bytes = Buffer.from(result.base64, 'base64'); delete result.base64;
       const previewDir = path.join(root, 'target/asset-export'); fs.mkdirSync(previewDir, {recursive: true});
       fs.writeFileSync(path.join(previewDir, `${id}.png`), Buffer.from(result.preview, 'base64')); delete result.preview;

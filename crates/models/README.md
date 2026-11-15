@@ -82,13 +82,13 @@ Native debug and release builds use the same asset discovery: an explicit
 directory `assets`, then the build-time workspace `assets`. An explicit override
 is respected even if missing. Local release runs from the repository need no
 environment override. Release distributions include `assets/models` next to the
-executable; Linux CI and web packaging copy the 37 runtime models with
+executable; Linux CI and web packaging copy the 38 runtime models with
 `scripts/package-static-props.py`. Web hosting serves `assets/models` alongside
 `index.html` and does not use native discovery.
 
 
 Backdrop roots use `StaticModelPath(SceneryKind::Ship.asset_path())` (also `Boat`,
-`Crane` and `Warehouse`). They share the scene cache, loading failure handling and
+`Crane`, `Warehouse` and `Skyline`). They share the scene cache, loading failure handling and
 `StaticPropsReady` gate with catalogue props. Original placement and collision
 remain in `saltline-world`. The imported `ship-radar`, `boat-hull` and
 `crane-spreader` nodes retain their pivots for later animation; no new procedural
@@ -97,3 +97,12 @@ motion is enabled by this replacement.
 
 Inspect the new backdrop models in the game with `--inspect ship`, `--inspect boat`
 or `--inspect crane` (add `--headless-render` to save a capture without a window).
+
+The skyline is exported at world identity from the original `Mb` builder with
+`node scripts/export-assets.cjs skyline`. Its single batched mesh replaces the
+placeholder distant scenery and never casts or receives shadows. The exporter
+also writes `assets/models/skyline.json`: HDR lamp colors, octahedron sizes and
+blink parameters, plus the 12 seeded gull orbits from `wb`. The game embeds this
+metadata and animates two batched meshes using `PresentationClock`; pause and
+inspection captures therefore use the same timing rules as other presentation.
+The existing detailed `gull.glb` is a separate catalogue model.

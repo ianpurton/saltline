@@ -79,6 +79,7 @@ try {
     const entry = entries.find(e => e.id === id);
     randomState = 7; usedTextures = new Set();
     const object = await entry.build(context); object.name = id; object.updateMatrixWorld(true);
+    const backdrop = object.userData.backdrop;
     const original = stats(object), limitations = new Set(entry.limitations || []);
     const articulationNodes = entry.articulationNodes || [];
     if (articulationNodes.length) limitations.add('Articulation nodes preserved; procedural motion and blinking lamps are not animation clips.');
@@ -160,7 +161,7 @@ try {
     if (coverage < .005) throw Error(id + ': blank reload preview');
     const bytes = new Uint8Array(buffer); let binary = '';
     for (let i = 0; i < bytes.length; i += 32768) binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
-    const result = {base64: btoa(binary), preview: png, coverage, articulationNodes, source: entry.source, original, roundtrip, rigChecks, materials: materials.size, limitations: [...limitations], textures: [...usedTextures].map(t => textureCache.get(t).userData.evidence)};
+    const result = {backdrop, base64: btoa(binary), preview: png, coverage, articulationNodes, source: entry.source, original, roundtrip, rigChecks, materials: materials.size, limitations: [...limitations], textures: [...usedTextures].map(t => textureCache.get(t).userData.evidence)};
     loaded.scene.traverse(n => {if (n.isMesh) n.geometry.dispose();});
     return result;
   };

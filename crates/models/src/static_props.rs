@@ -18,15 +18,23 @@ pub enum SceneryKind {
     Boat,
     Crane,
     Warehouse,
+    Skyline,
 }
 impl SceneryKind {
-    pub const ALL: [Self; 4] = [Self::Ship, Self::Boat, Self::Crane, Self::Warehouse];
+    pub const ALL: [Self; 5] = [
+        Self::Ship,
+        Self::Boat,
+        Self::Crane,
+        Self::Warehouse,
+        Self::Skyline,
+    ];
     pub fn asset_path(self) -> &'static str {
         match self {
             Self::Ship => "models/ship.glb#Scene0",
             Self::Boat => "models/boat.glb#Scene0",
             Self::Crane => "models/crane.glb#Scene0",
             Self::Warehouse => "models/warehouse.glb#Scene0",
+            Self::Skyline => "models/skyline.glb#Scene0",
         }
     }
 }
@@ -59,10 +67,21 @@ impl Plugin for StaticPropsPlugin {
 }
 fn instantiated(
     event: On<WorldInstanceReady>,
-    props: Query<(), With<StaticModelPath>>,
+    props: Query<&StaticModelPath>,
+    children: Query<&Children>,
     mut c: Commands,
 ) {
-    if props.contains(event.entity) {
+    if let Ok(path) = props.get(event.entity) {
+        if path.0 == SceneryKind::Skyline.asset_path() {
+            let mut stack = vec![event.entity];
+            while let Some(entity) = stack.pop() {
+                c.entity(entity)
+                    .insert((bevy::light::NotShadowCaster, bevy::light::NotShadowReceiver));
+                if let Ok(descendants) = children.get(entity) {
+                    stack.extend(descendants.iter());
+                }
+            }
+        }
         c.entity(event.entity).insert(Instantiated);
     }
 }
@@ -204,6 +223,7 @@ mod tests {
                 SceneryKind::Boat => "boat-hull",
                 SceneryKind::Crane => "crane-spreader",
                 SceneryKind::Warehouse => "warehouse-fan",
+                SceneryKind::Skyline => "skyline",
             };
             let mut stack = vec![root];
             let mut found = false;
@@ -212,6 +232,20 @@ mod tests {
                     .world()
                     .get::<Name>(entity)
                     .is_some_and(|name| name.as_str() == expected);
+                if matches!(kind, SceneryKind::Skyline)
+                    && app.world().get::<Mesh3d>(entity).is_some()
+                {
+                    assert!(
+                        app.world()
+                            .get::<bevy::light::NotShadowCaster>(entity)
+                            .is_some()
+                    );
+                    assert!(
+                        app.world()
+                            .get::<bevy::light::NotShadowReceiver>(entity)
+                            .is_some()
+                    );
+                }
                 if let Some(children) = app.world().get::<Children>(entity) {
                     stack.extend(children.iter());
                 }

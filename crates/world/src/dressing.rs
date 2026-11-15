@@ -3,7 +3,6 @@ use crate::{CollisionFlags, Port};
 use bevy::prelude::*;
 use saltline_models::{
     Kit,
-    library::map_props::{PropKind, PropOptions, build as prop},
     static_props::{SceneryKind, StaticModelPath},
 };
 pub fn build(c: &mut Commands, k: &Kit, root: Entity, port: &mut Port) {
@@ -55,16 +54,10 @@ pub fn build(c: &mut Commands, k: &Kit, root: Entity, port: &mut Port) {
         Transform::from_xyz(31.5, -1.6, 21.)
             .with_rotation(Quat::from_rotation_y(-std::f32::consts::FRAC_PI_2)),
     ));
-    // Distant silhouettes sit outside the playable berth, never inside its routes.
-    for i in 0..12 {
-        let x = -90. + i as f32 * 11.;
-        let z = -100. - (i % 3) as f32 * 12.;
-        let h = 7. + (i % 4) as f32 * 3.;
-        k.part(c, root, Vec3::new(x, h * 0.5, z), Vec3::new(8., h, 18.), 9);
-    }
-    for i in 0..5 {
-        let pole = prop(c, k, root, PropKind::LightMast, PropOptions::default());
-        c.entity(pole)
-            .insert(Transform::from_xyz(-55. + i as f32 * 18., 0., -45.));
-    }
+    let skyline = k.root(c, Vec3::ZERO);
+    c.entity(skyline).insert((
+        Name::new("harbor skyline"),
+        ChildOf(root),
+        StaticModelPath(SceneryKind::Skyline.asset_path()),
+    ));
 }

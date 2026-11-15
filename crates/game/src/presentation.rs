@@ -213,6 +213,10 @@ mod tests {
             })
             .init_resource::<WeaponMotion>()
             .add_systems(Update, weapon);
+        let initial_aim = {
+            let mission = app.world().resource::<Mission>();
+            (mission.pitch, mission.yaw, mission.ammo)
+        };
         let camera = app
             .world_mut()
             .spawn((
@@ -236,7 +240,7 @@ mod tests {
         };
         assert!((projection.fov.to_degrees() - 54.).abs() < 0.1);
         let mission = app.world().resource::<Mission>();
-        assert_eq!((mission.pitch, mission.yaw, mission.ammo), (0., 0., 30));
+        assert_eq!((mission.pitch, mission.yaw, mission.ammo), initial_aim);
         app.world_mut().resource_mut::<PresentationClock>().dt = 0.;
         app.world_mut().resource_mut::<saltline_game::Actions>().aim = false;
         app.update();

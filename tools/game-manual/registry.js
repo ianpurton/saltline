@@ -9,6 +9,22 @@ window.SaltlineAssets = {
   },
   entries() {
     return [
+      {id:'skyline',label:'Harbor skyline',source:'references/src/world/backdrop/sky.js',build:context=>{
+        const lamps=[];
+        const root=Mb(context,{add(geometry,color,period=0,phase=0,duty=.5){
+          geometry.computeBoundingBox();
+          const center=geometry.boundingBox.getCenter(new lt.Vector3());
+          const size=geometry.boundingBox.getSize(new lt.Vector3());
+          lamps.push({position:center.toArray(),radius:Math.max(size.x,size.y,size.z)/2,color:[...color],period,phase,duty});
+        }}).root;
+        const birds=wb(context,{value:0},12).geometry;
+        const orbit=birds.attributes.aOrbit, params=birds.attributes.aPar;
+        root.userData.backdrop={lamps,gulls:Array.from({length:12},(_,i)=>({
+          center:[orbit.getX(i*6),orbit.getY(i*6),orbit.getZ(i*6)],radius:orbit.getW(i*6),
+          speed:params.getX(i*6),phase:params.getY(i*6),flap:params.getZ(i*6)
+        }))};
+        return root;
+      }},
       {id:'warehouse',label:'Warehouse / shell and fixed fixtures',source:'assets/warehouse.js',articulationNodes:['warehouse-fan'],limitations:['Loose catalogue prop placements and point lights omitted; fixed stairs, catwalks and interior fixtures retained.'],build:context=>{
         const assembly=ob({...context,physics:{addBox:()=>null}});
         // Loose catalogue placements already belong to the world. The original

@@ -1,4 +1,5 @@
 mod audio;
+mod backdrop;
 mod benchmark;
 mod capture;
 mod driver;
@@ -48,6 +49,7 @@ struct Visuals {
 struct Hud;
 fn main() {
     let mut app = App::new();
+    app.add_plugins(backdrop::plugin);
     let quality = quality::RenderQuality::from_args();
     info!("RENDER QUALITY {quality:?}");
     app.insert_resource(quality.clone());

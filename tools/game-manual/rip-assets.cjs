@@ -21,7 +21,7 @@ const groups = {
   gas_cylinders: ['JA'], pipe_stack: ['KA'], tarp_cargo: ['QA'], sandbags: ['tR'],
   cardboard_boxes: ['nR'], forklift: ['oR'], generator: ['rR'], dumpster: ['aR'], toolbox_cart: ['lR'],
 };
-const manifest = {reference: 'references/index.html', sha256: crypto.createHash('sha256').update(html).digest('hex'), files: {}};
+const manifest = {reference: 'references/archive/original.html', sha256: crypto.createHash('sha256').update(html).digest('hex'), files: {}};
 const extracted = new Set();
 for (const [file, names] of Object.entries(groups)) {
  const chunks = names.map(name => {
