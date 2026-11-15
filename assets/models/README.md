@@ -1,6 +1,6 @@
 # Exported SALTLINE catalogue
 
-These 39 self-contained GLBs are generated from the original procedural model
+These 42 self-contained GLBs are generated from the original procedural model
 builders extracted into ignored `target/game-manual/gallery`. The exporter
 automatically prepares these inputs from `references/index.html` when needed;
 it does not rebuild the manual or overwrite authored sources.
@@ -10,7 +10,7 @@ From the repository root:
 ```sh
 npm ci
 npx playwright install chromium # once, if needed
-npm run assets:export            # all 39
+npm run assets:export            # all 42
 npm run assets:export -- hound container20 pac9
 ```
 
@@ -52,5 +52,15 @@ VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json \
 ```
 
 The viewer exits after loading and saving `target/asset-export/bevy.png`.
-The game uses the 33 static catalogue GLBs through `StaticPropsPlugin`; containers,
-enemies and the weapon still use their existing procedural models.
+The game uses 33 static catalogue props plus the ship, boat and crane GLBs through
+`StaticPropsPlugin`; containers, enemies and the weapon keep their procedural models.
+
+The backdrop adapters export the original `vb` (ship), `xb` (boat) and `z1`
+(crane) builders. The ship is localized around its existing world anchor
+(41, 0, -9); the crane keeps its world-aligned geometry at an identity root;
+the boat keeps local +X forward and is turned -90 degrees around Y in the world.
+`ship-radar`, `boat-hull` and `crane-spreader` remain separate named nodes.
+Their procedural motion and blinking lamp shaders are not animation clips;
+these exports are static at their authored rest transforms. Existing world
+collision remains independent, including decorative gangways, ropes and fittings
+that can extend beyond collision envelopes. Warehouse sections are not included.

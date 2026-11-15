@@ -1,4 +1,4 @@
-//! Shared asynchronous scenes for the static prop catalogue.
+//! Shared asynchronous scenes for catalogue props and backdrop models.
 use crate::library::map_props::PropKind;
 use bevy::{prelude::*, world_serialization::WorldInstanceReady};
 use std::{
@@ -11,10 +11,31 @@ use std::{
 
 #[derive(Component)]
 pub struct StaticProp(pub PropKind);
+/// A backdrop asset, kept separate from the small-prop collision catalogue.
+#[derive(Clone, Copy, Debug)]
+pub enum SceneryKind {
+    Ship,
+    Boat,
+    Crane,
+}
+impl SceneryKind {
+    pub const ALL: [Self; 3] = [Self::Ship, Self::Boat, Self::Crane];
+    pub fn asset_path(self) -> &'static str {
+        match self {
+            Self::Ship => "models/ship.glb#Scene0",
+            Self::Boat => "models/boat.glb#Scene0",
+            Self::Crane => "models/crane.glb#Scene0",
+        }
+    }
+}
+
+/// Loads a static scene on this entity while retaining its authored transform.
+#[derive(Component)]
+pub struct StaticModelPath(pub &'static str);
 #[derive(Component)]
 struct Instantiated;
 #[derive(Resource, Default)]
-struct Scenes(HashMap<PropKind, Handle<WorldAsset>>);
+struct Scenes(HashMap<&'static str, Handle<WorldAsset>>);
 
 /// Shared with the render world so capture warmup starts after scene instantiation.
 #[derive(Resource, Clone, Default)]
@@ -31,35 +52,41 @@ impl Plugin for StaticPropsPlugin {
         app.init_resource::<Scenes>()
             .init_resource::<StaticPropsReady>()
             .add_observer(instantiated)
-            .add_systems(Update, (attach, readiness).chain());
+            .add_systems(Update, (register_props, attach, readiness).chain());
     }
 }
 fn instantiated(
     event: On<WorldInstanceReady>,
-    props: Query<(), With<StaticProp>>,
+    props: Query<(), With<StaticModelPath>>,
     mut c: Commands,
 ) {
     if props.contains(event.entity) {
         c.entity(event.entity).insert(Instantiated);
     }
 }
+fn register_props(mut c: Commands, props: Query<(Entity, &StaticProp), Without<StaticModelPath>>) {
+    for (entity, prop) in &props {
+        c.entity(entity)
+            .insert(StaticModelPath(prop.0.asset_path()));
+    }
+}
 fn attach(
     mut c: Commands,
     server: Res<AssetServer>,
     mut scenes: ResMut<Scenes>,
-    props: Query<(Entity, &StaticProp), Without<WorldAssetRoot>>,
+    props: Query<(Entity, &StaticModelPath), Without<WorldAssetRoot>>,
 ) {
     for (entity, prop) in &props {
         let handle = scenes
             .0
             .entry(prop.0)
-            .or_insert_with(|| server.load(prop.0.asset_path()));
+            .or_insert_with(|| server.load(prop.0));
         c.entity(entity).insert(WorldAssetRoot(handle.clone()));
     }
 }
 fn readiness(
     server: Res<AssetServer>,
-    props: Query<(&StaticProp, Option<&WorldAssetRoot>, Has<Instantiated>)>,
+    props: Query<(&StaticModelPath, Option<&WorldAssetRoot>, Has<Instantiated>)>,
     ready: Res<StaticPropsReady>,
 ) {
     let mut complete = true;
@@ -83,10 +110,7 @@ fn readiness(
                     }
                 })
         {
-            panic!(
-                "Static prop {} failed to load: {error}",
-                prop.0.asset_path()
-            );
+            panic!("Static model {} failed to load: {error}", prop.0);
         }
         complete &= instantiated && server.is_loaded_with_dependencies(&scene.0);
     }
@@ -133,6 +157,22 @@ mod tests {
                     .id()
             })
             .collect();
+        let scenery: Vec<_> = SceneryKind::ALL
+            .into_iter()
+            .map(|kind| {
+                let transform = Transform::from_xyz(41., 0., -9.);
+                let entity = app
+                    .world_mut()
+                    .spawn((
+                        StaticModelPath(kind.asset_path()),
+                        transform,
+                        Visibility::default(),
+                        ChildOf(parent),
+                    ))
+                    .id();
+                (entity, kind, transform)
+            })
+            .collect();
         let repeated = app
             .world_mut()
             .spawn((
@@ -153,6 +193,27 @@ mod tests {
                 "catalogue scene loading timed out"
             );
             std::thread::yield_now();
+        }
+        for (root, kind, transform) in scenery {
+            assert_eq!(*app.world().get::<Transform>(root).unwrap(), transform);
+            assert_eq!(app.world().get::<ChildOf>(root).unwrap().parent(), parent);
+            let expected = match kind {
+                SceneryKind::Ship => "ship-radar",
+                SceneryKind::Boat => "boat-hull",
+                SceneryKind::Crane => "crane-spreader",
+            };
+            let mut stack = vec![root];
+            let mut found = false;
+            while let Some(entity) = stack.pop() {
+                found |= app
+                    .world()
+                    .get::<Name>(entity)
+                    .is_some_and(|name| name.as_str() == expected);
+                if let Some(children) = app.world().get::<Children>(entity) {
+                    stack.extend(children.iter());
+                }
+            }
+            assert!(found, "missing articulation node {expected}");
         }
         for root in roots {
             assert_eq!(app.world().get::<ChildOf>(root).unwrap().parent(), parent);
@@ -178,7 +239,7 @@ mod tests {
         );
         assert_eq!(
             app.world().resource::<Scenes>().0.len(),
-            PropKind::ALL.len()
+            PropKind::ALL.len() + SceneryKind::ALL.len()
         );
         assert!(app.world_mut().query::<&Mesh3d>().iter(app.world()).count() > PropKind::ALL.len());
     }

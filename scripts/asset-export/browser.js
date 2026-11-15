@@ -80,10 +80,17 @@ try {
     randomState = 7; usedTextures = new Set();
     const object = await entry.build(context); object.name = id; object.updateMatrixWorld(true);
     const original = stats(object), limitations = new Set();
+    const articulationNodes = entry.articulationNodes || [];
+    if (articulationNodes.length) limitations.add('Articulation nodes preserved; procedural motion and blinking lamps are not animation clips.');
+    for (const name of articulationNodes) if (!object.getObjectByName(name)) throw Error(id + ': missing articulation node ' + name);
     const materials = new Map();
     object.traverse(n => {
       if (!n.isMesh) return;
       n.geometry = n.geometry.clone();
+      if (n.geometry.hasAttribute('blink')) {
+        n.geometry.deleteAttribute('blink');
+        limitations.add('Blink shader timing attribute omitted; lamps use static unlit colors.');
+      }
       const colors = n.geometry.attributes.color;
       if (colors) for (let i = 0; i < colors.array.length; i++) {
         if (colors.array[i] < 0 || colors.array[i] > 1) limitations.add('Vertex colors clamped to glTF 0..1 range.');
@@ -131,6 +138,7 @@ try {
     const buffer = await new GLTFExporter().parseAsync(object, {binary: true, onlyVisible: false});
     const loaded = await new GLTFLoader().parseAsync(buffer, '');
     const roundtrip = stats(loaded.scene);
+    for (const name of articulationNodes) if (!loaded.scene.getObjectByName(name)) throw Error(id + ': lost articulation node ' + name);
     for (const key of ['primitives', 'triangles', 'joints']) if (original[key] !== roundtrip[key]) throw Error(`${id}: ${key} changed`);
     for (const key of ['min', 'max']) original[key].forEach((v, i) => {if (Math.abs(v - roundtrip[key][i]) > Math.max(1e-4, Math.abs(v) * 1e-5)) throw Error(`${id}: bounds changed`);});
     const rigChecks = checkRig(loaded.scene);
@@ -152,7 +160,7 @@ try {
     if (coverage < .005) throw Error(id + ': blank reload preview');
     const bytes = new Uint8Array(buffer); let binary = '';
     for (let i = 0; i < bytes.length; i += 32768) binary += String.fromCharCode(...bytes.subarray(i, i + 32768));
-    const result = {base64: btoa(binary), preview: png, coverage, source: entry.source, original, roundtrip, rigChecks, materials: materials.size, limitations: [...limitations], textures: [...usedTextures].map(t => textureCache.get(t).userData.evidence)};
+    const result = {base64: btoa(binary), preview: png, coverage, articulationNodes, source: entry.source, original, roundtrip, rigChecks, materials: materials.size, limitations: [...limitations], textures: [...usedTextures].map(t => textureCache.get(t).userData.evidence)};
     loaded.scene.traverse(n => {if (n.isMesh) n.geometry.dispose();});
     return result;
   };

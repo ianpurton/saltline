@@ -24,8 +24,8 @@ script uses the same screenshot observer and software Vulkan/Xvfb approach as
 `scripts/screenshot.sh`. Run `cargo test --workspace` for gameplay, mesh attribute,
 triangle degeneracy, hierarchy and handle reuse checks.
 
-Barrel and fence modules reserve the requested source layout; the original game
-contained no barrel or fence assembly to migrate.
+Legacy barrel and fence assemblies remain available; active catalogue placements
+use the GLB scenes described below.
 
 ## Reference comparison
 
@@ -57,8 +57,8 @@ All 33 `PropKind` models use `assets/models/*.glb` with embedded PBR materials.
 `PropOptions` remains source-compatible, but color, seed, forks, fence posts and
 sign choices no longer affect the fixed exported visuals. `PropKind::size` still
 defines world collision; GLB bounds do not replace colliders. Containers, enemy
-rigs, weapons, large structures, relay indicators and shared utilities retain
-their existing builders. Exported materials do not reproduce custom wetness.
+rigs, weapons, warehouses, relay indicators and shared utilities retain their
+existing builders. Ship, boat and quay crane visuals use backdrop GLBs. Exported materials do not reproduce custom wetness.
 
 Render a headless overview of every static prop with:
 
@@ -81,6 +81,18 @@ Native debug and release builds use the same asset discovery: an explicit
 directory `assets`, then the build-time workspace `assets`. An explicit override
 is respected even if missing. Local release runs from the repository need no
 environment override. Release distributions include `assets/models` next to the
-executable; Linux CI and web packaging copy the 33 runtime models with
+executable; Linux CI and web packaging copy the 36 runtime models with
 `scripts/package-static-props.py`. Web hosting serves `assets/models` alongside
 `index.html` and does not use native discovery.
+
+
+Backdrop roots use `StaticModelPath(SceneryKind::Ship.asset_path())` (also `Boat`
+and `Crane`). They share the scene cache, loading failure handling and
+`StaticPropsReady` gate with catalogue props. Original placement and collision
+remain in `saltline-world`. The imported `ship-radar`, `boat-hull` and
+`crane-spreader` nodes retain their pivots for later animation; no new procedural
+motion is enabled by this replacement.
+
+
+Inspect the new backdrop models in the game with `--inspect ship`, `--inspect boat`
+or `--inspect crane` (add `--headless-render` to save a capture without a window).

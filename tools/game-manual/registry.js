@@ -9,6 +9,22 @@ window.SaltlineAssets = {
   },
   entries() {
     return [
+      ...[
+        {id:'ship', label:'Freighter / KITTIWAKE', builder:vb, anchor:[41,0,-9], nodes:['ship-radar']},
+        {id:'boat', label:'Rescue boat', builder:xb, anchor:[0,0,0], nodes:['boat-hull']},
+        {id:'crane', label:'Quay crane / SALTLINE 04', builder:z1, anchor:[0,0,0], nodes:['crane-spreader']},
+      ].map(({id,label,builder,anchor,nodes})=>({id,label,source:'assets/'+id+'.js',articulationNodes:nodes,build:context=>{
+        const lamps=pb();
+        const model=builder(context,lamps);
+        if(model.radar)model.radar.name='ship-radar';
+        if(model.hullGrp)model.hullGrp.name='boat-hull';
+        // Boat adds its own lamp group. Other builders accumulate lamps separately.
+        if(id!=='boat') {const lights=lamps.build();if(lights){lights.name=id+'-lamps';model.root.add(lights);}}
+        model.root.name=id+'-assembly';
+        model.root.position.sub(new lt.Vector3(...anchor));
+        const root=new lt.Group();root.name=id;root.add(model.root);
+        return root;
+      }})),
       {id:'hound', label:'Hound / H-03', source:'assets/hound.js', build: context => {
         const materials = {
           shell:context.mats.get('armor_white',{vertexColors:true}),

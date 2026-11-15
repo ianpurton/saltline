@@ -13,10 +13,17 @@ struct Inspect {
 
 fn main() {
     App::new()
-        .add_plugins(DefaultPlugins.set(AssetPlugin {
-            file_path: format!("{}/../../assets", env!("CARGO_MANIFEST_DIR")),
-            ..default()
-        }))
+        .add_plugins(
+            DefaultPlugins
+                .set(AssetPlugin {
+                    file_path: format!("{}/../../assets", env!("CARGO_MANIFEST_DIR")),
+                    ..default()
+                })
+                .set(bevy::render::RenderPlugin {
+                    synchronous_pipeline_compilation: true,
+                    ..default()
+                }),
+        )
         .add_systems(Startup, setup)
         .add_systems(Update, capture)
         .run();
@@ -39,6 +46,9 @@ fn setup(mut commands: Commands, server: Res<AssetServer>) {
     ));
     let (eye, target) = match id.as_str() {
         "container20" => (Vec3::new(9., 6., 10.), Vec3::new(0., 1.3, 0.)),
+        "ship" => (Vec3::new(65., 48., 50.), Vec3::new(-2., 15., -33.)),
+        "crane" => (Vec3::new(90., 60., 65.), Vec3::new(37., 16., 0.)),
+        "boat" => (Vec3::new(8., 6., 8.), Vec3::new(-0.2, 1.5, 0.)),
         "pac9" => (Vec3::new(1.2, 0.7, 1.2), Vec3::ZERO),
         _ => (Vec3::new(3., 2.4, 3.), Vec3::new(0., 0.7, 0.)),
     };
