@@ -10,7 +10,7 @@
  #linebreak()
  #text(size: 7pt)[#entry.size.map(x => str(calc.round(x, digits: 2))).join(" × ") m / nominal]
  #linebreak()
- #text(size: 6.5pt, fill: blue, entry.source)
+ #text(size: 6.5pt, fill: blue, "assets/models/" + entry.id + ".glb")
 ]
 #show: manual
 
@@ -111,7 +111,7 @@ Support movement, look, fire, aim, sprint, crouch, jump, reload, interaction and
 ]
 ])
 #sheet("05", "PAC-9 weapon system", "Active viewmodel / firing / reload / impact pipeline", [
-#plate("thumbnails/pac9-side.png", [PAC-9 side view rendered from gallery/assets/pac9.js. Hands and transient effects are excluded.], height: 37mm)
+#plate("thumbnails/pac9-side.png", [PAC-9 side view. Model: assets/models/pac9.glb. Hands and transient effects are excluded.], height: 37mm)
 #cols[
 == PAC-9 specification
 #table(columns: (1.5fr, 1fr), table.header([*Rule*], [*Value*]), [Magazine], [#d.weapon.Gv rounds], [Reserve], [#d.weapon.B_ rounds], [Cadence], [#d.weapon.O_ rpm], [Shot damage], [#d.weapon.H_], [Range], [#d.weapon.V_ m], [Tactical reload], [#d.weapon.W_ s], [Empty reload], [#d.weapon.G_ s])
@@ -143,7 +143,7 @@ Verify tactical reload with a partly full magazine, empty reload with reserve av
 ]
 ])
 #sheet("06", "Hound / construction", "H-03 / narrow chassis / optical head / dorsal gun", [
-#plate("thumbnails/hound.png", [Original hound geometry and procedural surfaces, rendered from gallery/assets/hound.js. Static foot placement uses the original IK solver.], height: 62mm)
+#plate("thumbnails/hound.png", [Original hound geometry and procedural surfaces. Model: assets/models/hound.glb. Static foot placement uses the original IK solver.], height: 62mm)
 #grid(columns: (1fr, 1fr), gutter: 5mm,
  image("assets/thumbnails/hound-front.png", width: 100%, height: 52mm, fit: "contain"), image("assets/thumbnails/hound-side.png", width: 100%, height: 52mm, fit: "contain"))
 #cols[
@@ -175,7 +175,7 @@ Hounds smoke below 56 health (40% of maximum). Death changes body posture, relea
 ]
 ])
 #sheet("08", "Gull & encounter pacing", "Airborne enemy / shared senses / relay reinforcement", [
-#plate("thumbnails/gull.png", [Original gull geometry rendered from gallery/assets/gull.js. Motion-blur discs and the searchlight cone are omitted for this static view.], height: 43mm)
+#plate("thumbnails/gull.png", [Original gull geometry. Model: assets/models/gull.glb. Motion-blur discs and the searchlight cone are omitted for this static view.], height: 43mm)
 #cols[
 == Gull construction
 Four rotor centers are arranged at X ±0.33 and Z ±0.30 m. The body carries rotor supports and protective rings, landing skids, navigation strobes, an underslung sensor gimbal, lamp and gun. Rotor motion and transparent rotor discs serve different visual roles.
@@ -229,12 +229,12 @@ Build a readable daylight scene first, then add sky/fog and wet surfaces. Valida
 ]
 ])
 #for page in range(calc.ceil(props.len() / 9)) {
- sheet(str(10+page), "Asset thumbnails / " + str(page+1), "Executable JavaScript builders / original procedural surfaces / studio lighting", [
+ sheet(str(10+page), "Asset thumbnails / " + str(page+1), "GLB asset catalogue / original procedural surfaces / studio lighting", [
   #grid(columns: (1fr, 1fr, 1fr), gutter: 3mm, ..props.slice(page*9, calc.min((page+1)*9, props.len())).map(asset-card))
   #v(4pt)
   #cols[
    == Source of truth
-   Every tile is a real Three.js render of its named builder. Builders are extracted from the original HTML; rebuild to refresh the generated gallery and PDF. Nominal dimensions are read from the extracted JavaScript registry.
+   Each tile names its corresponding GLB in assets/models/. Images render the original HTML builders with studio materials; the GLBs are separate exports and may approximate custom shaders. Nominal dimensions come from the extracted registry.
    == Reading the views
    Assets are framed individually, so image sizes are not mutually to scale. Lighting and exposure are standardized; construction geometry and surfaces come from the executable builders. Detailed colliders remain in the builders.
   ]
