@@ -9,6 +9,7 @@ pub struct ContainerSpec {
     pub reefer: bool,
     pub doors: f32,
 }
+
 impl Kit {
     /// Compatibility builder for model inspection and existing examples.
     pub fn container(&self, c: &mut Commands, p: Vec3, mat: usize) -> Entity {
@@ -47,18 +48,26 @@ impl Kit {
         c.entity(e).insert((
             Name::new(format!("container {l} / {}", s.paint)),
             crate::geometry::batch::StaticContainer(key),
+            crate::geometry::batch::ContainerEnvelope(Vec3::new(l, h, w)),
         ));
-        self.part(c, e, Vec3::new(0., h * 0.5, 0.), Vec3::new(l, h, w), paint);
+        // Recess panels below the frame and corrugations: flush cuboid faces z-fight.
+        self.part(
+            c,
+            e,
+            Vec3::new(0., h * 0.5, 0.),
+            Vec3::new(l - 0.12, h - 0.08, w - 0.10),
+            paint,
+        );
         // Corrugations stay inside the catalogue envelope.
         let ribs = (l / 0.24).floor() as usize;
         for i in 0..ribs {
-            let x = -l * 0.5 + 0.18 + i as f32 * (l - 0.36) / (ribs - 1) as f32;
+            let x = -l * 0.5 + 0.24 + i as f32 * (l - 0.48) / (ribs - 1) as f32;
             for z in [-1., 1.] {
                 self.part(
                     c,
                     e,
                     Vec3::new(x, h * 0.5, z * (w * 0.5 - 0.018)),
-                    Vec3::new(0.045, h - 0.16, 0.036),
+                    Vec3::new(0.045, h - 0.40, 0.036),
                     paint,
                 );
             }
@@ -66,7 +75,7 @@ impl Kit {
                 c,
                 e,
                 Vec3::new(x, h - 0.018, 0.),
-                Vec3::new(0.045, 0.036, w - 0.14),
+                Vec3::new(0.045, 0.036, w - 0.22),
                 paint,
             );
         }
@@ -76,7 +85,8 @@ impl Kit {
                     c,
                     e,
                     Vec3::new(0., y, z * (w * 0.5 - 0.045)),
-                    Vec3::new(l, 0.13, 0.09),
+                    // Stop at the corner blocks rather than sharing their outer faces.
+                    Vec3::new(l - 0.40, 0.13, 0.09),
                     4,
                 );
             }
@@ -87,7 +97,7 @@ impl Kit {
                     c,
                     e,
                     Vec3::new(x * (l * 0.5 - 0.055), h * 0.5, z * (w * 0.5 - 0.055)),
-                    Vec3::new(0.11, h, 0.11),
+                    Vec3::new(0.11, h - 0.36, 0.11),
                     4,
                 );
                 for y in [0.09, h - 0.09] {
@@ -104,15 +114,17 @@ impl Kit {
         for side in [-1., 1.] {
             let hinge = Vec3::new(l * 0.5 - 0.035, h * 0.5, side * (w * 0.5 - 0.07));
             let rotation = Quat::from_rotation_y(-side * s.doors * 2.1);
-            let center = hinge + rotation * Vec3::new(0., 0., -side * w * 0.24);
-            let door = self.part(c, e, center, Vec3::new(0.045, h - 0.18, w * 0.48), paint);
+            // Each leaf stops short of the center seam instead of overlapping its mate.
+            let door_width = w * 0.5 - 0.076;
+            let center = hinge + rotation * Vec3::new(0., 0., -side * door_width * 0.5);
+            let door = self.part(c, e, center, Vec3::new(0.045, h - 0.18, door_width), paint);
             c.entity(door).insert(
                 Transform::from_translation(center)
                     .with_rotation(rotation)
-                    .with_scale(Vec3::new(0.045, h - 0.18, w * 0.48)),
+                    .with_scale(Vec3::new(0.045, h - 0.18, door_width)),
             );
             for dz in [0.24, 0.72] {
-                let center = hinge + rotation * Vec3::new(0.04, 0., -side * dz);
+                let center = hinge + rotation * Vec3::new(0.015, 0., -side * dz);
                 let rod = self.part(c, e, center, Vec3::new(0.035, h - 0.4, 0.035), 4);
                 c.entity(rod).insert(
                     Transform::from_translation(center)
@@ -166,5 +178,74 @@ impl Kit {
             );
         }
         e
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn container_cuboids_do_not_share_overlapping_outward_faces() {
+        let mut meshes = Assets::<Mesh>::default();
+        let mut materials = Assets::<StandardMaterial>::default();
+        let mut images = Assets::<Image>::default();
+        let kit = Kit::new(&mut meshes, &mut materials, &mut images);
+        let paint = materials.get(&kit.mats[paint_index("red")]).unwrap();
+        for map in [&paint.normal_map_texture, &paint.metallic_roughness_texture] {
+            let image = images.get(map.as_ref().unwrap()).unwrap();
+            assert_eq!(image.texture_descriptor.mip_level_count, 10);
+            let expected_bytes: usize = (0..10).map(|level| (512usize >> level).pow(2) * 4).sum();
+            assert_eq!(image.data.as_ref().unwrap().len(), expected_bytes);
+        }
+        for (length, height) in [(6.06, 2.59), (12.19, 2.59), (12.19, 2.90)] {
+            let mut world = World::new();
+            let root = kit.container_spec(
+                &mut world.commands(),
+                Vec3::ZERO,
+                ContainerSpec {
+                    length,
+                    height,
+                    paint: "red",
+                    reefer: false,
+                    doors: 0.,
+                },
+            );
+            world.flush();
+            let bounds: Vec<_> = world
+                .get::<Children>(root)
+                .unwrap()
+                .iter()
+                .filter(|&e| world.get::<Mesh3d>(e).is_some_and(|m| m.0 == kit.cube))
+                .map(|e| {
+                    let t = world.get::<Transform>(e).unwrap();
+                    (t.translation - t.scale * 0.5, t.translation + t.scale * 0.5)
+                })
+                .collect();
+            let epsilon = 1e-5;
+            for (i, &(min, max)) in bounds.iter().enumerate() {
+                assert!(
+                    min.cmpge(Vec3::new(-length * 0.5, 0., -1.219) - Vec3::splat(epsilon))
+                        .all()
+                );
+                assert!(
+                    max.cmple(Vec3::new(length * 0.5, height, 1.219) + Vec3::splat(epsilon))
+                        .all()
+                );
+                for &(other_min, other_max) in &bounds[i + 1..] {
+                    for axis in 0..3 {
+                        let overlap = (0..3)
+                            .filter(|&a| a != axis)
+                            .all(|a| max[a].min(other_max[a]) - min[a].max(other_min[a]) > epsilon);
+                        let same_face = (min[axis] - other_min[axis]).abs() < epsilon
+                            || (max[axis] - other_max[axis]).abs() < epsilon;
+                        assert!(
+                            !(overlap && same_face),
+                            "coplanar cuboids: {min:?}..{max:?}, {other_min:?}..{other_max:?}"
+                        );
+                    }
+                }
+            }
+        }
     }
 }

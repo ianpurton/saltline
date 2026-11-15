@@ -1,6 +1,7 @@
 #[cfg(not(target_arch = "wasm32"))]
 pub mod embedded;
 pub mod industrial;
+mod mipmaps;
 pub mod sky;
 #[cfg(not(target_arch = "wasm32"))]
 pub mod wet;
@@ -133,12 +134,7 @@ pub fn legacy(
                 format,
                 RenderAssetUsages::default(),
             );
-            image.sampler =
-                bevy::image::ImageSampler::Descriptor(bevy::image::ImageSamplerDescriptor {
-                    address_mode_u: bevy::image::ImageAddressMode::Repeat,
-                    address_mode_v: bevy::image::ImageAddressMode::Repeat,
-                    ..default()
-                });
+            mipmaps::filter_generated_map(&mut image);
             images.add(image)
         };
         maps.push((

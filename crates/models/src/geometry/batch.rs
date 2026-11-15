@@ -5,6 +5,9 @@ use std::collections::HashMap;
 pub struct CoarseContainers(pub bool);
 #[derive(Component)]
 pub struct StaticContainer(pub usize);
+/// Full catalogue bounds for the coarse proxy, independent of recessed panels.
+#[derive(Component)]
+pub(crate) struct ContainerEnvelope(pub Vec3);
 #[derive(Component)]
 pub struct ContainerLod {
     near: Vec<Entity>,
@@ -79,9 +82,13 @@ pub fn assemble(world: &mut World) {
                     .expect("container body material")
                     .0
                     .clone();
-                let transform = *world
+                let mut transform = *world
                     .get::<Transform>(body)
                     .expect("container body transform");
+                if let Some(envelope) = world.get::<ContainerEnvelope>(root) {
+                    transform =
+                        Transform::from_xyz(0., envelope.0.y * 0.5, 0.).with_scale(envelope.0);
+                }
                 let mesh = world
                     .resource::<Assets<Mesh>>()
                     .get(&mesh)
@@ -186,7 +193,11 @@ mod tests {
         for x in [0., 10.] {
             let root = app
                 .world_mut()
-                .spawn((Transform::from_xyz(x, 0., 0.), StaticContainer(1)))
+                .spawn((
+                    Transform::from_xyz(x, 0., 0.),
+                    StaticContainer(1),
+                    ContainerEnvelope(Vec3::new(4., 2., 2.)),
+                ))
                 .id();
             for dx in [-1., 1.] {
                 let child = app
@@ -209,6 +220,23 @@ mod tests {
         let a = app.world().get::<Mesh3d>(near[0]).unwrap();
         let b = app.world().get::<Mesh3d>(near[1]).unwrap();
         assert_eq!(a.0.id(), b.0.id());
+        // Recessing the detailed body must not shrink the distant proxy.
+        let far = app.world().get::<ContainerLod>(roots[0]).unwrap().far;
+        let far_mesh = app.world().get::<Mesh3d>(far).unwrap();
+        let meshes = app.world().resource::<Assets<Mesh>>();
+        let positions = meshes
+            .get(&far_mesh.0)
+            .unwrap()
+            .attribute(Mesh::ATTRIBUTE_POSITION)
+            .unwrap()
+            .as_float3()
+            .unwrap();
+        let (min, max) = positions.iter().map(|&p| Vec3::from(p)).fold(
+            (Vec3::splat(f32::INFINITY), Vec3::splat(f32::NEG_INFINITY)),
+            |(min, max), p| (min.min(p), max.max(p)),
+        );
+        assert_eq!(min, Vec3::new(-2., 0., -1.));
+        assert_eq!(max, Vec3::new(2., 2., 1.));
         assert_eq!(
             app.world()
                 .resource::<Assets<Mesh>>()
