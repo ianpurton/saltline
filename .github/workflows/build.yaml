@@ -33,6 +33,7 @@ jobs:
           mkdir -p dist/linux
           cp target/release/saltline-game dist/linux/
           cp README.md assets/fonts/OFL.txt dist/linux/
+          python3 scripts/package-static-props.py dist/linux/assets
       - uses: actions/upload-artifact@v4
         with:
           name: saltline-linux

@@ -3,6 +3,7 @@ use bevy::prelude::*;
 pub mod geometry;
 pub mod library;
 pub mod materials;
+pub mod static_props;
 pub struct SurfacePalette {
     pub asphalt: Handle<StandardMaterial>,
     pub concrete: Handle<StandardMaterial>,

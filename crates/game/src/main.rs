@@ -8,6 +8,8 @@ mod finish;
 #[cfg(target_os = "linux")]
 mod graphics;
 mod hud;
+#[cfg(not(target_arch = "wasm32"))]
+mod native_assets;
 fn graphics_isolated(args: &[String]) -> bool {
     args.iter().any(|a| {
         matches!(
@@ -64,6 +66,8 @@ fn main() {
         },
         ..default()
     });
+    #[cfg(not(target_arch = "wasm32"))]
+    let plugins = plugins.set(native_assets::plugin());
     #[cfg(target_arch = "wasm32")]
     let plugins = plugins.set(bevy::render::RenderPlugin {
         render_creation: bevy::render::settings::WgpuSettings {
@@ -109,6 +113,7 @@ fn main() {
     if !graphics_isolated(&saltline_game::launch_args().collect::<Vec<_>>()) {
         app.add_plugins(graphics::GraphicsPlugin);
     }
+    app.add_plugins(saltline_models::static_props::StaticPropsPlugin);
     capture::readiness(&mut app);
     #[cfg(target_arch = "wasm32")]
     app.add_systems(PreStartup, capture::limit_browser_surface)

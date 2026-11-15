@@ -16,13 +16,14 @@ fi
 cargo build --locked --profile "$profile" --target wasm32-unknown-unknown -p saltline-game --bin saltline-game
 output_profile="$profile"
 if [[ "$profile" == dev ]]; then output_profile=debug; fi
-# Only generated web files belong in this directory, never reference screenshots.
+# Only runtime web files and assets belong here, never reference screenshots.
 rm -rf dist/web
 mkdir -p dist/web
 wasm-bindgen --target web --out-dir dist/web --out-name saltline \
   "${CARGO_TARGET_DIR:-target}/wasm32-unknown-unknown/$output_profile/saltline-game.wasm"
 cp web/index.html dist/web/index.html
 cp assets/fonts/OFL.txt dist/web/FONT-LICENSE.txt
+python3 scripts/package-static-props.py dist/web/assets
 python3 - <<'PY'
 import hashlib
 from pathlib import Path

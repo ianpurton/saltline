@@ -53,7 +53,11 @@ Run `scripts/title-screen.sh` to save two startup screenshots in
 `tmp/screenshots/title-{70,170}.png`. This uses software Vulkan under Xvfb;
 normal launches retain the selected hardware renderer. The Oswald font is embedded in the executable, so menu text does not depend on
 the launch directory or an external assets folder. Its SIL Open Font License is
-in `assets/fonts/OFL.txt`.
+in `assets/fonts/OFL.txt`. Static prop GLBs are loaded externally: release packages
+include `assets/models` beside the executable or web page. Native debug and release
+builds discover assets from the executable directory, working directory, then the
+build-time workspace. Set `BEVY_ASSET_ROOT` to explicitly select a root containing
+`assets`; this override takes precedence and does not fall back if missing.
 
 For GitHub CI, browser builds, releases, and Wavedash setup, see
 [the release guide](docs/releases.md).

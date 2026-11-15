@@ -1,7 +1,7 @@
-# Procedural models
+# Models
 
-`Kit::new` allocates the shared mesh and material palettes once. All model
-instances clone handles. Existing `Kit` entry points and material indices remain
+`Kit::new` allocates the shared mesh and material palettes once. Procedural model
+instances clone handles. Static catalogue props use cached GLB scenes (see below). Existing `Kit` entry points and material indices remain
 available; environmental assemblies live under `library` and world placement and
 collision data stay in `saltline-world`.
 
@@ -44,3 +44,43 @@ markings), feet are broader, the head uses paired front optics plus side optics,
 and the reference's densely packed equipment and asymmetrical mechanical detail
 are simplified. These are visible differences, not a claim of exact reproduction.
 The other models retain their original blockout fidelity.
+
+## Static GLB props
+
+Install `static_props::StaticPropsPlugin` after Bevy's asset/GLTF plugins when
+using `library::map_props::build`. The builder returns the same local root and
+queues a catalogue scene on it. The plugin caches scene handles across instances;
+`StaticPropsReady` becomes true once dependencies and scene instances are ready.
+Load failures identify the asset path and stop the application.
+
+All 33 `PropKind` models use `assets/models/*.glb` with embedded PBR materials.
+`PropOptions` remains source-compatible, but color, seed, forks, fence posts and
+sign choices no longer affect the fixed exported visuals. `PropKind::size` still
+defines world collision; GLB bounds do not replace colliders. Containers, enemy
+rigs, weapons, large structures, relay indicators and shared utilities retain
+their existing builders. Exported materials do not reproduce custom wetness.
+
+Render a headless overview of every static prop with:
+
+```sh
+cargo run -p saltline-models --example static_props_inspect
+```
+
+The output is `tmp/static-props/catalogue.png`. Tiles run in `PropKind::ALL`
+order, six per row, from the far left across each row. Models are scaled to fit
+for this overview only; in-game instances keep their authored transforms.
+
+Known collision/visual differences: imported equipment can extend beyond the
+legacy collider envelopes. In particular, the relay is about 2.57 × 3.18 × 1.17 m
+versus its 1.2 × 2.4 × 0.8 m cabinet collider; the booth roof, fence feet and light
+fixtures also overhang. Stair rails rise to about 3.62 m above the ground while
+collision follows the existing steps/platform. Collision is intentionally unchanged.
+
+Native debug and release builds use the same asset discovery: an explicit
+`BEVY_ASSET_ROOT/assets` override, then executable-adjacent `assets`, then working
+directory `assets`, then the build-time workspace `assets`. An explicit override
+is respected even if missing. Local release runs from the repository need no
+environment override. Release distributions include `assets/models` next to the
+executable; Linux CI and web packaging copy the 33 runtime models with
+`scripts/package-static-props.py`. Web hosting serves `assets/models` alongside
+`index.html` and does not use native discovery.

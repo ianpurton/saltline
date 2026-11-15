@@ -52,4 +52,5 @@ VK_ICD_FILENAMES=/usr/share/vulkan/icd.d/lvp_icd.json \
 ```
 
 The viewer exits after loading and saving `target/asset-export/bevy.png`.
-It does not replace any existing game models.
+The game uses the 33 static catalogue GLBs through `StaticPropsPlugin`; containers,
+enemies and the weapon still use their existing procedural models.

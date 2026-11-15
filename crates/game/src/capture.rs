@@ -188,11 +188,16 @@ impl RenderReady {
     }
 }
 pub fn readiness(app: &mut App) {
+    let props = app
+        .world()
+        .resource::<saltline_models::static_props::StaticPropsReady>()
+        .clone();
     let ready = RenderReady::default();
     app.insert_resource(ready.clone());
     if let Some(render) = app.get_sub_app_mut(bevy::render::RenderApp) {
         render
             .insert_resource(ready)
+            .insert_resource(props)
             .add_systems(bevy::render::Render, settled);
     }
 }
@@ -200,8 +205,13 @@ fn settled(
     cache: Res<bevy::render::render_resource::PipelineCache>,
     ready: Res<RenderReady>,
     mut quiet: Local<u32>,
+    props: Res<saltline_models::static_props::StaticPropsReady>,
 ) {
     if ready.ready() {
+        return;
+    }
+    if !props.ready() {
+        *quiet = 0;
         return;
     }
     if cache.waiting_pipelines().next().is_none() {
