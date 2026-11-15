@@ -217,7 +217,16 @@ fn init_finish_pipeline(
 struct FinishSettings {
     params: Vec4, // time, damage, low health, ADS
 }
-fn attach(mut c: Commands, cameras: Query<Entity, With<Camera3d>>) {
+fn attach(
+    mut c: Commands,
+    cameras: Query<
+        Entity,
+        (
+            With<Camera3d>,
+            Without<saltline_models::materials::wet::GroundReflectionCamera>,
+        ),
+    >,
+) {
     for e in &cameras {
         c.entity(e).insert(FinishSettings::default());
     }

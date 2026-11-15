@@ -23,6 +23,8 @@ fn graphics_isolated(args: &[String]) -> bool {
         )
     })
 }
+#[cfg(not(target_arch = "wasm32"))]
+mod ground_reflections;
 mod presentation;
 mod quality;
 mod rain;
@@ -171,9 +173,11 @@ fn main() {
     #[cfg(not(target_arch = "wasm32"))]
     app.add_plugins(finish::FinishPlugin);
     #[cfg(not(target_arch = "wasm32"))]
+    app.add_plugins(ground_reflections::GroundReflectionsPlugin);
     app.add_plugins(saltline_models::materials::wet::WetPlugin)
-        .add_systems(Update, presentation::water.after(presentation::clock))
-        .add_systems(Update, rendering::freeze_environment_maps)
+        .add_systems(Update, presentation::water.after(presentation::clock));
+    #[cfg(not(target_arch = "wasm32"))]
+    app.add_systems(Update, rendering::freeze_environment_maps)
         .add_systems(Update, rendering::configure);
     if saltline_game::launch_args().any(|a| a == "--inspect" || a == "--title-capture") {
         app.insert_resource(bevy::time::TimeUpdateStrategy::ManualDuration(

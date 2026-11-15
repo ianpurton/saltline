@@ -1,0 +1,38 @@
+{
+  "maskRect": [
+    -44,
+    -40,
+    80
+  ],
+  "marksRect": [
+    -40,
+    -30,
+    70,
+    60
+  ],
+  "colorSpace": "linear data",
+  "rowOrder": "increasing world Z",
+  "maps": {
+    "mask": {
+      "sha256": "0a1438d5265e8575329c7982ccfe40a068240b8d2f5155cf63c538e4a76a9fc7",
+      "bytes": 3152166
+    },
+    "detail": {
+      "sha256": "350733ba565a27976571543a9ff7e484aa8f126d7170af865abcab24153c8b08",
+      "bytes": 984162
+    },
+    "normal": {
+      "sha256": "00ee54f9c895e9a4a9131cb652c7e3be53e52333e9a4acc0816390d874e75e4e",
+      "bytes": 1004459
+    },
+    "marks": {
+      "sha256": "2e978a1aca28b8dc02e2cbd2e5dc2350fb61769ff770ef9d5108d1b7a86ae7d0",
+      "bytes": 650003
+    }
+  },
+  "inputs": {
+    "references/src/world/ground/geometry.js": "6ccf7638622573fb5021c8ba82b907469deecb7eb4b9b81d4f985e42c616c300",
+    "scripts/export-ground.cjs": "b38ff7bc3887e0d515ea589dc016c3f919f03a7fc55b74e6b57a7c35ea3b8d58",
+    "references/public/fonts/fC1_PZJEZG-e9gHhdI4-NBbfd2ys3SjJCx1czNDuDJAM2w.woff2": "203dd8ba4ae61b19cd2e00c66708f0d0f6d8484cdfdb1d7e8be37260d36a99b1"
+  }
+}

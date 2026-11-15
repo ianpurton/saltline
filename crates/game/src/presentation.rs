@@ -182,13 +182,18 @@ pub fn weapon(
         }
     }
 }
-#[cfg(not(target_arch = "wasm32"))]
 pub fn water(
     clock: Res<PresentationClock>,
+    quality: Res<crate::quality::RenderQuality>,
+    mut simple: ResMut<saltline_models::materials::wet::SimpleWetSurfaces>,
     mut materials: ResMut<Assets<saltline_models::materials::wet::WetMaterial>>,
 ) {
+    if simple.0 != !quality.detailed_wet {
+        simple.0 = !quality.detailed_wet;
+    }
     for (_, m) in materials.iter_mut() {
         m.extension.settings.x = clock.elapsed;
+        m.extension.settings.z = if quality.rain { 0.6 } else { 0. };
     }
 }
 

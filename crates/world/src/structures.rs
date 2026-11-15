@@ -27,13 +27,12 @@ pub fn shell(c: &mut Commands, k: &Kit, root: Entity, port: &mut Port) {
     let ground = k.part(
         c,
         root,
-        Vec3::new(-5., -0.25, 0.),
-        Vec3::new(70., 0.5, 60.),
+        Vec3::new(-65., -0.25, 0.),
+        Vec3::new(190., 0.5, 320.),
         0,
     );
     c.entity(ground)
         .insert(MeshMaterial3d(k.surfaces.asphalt.clone()));
-    #[cfg(not(target_arch = "wasm32"))]
     c.entity(ground)
         .insert(saltline_models::materials::wet::WetSurface(false));
     let sea = k.part(
@@ -45,7 +44,6 @@ pub fn shell(c: &mut Commands, k: &Kit, root: Entity, port: &mut Port) {
     );
     c.entity(sea)
         .insert(MeshMaterial3d(k.surfaces.water.clone()));
-    #[cfg(not(target_arch = "wasm32"))]
     c.entity(sea)
         .insert(saltline_models::materials::wet::WetSurface(true));
     // The reference GLB retains world coordinates, so its local root is identity.

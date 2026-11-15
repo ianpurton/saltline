@@ -9,6 +9,7 @@ pub fn camera_effects(sky: Handle<Image>, intensity: f32) -> impl Bundle {
             intensity,
             ..default()
         },
+        bevy::camera::visibility::RenderLayers::from_layers(&[0, 1]),
         Tonemapping::AcesFitted,
         Msaa::Off,
         bevy::camera::Hdr,
@@ -20,7 +21,13 @@ pub fn camera_effects(sky: Handle<Image>, intensity: f32) -> impl Bundle {
 pub fn configure(
     mut c: Commands,
     quality: Res<crate::quality::RenderQuality>,
-    cameras: Query<Entity, With<Camera3d>>,
+    cameras: Query<
+        Entity,
+        (
+            With<Camera3d>,
+            Without<saltline_models::materials::wet::GroundReflectionCamera>,
+        ),
+    >,
     mut lights: Query<(&mut DirectionalLight, &mut bevy::light::CascadeShadowConfig)>,
     mut shadow_map: ResMut<bevy::light::DirectionalLightShadowMap>,
     mut rain: Query<&mut Visibility, With<crate::rain::Rain>>,
@@ -120,6 +127,7 @@ pub fn camera_effects(_sky: Handle<Image>, _intensity: f32) -> impl Bundle {
     (
         // Forward LDR supports tone mapping inside the material shader. Keep
         // sunlit containers from clipping while retaining readable sky fill.
+        bevy::camera::visibility::RenderLayers::from_layers(&[0, 1]),
         Tonemapping::AcesFitted,
         bevy::core_pipeline::tonemapping::DebandDither::Disabled,
         Msaa::Off,

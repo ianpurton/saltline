@@ -70,7 +70,13 @@ pub fn limit_browser_surface(
 pub fn attach(
     mut c: Commands,
     mut images: ResMut<Assets<Image>>,
-    cameras: Query<Entity, With<Camera3d>>,
+    cameras: Query<
+        Entity,
+        (
+            With<Camera3d>,
+            Without<saltline_models::materials::wet::GroundReflectionCamera>,
+        ),
+    >,
     quality: Res<crate::quality::RenderQuality>,
     #[cfg(target_arch = "wasm32")] device: Res<bevy::render::renderer::RenderDevice>,
 ) {
@@ -130,7 +136,13 @@ pub fn resize(
     mut scene: ResMut<SceneTarget>,
     mut images: ResMut<Assets<Image>>,
     mut sprites: Query<&mut Sprite, With<Composite>>,
-    mut cameras: Query<&mut RenderTarget, With<Camera3d>>,
+    mut cameras: Query<
+        &mut RenderTarget,
+        (
+            With<Camera3d>,
+            Without<saltline_models::materials::wet::GroundReflectionCamera>,
+        ),
+    >,
     #[cfg(target_arch = "wasm32")] device: Res<bevy::render::renderer::RenderDevice>,
 ) {
     if ready.ready() {
@@ -277,6 +289,14 @@ mod target_tests {
                 ))
                 .id(),
         ];
+        let mirror = app
+            .world_mut()
+            .spawn((
+                Camera3d::default(),
+                saltline_models::materials::wet::GroundReflectionCamera,
+                RenderTarget::Image(image.clone().into()),
+            ))
+            .id();
         let composite = app
             .world_mut()
             .spawn((Composite, Sprite::from_image(image.clone())))
@@ -296,6 +316,11 @@ mod target_tests {
             };
             assert_eq!(target.handle.id(), replacement.id());
         }
+        let RenderTarget::Image(mirror_target) = app.world().get::<RenderTarget>(mirror).unwrap()
+        else {
+            panic!("mirror image target")
+        };
+        assert_eq!(mirror_target.handle.id(), image.id());
         assert_eq!(
             app.world().get::<Sprite>(composite).unwrap().image.id(),
             replacement.id()

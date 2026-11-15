@@ -8,6 +8,9 @@ pub struct RainMaterial {
     motion: Vec4,
     #[uniform(0)]
     right: Vec4,
+    #[texture(1)]
+    #[sampler(2)]
+    mask: Option<Handle<Image>>,
 }
 impl Material for RainMaterial {
     fn vertex_shader() -> ShaderRef {
@@ -69,23 +72,36 @@ pub fn setup(
     .with_inserted_attribute(Mesh::ATTRIBUTE_POSITION, positions)
     .with_inserted_attribute(Mesh::ATTRIBUTE_UV_0, uvs)
     .with_inserted_indices(Indices::U32(indices));
-    c.spawn((
-        Rain,
-        Mesh3d(meshes.add(mesh)),
-        MeshMaterial3d(materials.add(RainMaterial {
-            motion: Vec4::ZERO,
-            right: Vec4::X,
-        })),
-        Transform::default(),
-        bevy::camera::visibility::NoFrustumCulling,
-        bevy::light::NotShadowCaster,
-        bevy::light::NotShadowReceiver,
-    ));
+    let mesh = meshes.add(mesh);
+    for kind in [0., 1.] {
+        c.spawn((
+            Rain,
+            Mesh3d(mesh.clone()),
+            MeshMaterial3d(materials.add(RainMaterial {
+                motion: Vec4::new(0., 0., 0., kind),
+                right: Vec4::X,
+                mask: None,
+            })),
+            Transform::default(),
+            bevy::camera::visibility::RenderLayers::layer(1),
+            bevy::camera::visibility::NoFrustumCulling,
+            bevy::light::NotShadowCaster,
+            bevy::light::NotShadowReceiver,
+        ));
+    }
 }
 pub fn update(
     clock: Res<crate::presentation::PresentationClock>,
-    cameras: Query<(&Camera, &GlobalTransform), With<Camera3d>>,
+    cameras: Query<
+        (&Camera, &GlobalTransform),
+        (
+            With<Camera3d>,
+            Without<saltline_models::materials::wet::GroundReflectionCamera>,
+        ),
+    >,
     mut materials: ResMut<Assets<RainMaterial>>,
+    maps: Option<Res<saltline_models::materials::ground::GroundMaps>>,
+    quality: Res<crate::quality::RenderQuality>,
     performance: Option<Res<saltline_game::performance::PerformanceSettings>>,
     diagnostics: Option<bevy::diagnostic::Diagnostics>,
 ) {
@@ -100,7 +116,12 @@ pub fn update(
     };
     let p = camera.translation();
     for (_, m) in materials.iter_mut() {
-        m.motion = Vec4::new(clock.elapsed, p.x, p.z, 0.);
-        m.right = camera.right().extend(0.);
+        m.motion = Vec4::new(clock.elapsed, p.x, p.z, m.motion.w);
+        if let Some(maps) = maps.as_ref() {
+            if m.mask.is_none() {
+                m.mask = Some(maps.mask.clone());
+            }
+        }
+        m.right = camera.right().extend(if quality.rain { 0.6 } else { 0. });
     }
 }

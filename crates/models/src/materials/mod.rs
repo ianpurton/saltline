@@ -1,9 +1,9 @@
 #[cfg(not(target_arch = "wasm32"))]
 pub mod embedded;
+pub mod ground;
 pub mod industrial;
 mod mipmaps;
 pub mod sky;
-#[cfg(not(target_arch = "wasm32"))]
 pub mod wet;
 use bevy::prelude::*;
 pub fn legacy(

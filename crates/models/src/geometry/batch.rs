@@ -16,7 +16,13 @@ pub struct ContainerLod {
 }
 pub fn update_lod(
     coarse: Option<Res<CoarseContainers>>,
-    cameras: Query<(&Camera, &GlobalTransform), With<Camera3d>>,
+    cameras: Query<
+        (&Camera, &GlobalTransform),
+        (
+            With<Camera3d>,
+            Without<crate::materials::wet::GroundReflectionCamera>,
+        ),
+    >,
     mut roots: Query<(&GlobalTransform, &mut ContainerLod)>,
     mut visibility: Query<&mut Visibility>,
 ) {
