@@ -10,7 +10,8 @@ pub fn camera_effects(sky: Handle<Image>, intensity: f32) -> impl Bundle {
             ..default()
         },
         bevy::camera::visibility::RenderLayers::from_layers(&[0, 1]),
-        Tonemapping::AcesFitted,
+        Tonemapping::None,
+        bevy::core_pipeline::tonemapping::DebandDither::Disabled,
         Msaa::Off,
         bevy::camera::Hdr,
         bevy::core_pipeline::prepass::DeferredPrepass,
@@ -85,14 +86,6 @@ pub fn configure(
             quality.taa,
             bevy::anti_alias::taa::TemporalAntiAliasing,
             bevy::anti_alias::taa::TemporalAntiAliasing::default()
-        );
-        effect!(
-            quality.bloom,
-            bevy::post_process::bloom::Bloom,
-            bevy::post_process::bloom::Bloom {
-                intensity: 0.045,
-                ..default()
-            }
         );
     }
     for (mut light, mut cascades) in &mut lights {

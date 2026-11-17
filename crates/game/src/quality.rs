@@ -4,6 +4,8 @@ const MIN_SCALE: f32 = if cfg!(target_os = "linux") { 0.5 } else { 0.7 };
 #[derive(Resource, Clone, Debug, serde::Serialize, serde::Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct RenderQuality {
+    #[serde(default)]
+    pub finish: FinishPreferences,
     pub high: bool,
     pub preset: String,
     #[cfg(not(target_arch = "wasm32"))]
@@ -13,7 +15,6 @@ pub struct RenderQuality {
     pub contact: bool,
     #[cfg(not(target_arch = "wasm32"))]
     pub volumetric: bool,
-    #[cfg(not(target_arch = "wasm32"))]
     pub bloom: bool,
     #[cfg(not(target_arch = "wasm32"))]
     pub taa: bool,
@@ -43,6 +44,10 @@ impl RenderQuality {
         let high = name == "high";
         let low = name == "low";
         Self {
+            finish: FinishPreferences {
+                lens: !low,
+                ..Default::default()
+            },
             high,
             preset: if high {
                 "high"
@@ -59,7 +64,6 @@ impl RenderQuality {
             contact: high,
             #[cfg(not(target_arch = "wasm32"))]
             volumetric: high,
-            #[cfg(not(target_arch = "wasm32"))]
             bloom: true,
             #[cfg(not(target_arch = "wasm32"))]
             taa: true,
@@ -105,9 +109,16 @@ impl RenderQuality {
             q.ssr = flag("--ssr", q.ssr);
             q.ao = flag("--ao", q.ao);
             q.volumetric = flag("--volumetric", q.volumetric);
-            q.bloom = flag("--bloom", q.bloom);
+
             q.taa = flag("--taa", q.taa);
         }
+        q.bloom = flag("--bloom", q.bloom);
+        q.finish.adaptation = flag("--adaptation", q.finish.adaptation);
+        q.finish.lens = flag("--lens", q.finish.lens);
+        q.finish.ads_blur = flag("--ads-blur", q.finish.ads_blur);
+        q.finish.aberration = flag("--aberration", q.finish.aberration);
+        q.finish.grain = flag("--grain", q.finish.grain);
+        q.finish.sharpen = flag("--sharpen", q.finish.sharpen);
         q.contact = flag("--contact-shadows", q.contact);
         if let Some(size) = option("--shadow-size")
             .and_then(|v| v.parse().ok())
@@ -131,7 +142,13 @@ impl RenderQuality {
         if args.iter().any(|a| {
             matches!(
                 a.as_str(),
-                "--ssr"
+                "--adaptation"
+                    | "--lens"
+                    | "--ads-blur"
+                    | "--aberration"
+                    | "--grain"
+                    | "--sharpen"
+                    | "--ssr"
                     | "--ao"
                     | "--contact-shadows"
                     | "--volumetric"
@@ -262,5 +279,29 @@ mod tests {
             q.adapt(if i % 10 == 0 { 0.021 } else { 0.015 });
         }
         assert!(q.scale < 1.);
+    }
+}
+
+/// Toggles are shared by native and WebGL2; strengths are calibrated in the shader.
+#[derive(Clone, Debug, serde::Serialize, serde::Deserialize)]
+#[serde(default, deny_unknown_fields)]
+pub struct FinishPreferences {
+    pub adaptation: bool,
+    pub lens: bool,
+    pub ads_blur: bool,
+    pub aberration: bool,
+    pub grain: bool,
+    pub sharpen: bool,
+}
+impl Default for FinishPreferences {
+    fn default() -> Self {
+        Self {
+            adaptation: true,
+            lens: true,
+            ads_blur: true,
+            aberration: true,
+            grain: true,
+            sharpen: true,
+        }
     }
 }

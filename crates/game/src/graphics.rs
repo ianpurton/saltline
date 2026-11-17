@@ -98,7 +98,7 @@ struct Row(usize);
 struct RowText(usize);
 #[derive(Component)]
 struct Status;
-const LABELS: [&str; 15] = [
+const LABELS: [&str; 21] = [
     "Preset",
     "Render scale",
     "Adaptive resolution",
@@ -112,6 +112,12 @@ const LABELS: [&str; 15] = [
     "Rain",
     "Wet surfaces",
     "Container detail",
+    "Eye adaptation",
+    "Lens effects",
+    "ADS blur",
+    "Chromatic aberration",
+    "Film grain",
+    "Sharpening",
     "Reset defaults",
     "Back",
 ];
@@ -142,13 +148,13 @@ fn setup(mut c: Commands, output: Res<capture::OutputCamera>) {
     });
 }
 fn spawn_button(parent: &mut ChildSpawnerCommands, row: usize, label: &str) {
-    if row < 13 {
+    if row < 19 {
         parent
             .spawn((
                 Row(row),
                 Hovered::default(),
                 Node {
-                    height: px(30),
+                    height: px(23),
                     align_items: AlignItems::Center,
                     padding: UiRect::horizontal(px(5)),
                     ..default()
@@ -179,7 +185,7 @@ fn spawn_button(parent: &mut ChildSpawnerCommands, row: usize, label: &str) {
                 Hovered::default(),
                 Row(row),
                 Node {
-                    height: px(30),
+                    height: px(23),
                     padding: UiRect::horizontal(px(8)),
                     align_items: AlignItems::Center,
                     ..default()
@@ -209,7 +215,7 @@ fn arrow(parent: &mut ChildSpawnerCommands, row: usize, delta: i32, glyph: &str,
             )),
             Node {
                 width: px(26),
-                height: px(28),
+                height: px(21),
                 align_items: AlignItems::Center,
                 justify_content: JustifyContent::Center,
                 ..default()
@@ -259,10 +265,16 @@ fn change(q: &mut RenderQuality, row: usize, delta: i32) -> bool {
         10 => q.rain = !q.rain,
         11 => q.detailed_wet = !q.detailed_wet,
         12 => q.detailed_containers = !q.detailed_containers,
-        13 => *q = RenderQuality::preset("medium"),
+        13 => q.finish.adaptation = !q.finish.adaptation,
+        14 => q.finish.lens = !q.finish.lens,
+        15 => q.finish.ads_blur = !q.finish.ads_blur,
+        16 => q.finish.aberration = !q.finish.aberration,
+        17 => q.finish.grain = !q.finish.grain,
+        18 => q.finish.sharpen = !q.finish.sharpen,
+        19 => *q = RenderQuality::preset("medium"),
         _ => return false,
     }
-    if row != 0 && row != 13 {
+    if row != 0 && row != 19 {
         q.preset = "custom".into();
     }
     q.reset_history();
@@ -298,7 +310,7 @@ fn input(
         return;
     }
     let rows: Vec<usize> = if state.open {
-        (0..15).collect()
+        (0..21).collect()
     } else {
         vec![100, 101]
     };
@@ -335,7 +347,7 @@ fn input(
                 state.open = true;
                 state.selected = 0;
             }
-            14 => {
+            20 => {
                 state.open = false;
                 state.selected = 101;
             }
@@ -408,6 +420,12 @@ fn display(
                 "Low"
             }
             .into(),
+            13 => on(q.finish.adaptation).into(),
+            14 => on(q.finish.lens).into(),
+            15 => on(q.finish.ads_blur).into(),
+            16 => on(q.finish.aberration).into(),
+            17 => on(q.finish.grain).into(),
+            18 => on(q.finish.sharpen).into(),
             _ => String::new(),
         };
         let label = if row.0 == 100 {
@@ -457,6 +475,29 @@ mod tests {
         assert!(decode(&serde_json::to_vec(&saved).unwrap()).is_err());
     }
     #[test]
+    fn old_preferences_gain_finish_defaults() {
+        let mut value = serde_json::to_value(Saved {
+            version: 1,
+            quality: RenderQuality::preset("medium"),
+        })
+        .unwrap();
+        value["quality"].as_object_mut().unwrap().remove("finish");
+        let q = decode(&serde_json::to_vec(&value).unwrap()).unwrap();
+        assert!(q.finish.adaptation && q.finish.lens && q.finish.ads_blur && q.finish.grain);
+        let mut q = q;
+        for row in 13..19 {
+            assert!(change(&mut q, row, 1));
+        }
+        assert!(
+            !q.finish.adaptation
+                && !q.finish.lens
+                && !q.finish.ads_blur
+                && !q.finish.aberration
+                && !q.finish.grain
+                && !q.finish.sharpen
+        );
+    }
+    #[test]
     fn preferences_replace_atomically_and_report_io_failure() {
         let directory =
             std::env::temp_dir().join(format!("saltline-graphics-test-{}", std::process::id()));
@@ -482,7 +523,7 @@ mod tests {
         let mut app = App::new();
         app.insert_resource(GraphicsState {
             open: true,
-            selected: 14,
+            selected: 20,
             ..default()
         })
         .insert_resource(RenderQuality::preset("medium"))
@@ -523,7 +564,7 @@ mod tests {
             change(&mut q, 1, -1);
         }
         assert_eq!(q.scale, 0.5);
-        change(&mut q, 13, 1);
+        change(&mut q, 19, 1);
         assert_eq!(preset(&q), "medium");
     }
 }

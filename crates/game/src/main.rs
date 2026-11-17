@@ -4,7 +4,6 @@ mod benchmark;
 mod capture;
 mod driver;
 mod effects;
-#[cfg(not(target_arch = "wasm32"))]
 mod finish;
 #[cfg(target_os = "linux")]
 mod graphics;
@@ -170,7 +169,6 @@ fn main() {
         })
         .add_systems(PostStartup, position_fps_overlay.after(capture::attach));
     }
-    #[cfg(not(target_arch = "wasm32"))]
     app.add_plugins(finish::FinishPlugin);
     #[cfg(not(target_arch = "wasm32"))]
     app.add_plugins(ground_reflections::GroundReflectionsPlugin);
@@ -284,7 +282,11 @@ fn setup_timing_overlay(
         "deferred_lighting",
         "main_opaque_pass_3d",
         "taa",
-        "saltline_finish",
+        "cinematic_blur",
+        "cinematic_meter",
+        "cinematic_streak",
+        "cinematic_composite",
+        "cinematic_finish",
     ] {
         for field in ["elapsed_cpu", "elapsed_gpu"] {
             items.push(DiagnosticPath::new(format!("render/{pass}/{field}")).into());
