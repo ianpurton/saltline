@@ -42,26 +42,41 @@ fn movement_collision_and_pause() {
 #[test]
 fn firing_damage_reload() {
     let mut a = app();
-    a.world_mut().spawn((
-        Enemy {
-            drone: false,
-            health: 100.,
-            home: Vec3::ZERO,
-            cooldown: 10.,
-        },
-        Transform::from_xyz(0., 1., 0.),
-    ));
+    let enemy = a
+        .world_mut()
+        .spawn((
+            Enemy {
+                drone: false,
+                health: 100.,
+                home: Vec3::ZERO,
+                cooldown: 10.,
+            },
+            Transform::default(),
+        ))
+        .id();
     a.world_mut().resource_mut::<Actions>().fire = true;
     for _ in 0..25 {
+        // Track the grounded, approaching enemy at the simulation's hit center.
+        let center = a.world().get::<Transform>(enemy).unwrap().translation + Vec3::Y * 0.65;
+        let mut mission = a.world_mut().resource_mut::<Mission>();
+        let direction = center - mission.position;
+        mission.yaw = (-direction.x).atan2(-direction.z);
+        mission.pitch = direction.y.atan2(direction.xz().length());
         a.update();
+        if a.world().resource::<Mission>().kills == 1 {
+            break;
+        }
     }
-    assert!(a.world().resource::<Mission>().kills >= 1);
+    assert_eq!(a.world().resource::<Mission>().kills, 1);
+    assert_eq!(a.world().resource::<Mission>().ammo, 27);
+    assert_eq!(a.world().get::<Enemy>(enemy).unwrap().health, -2.);
     a.world_mut().resource_mut::<Actions>().fire = false;
     a.world_mut().resource_mut::<Actions>().reload = true;
     for _ in 0..120 {
         a.update();
     }
     assert_eq!(a.world().resource::<Mission>().ammo, 30);
+    assert_eq!(a.world().resource::<Mission>().reserve, 207);
 }
 #[test]
 fn mission_driver() {
